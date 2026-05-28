@@ -33,4 +33,4 @@
 
 ## 실행 방법
 
-vercel 코드?? - https://festival-dating-3oyyy977e-homegravitys-projects.vercel.app/
+vercel 코드?? - https://festival-dating-web.vercel.app/

@@ -10,9 +10,9 @@ import { supabase } from './lib/supabaseClient';
 
 function App() {
   const savedData = JSON.parse(localStorage.getItem('festivalDatingData')) || {};
-  const [accessCode, setAccessCode] = useState('');
+  
   const [isEntered, setIsEntered] = useState(savedData.isEntered || false);
-  const [errorMessage, setErrorMessage] = useState('');
+  
 
 
 
@@ -48,6 +48,8 @@ function App() {
   const [isProfileVisible, setIsProfileVisible] = useState(savedData.isProfileVisible ?? true);
   const [supabaseProfileId, setSupabaseProfileId] = useState(savedData.supabaseProfileId || null);
   const [participantCode, setParticipantCode] = useState(savedData.participantCode || '');
+  const [startMode, setStartMode] = useState('home');
+  const [lookupCode, setLookupCode] = useState('');
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -139,18 +141,89 @@ function App() {
 
 
   
-  const correctCode = 'FESTA2026';
+  
 
-  const handleEnter = () => {
-    const userCode = accessCode.trim().toUpperCase();
+  
 
-    if (userCode === correctCode) {
-      setIsEntered(true);
-      setErrorMessage('');
-    } else {
-      setErrorMessage('입장코드가 올바르지 않습니다.');
-    }
+
+  const handleStartNewProfile = () => {
+    setIsEntered(true);
+    setIsProfileSaved(false);
+    setProfileFormMode('create');
+    setCurrentPage('profileComplete');
   };
+
+
+  const handleLoadProfileByCode = async () => {
+    const code = lookupCode.trim().toUpperCase();
+  
+    if (!code) {
+      alert('참여 코드를 입력해주세요.');
+      return;
+    }
+  
+    const { data: foundProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('participant_code', code)
+      .maybeSingle();
+  
+    if (profileError) {
+      console.error('프로필 불러오기 오류:', profileError);
+      alert(`프로필 불러오기 오류: ${profileError.message}`);
+      return;
+    }
+  
+    if (!foundProfile) {
+      alert('해당 참여 코드로 등록된 프로필을 찾을 수 없어요.');
+      return;
+    }
+  
+    const { data: foundContact, error: contactError } = await supabase
+      .from('contacts')
+      .select('contact_type, contact_value')
+      .eq('profile_id', foundProfile.id)
+      .maybeSingle();
+  
+    if (contactError) {
+      console.error('연락수단 불러오기 오류:', contactError);
+      alert(`연락수단 불러오기 오류: ${contactError.message}`);
+      return;
+    }
+  
+    setProfile({
+      nickname: foundProfile.nickname,
+      gender: foundProfile.gender,
+      targetGender: foundProfile.target_gender,
+      grade: foundProfile.grade,
+      department: foundProfile.department || '',
+      mbti: foundProfile.mbti || '',
+      interests: foundProfile.interests,
+      introduction: foundProfile.introduction,
+      idealType: foundProfile.ideal_type || '',
+      contactType: foundContact?.contact_type || 'instagram',
+      contactValue: foundContact?.contact_value || '',
+    });
+  
+    setSupabaseProfileId(foundProfile.id);
+    setParticipantCode(foundProfile.participant_code || code);
+    setIsProfileVisible(foundProfile.is_visible);
+    setIsEntered(true);
+    setIsProfileSaved(true);
+    setCurrentPage('profileComplete');
+    setProfileFormMode('create');
+    setStartMode('home');
+    setLookupCode('');
+  
+    await loadSupabaseProfiles();
+    await loadMySentLikes(foundProfile.id);
+    await loadMyReceivedLikes(foundProfile.id);
+    await loadMyMatches(foundProfile.id);
+  };
+
+
+
+
 
   const handleProfileChange = (event) => {
     const { name, value } = event.target;
@@ -730,9 +803,9 @@ function App() {
     
     localStorage.removeItem('festivalDatingData');
   
-    setAccessCode('');
+    
     setIsEntered(false);
-    setErrorMessage('');
+    
   
     setProfile({
       nickname: '',
@@ -1066,22 +1139,52 @@ function App() {
     <div className="app">
       <h1>축제 매칭 웹</h1>
       <p>학교 축제 현장에서 만나는 새로운 인연</p>
-
-      <div className="card">
-        <h2>입장코드 입력</h2>
-        <p>부스에서 안내받은 입장코드를 입력해주세요.</p>
-
-        <input
-          type="text"
-          placeholder="예: FESTA2026"
-          value={accessCode}
-          onChange={(event) => setAccessCode(event.target.value)}
-        />
-
-        <button onClick={handleEnter}>입장하기</button>
-
-        {errorMessage && <p className="error">{errorMessage}</p>}
-      </div>
+  
+      {startMode === 'home' && (
+        <div className="card">
+          <h2>참여 방법</h2>
+          <p>
+            처음 참여하는 경우 프로필을 만들고, 이미 참여했다면 참여 코드로
+            내 프로필을 다시 불러올 수 있어요.
+          </p>
+  
+          <button onClick={handleStartNewProfile}>
+            처음 참여하기
+          </button>
+  
+          <button
+            className="sub-button"
+            onClick={() => setStartMode('lookup')}
+          >
+            내 프로필 불러오기
+          </button>
+        </div>
+      )}
+  
+      {startMode === 'lookup' && (
+        <div className="card">
+          <h2>내 프로필 불러오기</h2>
+          <p>프로필 저장 후 발급받은 참여 코드를 입력해주세요.</p>
+  
+          <input
+            type="text"
+            placeholder="예: MANGO-ABC-2345"
+            value={lookupCode}
+            onChange={(event) => setLookupCode(event.target.value.toUpperCase())}
+          />
+  
+            <button onClick={handleLoadProfileByCode}>
+            불러오기
+          </button>
+            
+          <button
+            className="sub-button"
+            onClick={() => setStartMode('home')}
+          >
+            돌아가기
+          </button>
+        </div>
+      )}
     </div>
   );
 }

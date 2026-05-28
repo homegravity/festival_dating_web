@@ -1,16 +1,39 @@
-# React + Vite
+# 학교 축제 매칭 웹 프로젝트
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 프로젝트 소개
 
-Currently, two official plugins are available:
+저희 학교에서 진행되는 사랑나눔축제주간에 두사타(두유는 사랑을 타고)라는 부스를 보고 아이디어가 생각나 만든 프로젝트입니다. 
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+두사타란? - 학생들이 부스에 방문하여 명함사이즈에 카드에 본인의 개인정보 이상형, 관심사, 연락수단을 적고 다른 사람이 작성한 카드를 뽑아 갑니다. 
+이런식으로 학교 학생들끼리 매칭시켜주는 프로그랩입니다. 
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+개발 목적 - 기존 두사타는 종이로 되어있어서 분실의 위험이 있고 사람들이 카드를 보기 위해 붐비거나 카드를 가져가고 연락을 하지 않거나 
+단순 연락수단만 확인하고 카드를 뽑지 않는 다양한 문제점이 있어서 그러한 점을 개선하고자 쉽고 간편하고 빠르게 웹 형태로 이용할 수 있게 
+만들어 보았습니다. 
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+## 주요 기능
+
+- 사용자 정보 입력 기능
+- 매칭 참여 신청 기능
+- Supabase를 활용한 데이터 저장
+- 관리자용 표시/숨김 상태 관리
+- 알림 메시지 UI 제공
+
+## 사용 기술
+
+- React
+- Vite
+- JavaScript
+- CSS
+- Supabase
+
+## 실행 방법
+
+프로젝트를 실행하려면 먼저 패키지를 설치합니다.
+
+```bash
+npm install

@@ -325,3 +325,31 @@ textarea {
   background: white;
   color: #ff3f78;
 }
+
+
+.code-box {
+  margin: 20px 0;
+  padding: 14px;
+  background: #f8fbff;
+  border: 1px solid #d7ebff;
+  border-radius: 14px;
+}
+
+.code-box p {
+  margin: 6px 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.participant-code {
+  font-size: 20px !important;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #0077b6 !important;
+}
+
+.code-guide {
+  color: #777 !important;
+  font-size: 13px !important;
+  line-height: 1.5;
+}

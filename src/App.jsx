@@ -47,6 +47,7 @@ function App() {
   
   const [isProfileVisible, setIsProfileVisible] = useState(savedData.isProfileVisible ?? true);
   const [supabaseProfileId, setSupabaseProfileId] = useState(savedData.supabaseProfileId || null);
+  const [participantCode, setParticipantCode] = useState(savedData.participantCode || '');
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -66,6 +67,7 @@ function App() {
       matchedProfileIds,
       isProfileVisible,
       supabaseProfileId,
+      participantCode,
     };
   
     localStorage.setItem('festivalDatingData', JSON.stringify(dataToSave));
@@ -79,6 +81,8 @@ function App() {
     matchedProfileIds,
     isProfileVisible,
     supabaseProfileId,
+    participantCode,
+
   ]);
 
 
@@ -182,6 +186,7 @@ function App() {
       introduction: item.introduction,
       idealType: item.ideal_type,
       isVisible: item.is_visible,
+      participantCode: item.participant_code,
     }));
   
     setSupabaseProfiles(formattedProfiles);
@@ -355,6 +360,27 @@ function App() {
   };
 
 
+  const generateParticipantCode = () => {
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const numbers = '23456789';
+  
+    let code = 'MANGO-';
+  
+    for (let i = 0; i < 3; i += 1) {
+      code += letters[Math.floor(Math.random() * letters.length)];
+    }
+  
+    code += '-';
+  
+    for (let i = 0; i < 4; i += 1) {
+      code += numbers[Math.floor(Math.random() * numbers.length)];
+    }
+  
+    return code;
+  };
+
+
+
 
 
 
@@ -376,6 +402,8 @@ function App() {
     }
 
     if (!supabaseProfileId) {
+      
+      const newParticipantCode = participantCode || generateParticipantCode();
       const { data, error } = await supabase
         .from('profiles')
         .insert({
@@ -389,6 +417,7 @@ function App() {
           introduction: profile.introduction,
           ideal_type: profile.idealType || null,
           is_visible: isProfileVisible,
+          participant_code: newParticipantCode,
         })
         .select('id')
         .single();
@@ -400,6 +429,7 @@ function App() {
       }
     
       setSupabaseProfileId(data.id);
+      setParticipantCode(newParticipantCode);
 
       const contactSaved = await saveOrUpdateContactToSupabase(data.id);
 
@@ -727,6 +757,7 @@ function App() {
     setIsProfileVisible(true);
     setProfileFormMode('create');
     setSupabaseProfileId(null);
+    setParticipantCode('');
   };
   
 
@@ -943,6 +974,25 @@ function App() {
               <p className="status-message">매칭 가능 인원이 가득 찼어요.</p>
             )}
           </div>
+
+
+
+          {participantCode && (
+              <div className="code-box">
+                <p><strong>내 참여 코드</strong></p>
+                <p className="participant-code">{participantCode}</p>
+                <p className="code-guide">
+                  나중에 내 프로필을 다시 불러올 때 필요해요. 캡처하거나 메모해두세요.
+                </p>
+              </div>
+            )}
+
+
+
+
+
+
+
 
           <div className="contact-box">
             <p><strong>내 연락수단</strong></p>

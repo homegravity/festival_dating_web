@@ -33,7 +33,4 @@
 
 ## 실행 방법
 
-프로젝트를 실행하려면 먼저 패키지를 설치합니다.
-
-```bash
-npm install
+vercel 코드?? - https://festival-dating-3oyyy977e-homegravitys-projects.vercel.app/

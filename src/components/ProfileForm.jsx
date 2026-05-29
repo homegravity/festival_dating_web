@@ -1,9 +1,11 @@
 function ProfileForm({
   profile,
   profileFormMode,
+  isSubmittingProfile,
   onProfileChange,
   onProfileSubmit,
 }) {
+  
   return (
     <form className="card" onSubmit={onProfileSubmit}>
       <div className="notice-box">
@@ -121,9 +123,13 @@ function ProfileForm({
         onChange={onProfileChange}
       />
 
-      <button type="submit">
-        {profileFormMode === 'edit' ? '수정 내용 저장하기' : '프로필 저장하기'}
-      </button>
+        <button type="submit" disabled={isSubmittingProfile}>
+          {isSubmittingProfile
+            ? '저장 중...'
+            : profileFormMode === 'edit'
+              ? '수정 내용 저장하기'
+              : '프로필 저장하기'}
+        </button>
     </form>
   );
 }

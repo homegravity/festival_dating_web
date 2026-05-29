@@ -38,6 +38,7 @@ function App() {
   const [likedProfileIds, setLikedProfileIds] = useState(savedData.likedProfileIds || []);
   const [rejectedProfileIds, setRejectedProfileIds] = useState([]);
   const [profileFormMode, setProfileFormMode] = useState('create');
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
 
 
   const maxLikes = 3;
@@ -50,6 +51,7 @@ function App() {
   const [participantCode, setParticipantCode] = useState(savedData.participantCode || '');
   const [startMode, setStartMode] = useState('home');
   const [lookupCode, setLookupCode] = useState('');
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -186,12 +188,18 @@ function App() {
 
 
   const handleLoadProfileByCode = async () => {
+    if (isLoadingProfile) {
+      return;
+    }
+  
     const code = lookupCode.trim().toUpperCase();
   
     if (!code) {
       alert('참여 코드를 입력해주세요.');
       return;
     }
+  
+    setIsLoadingProfile(true);
   
     const { data: foundProfile, error: profileError } = await supabase
       .from('profiles')
@@ -202,11 +210,13 @@ function App() {
     if (profileError) {
       console.error('프로필 불러오기 오류:', profileError);
       alert(`프로필 불러오기 오류: ${profileError.message}`);
+      setIsLoadingProfile(false);
       return;
     }
   
     if (!foundProfile) {
       alert('해당 참여 코드로 등록된 프로필을 찾을 수 없어요.');
+      setIsLoadingProfile(false);
       return;
     }
   
@@ -219,6 +229,7 @@ function App() {
     if (contactError) {
       console.error('연락수단 불러오기 오류:', contactError);
       alert(`연락수단 불러오기 오류: ${contactError.message}`);
+      setIsLoadingProfile(false);
       return;
     }
   
@@ -250,6 +261,8 @@ function App() {
     await loadMySentLikes(foundProfile.id);
     await loadMyReceivedLikes(foundProfile.id);
     await loadMyMatches(foundProfile.id);
+  
+    setIsLoadingProfile(false);
   };
 
 
@@ -492,6 +505,17 @@ function App() {
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
 
+
+    if (isSubmittingProfile) {
+      return;
+    }
+  
+    setIsSubmittingProfile(true);
+
+
+
+
+
     if (
       !profile.nickname ||
       !profile.gender ||
@@ -529,6 +553,7 @@ function App() {
       if (error) {
         console.error('Supabase 저장 오류:', error);
         alert(`Supabase 저장 오류: ${error.message}`);
+        setIsSubmittingProfile(false);
         return;
       }
     
@@ -538,6 +563,7 @@ function App() {
       const contactSaved = await saveOrUpdateContactToSupabase(data.id);
 
       if (!contactSaved) {
+        setIsSubmittingProfile(false);
         return;
       }
                 
@@ -589,7 +615,19 @@ function App() {
     setIsProfileSaved(true);
     setCurrentPage('profileComplete');
     setProfileFormMode('create');
+    setIsSubmittingProfile(false);
   };
+
+
+
+
+
+
+
+
+
+
+
 
   const visibleProfiles = supabaseProfiles.filter((otherProfile) => {
     const isNotMyProfile = String(otherProfile.id) !== String(supabaseProfileId); 
@@ -807,7 +845,9 @@ function App() {
 
 
   const handleResetData = async () => {
-    const confirmed = window.confirm('프로필과 매칭 정보를 모두 삭제할까요?');
+    const confirmed = window.confirm(
+      '정말 프로필을 삭제할까요?\n\n삭제하면 참여 코드로도 다시 불러올 수 없어요.'
+    );
   
     if (!confirmed) {
       return;
@@ -1174,6 +1214,7 @@ function App() {
         <ProfileForm
           profile={profile}
           profileFormMode={profileFormMode}
+          isSubmittingProfile={isSubmittingProfile}
           onProfileChange={handleProfileChange}
           onProfileSubmit={handleProfileSubmit}
         />
@@ -1184,19 +1225,19 @@ function App() {
   return (
     <div className="app">
       <h1>축제 매칭 웹</h1>
-      <p>학교 축제 현장에서 만나는 새로운 인연</p>
+      <p>마음에 드는 사람에게 관심을 보내고, 서로 수락하면 연락수단이 공개돼요.</p>
   
       {startMode === 'home' && (
-        <div className="card">
-          <h2>참여 방법</h2>
-          <p>
-            처음 참여하는 경우 프로필을 만들고, 이미 참여했다면 참여 코드로
-            내 프로필을 다시 불러올 수 있어요.
-          </p>
-  
-          <button onClick={handleStartNewProfile}>
-            처음 참여하기
-          </button>
+          <div className="card">
+            <h2>시작하기</h2>
+            <p>
+              처음 참여한다면 프로필을 만들고, 이미 참여했다면 참여 코드로
+              내 프로필을 다시 불러올 수 있어요.
+            </p>
+
+            <button onClick={handleStartNewProfile}>
+              프로필 만들기
+            </button>
   
           <button
             className="sub-button"
@@ -1207,20 +1248,25 @@ function App() {
         </div>
       )}
   
-      {startMode === 'lookup' && (
-        <div className="card">
-          <h2>내 프로필 불러오기</h2>
-          <p>프로필 저장 후 발급받은 참여 코드를 입력해주세요.</p>
+          {startMode === 'lookup' && (
+          <div className="card">
+            <h2>내 프로필 불러오기</h2>
+            <p>프로필을 만들 때 발급받은 참여 코드를 입력해주세요.</p>
   
-          <input
-            type="text"
-            placeholder="예: MANGO-ABC-2345"
-            value={lookupCode}
-            onChange={(event) => setLookupCode(event.target.value.toUpperCase())}
-          />
+            <input
+              type="text"
+              placeholder="예: MANGO-ABC-2345"
+              value={lookupCode}
+              onChange={(event) => setLookupCode(event.target.value.toUpperCase())}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !isLoadingProfile) {
+                  handleLoadProfileByCode();
+                }
+              }}
+            />
   
-            <button onClick={handleLoadProfileByCode}>
-            불러오기
+            <button onClick={handleLoadProfileByCode} disabled={isLoadingProfile}>
+            {isLoadingProfile ? '불러오는 중...' : '불러오기'}
           </button>
             
           <button

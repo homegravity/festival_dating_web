@@ -364,3 +364,8 @@ textarea {
 .copy-button:hover {
   background: #005f8f;
 }
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

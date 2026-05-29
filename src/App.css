@@ -353,3 +353,14 @@ textarea {
   font-size: 13px !important;
   line-height: 1.5;
 }
+
+
+.copy-button {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  background: #0077b6;
+}
+
+.copy-button:hover {
+  background: #005f8f;
+}

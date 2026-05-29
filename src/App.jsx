@@ -154,6 +154,37 @@ function App() {
   };
 
 
+  const handleCancelProfileForm = () => {
+    if (profileFormMode === 'edit') {
+      setIsProfileSaved(true);
+      setCurrentPage('profileComplete');
+      setProfileFormMode('create');
+      return;
+    }
+  
+    setIsEntered(false);
+    setStartMode('home');
+  };
+
+
+  const handleCopyParticipantCode = async () => {
+    if (!participantCode) {
+      alert('복사할 참여 코드가 없어요.');
+      return;
+    }
+  
+    try {
+      await navigator.clipboard.writeText(participantCode);
+      alert('참여 코드가 복사됐어요.');
+    } catch (error) {
+      console.error('참여 코드 복사 오류:', error);
+      alert('복사에 실패했어요. 참여 코드를 직접 캡처하거나 메모해주세요.');
+    }
+  };
+
+
+
+
   const handleLoadProfileByCode = async () => {
     const code = lookupCode.trim().toUpperCase();
   
@@ -1054,6 +1085,14 @@ function App() {
               <div className="code-box">
                 <p><strong>내 참여 코드</strong></p>
                 <p className="participant-code">{participantCode}</p>
+
+                <button
+                  className="copy-button"
+                  onClick={handleCopyParticipantCode}
+                >
+                  코드 복사하기
+                </button>
+
                 <p className="code-guide">
                   나중에 내 프로필을 다시 불러올 때 필요해요. 캡처하거나 메모해두세요.
                 </p>
@@ -1124,6 +1163,13 @@ function App() {
               ? '수정한 내용을 저장하면 내 프로필에 반영돼요.'
               : '프로필을 작성하고 마음에 드는 사람에게 관심을 보내보세요.'}
         </p>
+
+
+        <button className="sub-button" onClick={handleCancelProfileForm}>
+          {profileFormMode === 'edit' ? '수정 취소' : '첫 화면으로 돌아가기'}
+        </button>
+
+
 
         <ProfileForm
           profile={profile}

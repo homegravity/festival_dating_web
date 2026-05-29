@@ -9,8 +9,12 @@ body {
 }
 
 .app {
+  width: 100%;
+  max-width: 520px;
   min-height: 100vh;
-  padding: 40px 20px;
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+  box-sizing: border-box;
   text-align: center;
 }
 
@@ -227,6 +231,9 @@ textarea {
   background: white;
   border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  box-sizing: border-box;
+
 }
 
 .bottom-nav button {
@@ -368,4 +375,61 @@ textarea {
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+
+
+.card,
+.profile-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.participant-code,
+.contact-box p {
+  word-break: break-word;
+}
+
+
+
+body {
+  color: #222;
+}
+
+h1,
+h2,
+h3 {
+  color: #222;
+}
+
+p {
+  color: #444;
+}
+
+.card h2,
+.profile-card h2 {
+  color: #222;
+}
+
+.card p,
+.profile-card p {
+  color: #444;
+}
+
+input,
+select,
+textarea {
+  background: #ffffff;
+  color: #222;
+  border: 1px solid #ddd;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #999;
+}
+
+label {
+  color: #333;
 }

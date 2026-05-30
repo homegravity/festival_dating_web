@@ -136,14 +136,65 @@ function App() {
 
 
 
+
   useEffect(() => {
     loadContactsForMatches(matchedProfileIds);
   }, [matchedProfileIds]);
 
-
+  useEffect(() => {
+    if (!supabaseProfileId) {
+      return;
+    }
+  
+    const channel = supabase
+      .channel('likes-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'likes',
+        },
+        async () => {
+          await loadMySentLikes(supabaseProfileId);
+          await loadMyReceivedLikes(supabaseProfileId);
+          await loadMyMatches(supabaseProfileId);
+        }
+      )
+      .subscribe();
+  
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabaseProfileId]);
 
   
   
+  useEffect(() => {
+    const channel = supabase
+      .channel('profiles-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+        },
+        async () => {
+          await loadSupabaseProfiles();
+        }
+      )
+      .subscribe();
+  
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+
+
+
+
 
   
 

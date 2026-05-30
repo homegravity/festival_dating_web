@@ -561,7 +561,7 @@ function App() {
       return;
     }
   
-    setIsSubmittingProfile(true);
+    
 
 
 
@@ -579,6 +579,12 @@ function App() {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
+
+    setIsSubmittingProfile(true);
+
+
+
+
 
     if (!supabaseProfileId) {
       
@@ -772,6 +778,63 @@ function App() {
       return;
     }
   
+
+
+
+
+    const { data: reverseLikes, error: reverseCheckError } = await supabase
+  .from('likes')
+  .select('id, status')
+  .eq('sender_profile_id', profileId)
+  .eq('receiver_profile_id', supabaseProfileId);
+
+if (reverseCheckError) {
+  console.error('상대 관심 확인 오류:', reverseCheckError);
+  alert(`상대 관심 확인 오류: ${reverseCheckError.message}`);
+  return;
+}
+
+if (reverseLikes.length > 0) {
+  const reverseLike = reverseLikes[0];
+
+  if (reverseLike.status === 'pending') {
+    if (matchedProfileIds.length >= maxMatches) {
+      alert('매칭은 최대 3명까지만 가능해요.');
+      return;
+    }
+
+    const { error: acceptError } = await supabase
+      .from('likes')
+      .update({
+        status: 'accepted',
+      })
+      .eq('id', reverseLike.id);
+
+    if (acceptError) {
+      console.error('자동 매칭 오류:', acceptError);
+      alert(`자동 매칭 오류: ${acceptError.message}`);
+      return;
+    }
+
+    await loadMyReceivedLikes(supabaseProfileId);
+    await loadMySentLikes(supabaseProfileId);
+    await loadMyMatches(supabaseProfileId);
+
+    alert('서로 관심을 보내 매칭되었어요!');
+    return;
+  }
+
+  if (reverseLike.status === 'accepted') {
+    await loadMyMatches(supabaseProfileId);
+    alert('이미 매칭된 사람입니다.');
+    return;
+  }
+}
+
+
+
+
+
     if (likedProfileIds.length >= maxLikes) {
       alert('관심은 최대 3명까지만 보낼 수 있어요.');
       return;

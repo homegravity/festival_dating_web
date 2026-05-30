@@ -53,6 +53,10 @@ function App() {
   const [lookupCode, setLookupCode] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [processingProfileId, setProcessingProfileId] = useState(null);
+  const [processingReceivedProfileId, setProcessingReceivedProfileId] = useState(null);
+  const [processingReceivedAction, setProcessingReceivedAction] = useState('');
+  const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
+  const [isDeletingProfile, setIsDeletingProfile] = useState(false);
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -944,25 +948,35 @@ if (reverseLikes.length > 0) {
   
 
   const handleToggleProfileVisibility = async () => {
-    const nextVisible = !isProfileVisible;
-  
-    if (supabaseProfileId) {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          is_visible: nextVisible,
-        })
-        .eq('id', supabaseProfileId);
-  
-      if (error) {
-        console.error('프로필 공개 상태 변경 오류:', error);
-        alert(`프로필 공개 상태 변경 오류: ${error.message}`);
-        return;
-      }
+    if (isUpdatingVisibility) {
+      return;
     }
   
-    setIsProfileVisible(nextVisible);
-    await loadSupabaseProfiles();
+    const nextVisible = !isProfileVisible;
+  
+    setIsUpdatingVisibility(true);
+  
+    try {
+      if (supabaseProfileId) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            is_visible: nextVisible,
+          })
+          .eq('id', supabaseProfileId);
+  
+        if (error) {
+          console.error('프로필 공개 상태 변경 오류:', error);
+          alert(`프로필 공개 상태 변경 오류: ${error.message}`);
+          return;
+        }
+      }
+  
+      setIsProfileVisible(nextVisible);
+      await loadSupabaseProfiles();
+    } finally {
+      setIsUpdatingVisibility(false);
+    }
   };
 
 
@@ -972,12 +986,18 @@ if (reverseLikes.length > 0) {
 
 
 
-
   const handleResetData = async () => {
+    if (isDeletingProfile) {
+      return;
+    }
+    
+    
     const confirmed = window.confirm(
       '정말 프로필을 삭제할까요?\n\n삭제하면 참여 코드로도 다시 불러올 수 없어요.'
     );
   
+    
+    
     if (!confirmed) {
       return;
     }
@@ -989,11 +1009,12 @@ if (reverseLikes.length > 0) {
         .delete()
         .eq('id', supabaseProfileId);
     
-      if (error) {
-        console.error('Supabase 삭제 오류:', error);
-        alert(`Supabase 삭제 오류: ${error.message}`);
-        return;
-      }
+        if (error) {
+          console.error('Supabase 삭제 오류:', error);
+          alert(`Supabase 삭제 오류: ${error.message}`);
+          setIsDeletingProfile(false);
+          return;
+        }
     
       await loadSupabaseProfiles();
     }
@@ -1031,11 +1052,16 @@ if (reverseLikes.length > 0) {
     setProfileFormMode('create');
     setSupabaseProfileId(null);
     setParticipantCode('');
+    setIsDeletingProfile(false);
   };
   
 
 
   const handleAcceptLike = async (profileId) => {
+    if (processingReceivedProfileId === profileId) {
+      return;
+    }
+  
     if (!supabaseProfileId) {
       alert('프로필 정보가 없어 수락할 수 없어요.');
       return;
@@ -1046,48 +1072,67 @@ if (reverseLikes.length > 0) {
       return;
     }
   
-    const { error } = await supabase
-      .from('likes')
-      .update({
-        status: 'accepted',
-      })
-      .eq('sender_profile_id', profileId)
-      .eq('receiver_profile_id', supabaseProfileId);
+    setProcessingReceivedProfileId(profileId);
+    setProcessingReceivedAction('accept');
   
-    if (error) {
-      console.error('관심 수락 오류:', error);
-      alert(`관심 수락 오류: ${error.message}`);
-      return;
+    try {
+      const { error } = await supabase
+        .from('likes')
+        .update({
+          status: 'accepted',
+        })
+        .eq('sender_profile_id', profileId)
+        .eq('receiver_profile_id', supabaseProfileId);
+  
+      if (error) {
+        console.error('관심 수락 오류:', error);
+        alert(`관심 수락 오류: ${error.message}`);
+        return;
+      }
+  
+      await loadMyReceivedLikes(supabaseProfileId);
+      await loadMyMatches(supabaseProfileId);
+    } finally {
+      setProcessingReceivedProfileId(null);
+      setProcessingReceivedAction('');
     }
-  
-    await loadMyReceivedLikes(supabaseProfileId);
-    await loadMyMatches(supabaseProfileId);
   };
 
 
 
-
   const handleRejectLike = async (profileId) => {
+    if (processingReceivedProfileId === profileId) {
+      return;
+    }
+  
     if (!supabaseProfileId) {
       alert('프로필 정보가 없어 거절할 수 없어요.');
       return;
     }
   
-    const { error } = await supabase
-      .from('likes')
-      .update({
-        status: 'rejected',
-      })
-      .eq('sender_profile_id', profileId)
-      .eq('receiver_profile_id', supabaseProfileId);
+    setProcessingReceivedProfileId(profileId);
+    setProcessingReceivedAction('reject');
   
-    if (error) {
-      console.error('관심 거절 오류:', error);
-      alert(`관심 거절 오류: ${error.message}`);
-      return;
+    try {
+      const { error } = await supabase
+        .from('likes')
+        .update({
+          status: 'rejected',
+        })
+        .eq('sender_profile_id', profileId)
+        .eq('receiver_profile_id', supabaseProfileId);
+  
+      if (error) {
+        console.error('관심 거절 오류:', error);
+        alert(`관심 거절 오류: ${error.message}`);
+        return;
+      }
+  
+      await loadMyReceivedLikes(supabaseProfileId);
+    } finally {
+      setProcessingReceivedProfileId(null);
+      setProcessingReceivedAction('');
     }
-  
-    await loadMyReceivedLikes(supabaseProfileId);
   };
 
 
@@ -1165,12 +1210,14 @@ if (reverseLikes.length > 0) {
             
             {receivedProfiles.map((otherProfile) => (
             <ProfileCard
-              key={otherProfile.id}
-              otherProfile={otherProfile}
-              mode="received"
-              onAcceptLike={handleAcceptLike}
-              onRejectLike={handleRejectLike}
-            />
+            key={otherProfile.id}
+            otherProfile={otherProfile}
+            mode="received"
+            isProcessing={processingReceivedProfileId === otherProfile.id}
+            processingAction={processingReceivedAction}
+            onAcceptLike={handleAcceptLike}
+            onRejectLike={handleRejectLike}
+          />
           ))}
           
         </div>
@@ -1293,21 +1340,29 @@ if (reverseLikes.length > 0) {
 
 
           {!isMatchFull && (
-            <button
-              className="sub-button"
-              onClick={handleToggleProfileVisibility}
-            >
-              {isProfileVisible ? '프로필 숨기기' : '다시 공개하기'}
-            </button>
-          )}
-
+              <button
+                className="sub-button"
+                onClick={handleToggleProfileVisibility}
+                disabled={isUpdatingVisibility}
+              >
+                {isUpdatingVisibility
+                  ? '처리 중...'
+                  : isProfileVisible
+                    ? '프로필 숨기기'
+                    : '다시 공개하기'}
+              </button>
+            )}
 
 
 
           <button onClick={handleEditProfile}>프로필 수정하기</button>
           <button onClick={() => setCurrentPage('browse')}>프로필 둘러보기</button>
-          <button className="delete-button" onClick={handleResetData}>
-            프로필 삭제하기
+          <button
+            className="danger-button"
+            onClick={handleResetData}
+            disabled={isDeletingProfile}
+          >
+            {isDeletingProfile ? '삭제 중...' : '프로필 삭제하기'}
           </button>
 
 

@@ -22,6 +22,7 @@ function ProfileCard({
   mode,
   isLiked,
   isProcessing,
+  processingAction,
   onToggleLike,
   onAcceptLike,
   onRejectLike,
@@ -57,20 +58,28 @@ function ProfileCard({
         </button>
       )}
 
-      {mode === 'received' && (
-        <div className="button-row">
-          <button onClick={() => onAcceptLike(otherProfile.id)}>
-            수락하기
-          </button>
+        {mode === 'received' && (
+          <div className="button-row">
+            <button
+              onClick={() => onAcceptLike(otherProfile.id)}
+              disabled={isProcessing}
+            >
+              {isProcessing && processingAction === 'accept'
+                ? '수락 중...'
+                : '수락하기'}
+            </button>
 
-          <button
-            className="cancel-button"
-            onClick={() => onRejectLike(otherProfile.id)}
-          >
-            거절하기
-          </button>
-        </div>
-      )}
+            <button
+              className="cancel-button"
+              onClick={() => onRejectLike(otherProfile.id)}
+              disabled={isProcessing}
+            >
+              {isProcessing && processingAction === 'reject'
+                ? '거절 중...'
+                : '거절하기'}
+            </button>
+          </div>
+        )}
 
         {mode === 'match' && (
           <div className="contact-box">

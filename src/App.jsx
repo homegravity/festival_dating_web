@@ -22,6 +22,7 @@ function App() {
       gender: '',
       targetGender: '',
       grade: '',
+      age: '',
       department: '',
       mbti: '',
       interests: '',
@@ -57,6 +58,8 @@ function App() {
   const [processingReceivedAction, setProcessingReceivedAction] = useState('');
   const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
   const [isDeletingProfile, setIsDeletingProfile] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('info');
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -138,7 +141,17 @@ function App() {
   }, [matchedProfileIds, supabaseProfileId, isProfileVisible]);
   
 
-
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+  
+    const timer = setTimeout(() => {
+      setToastMessage('');
+    }, 3000);
+  
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
 
 
 
@@ -160,7 +173,15 @@ function App() {
           schema: 'public',
           table: 'likes',
         },
-        async () => {
+        async (payload) => {
+          if (
+            payload.eventType === 'UPDATE' &&
+            String(payload.new?.sender_profile_id) === String(supabaseProfileId) &&
+            payload.new?.status === 'rejected'
+          ) {
+            showToast('상대가 관심을 거절했어요.', 'warning');
+          }
+  
           await loadMySentLikes(supabaseProfileId);
           await loadMyReceivedLikes(supabaseProfileId);
           await loadMyMatches(supabaseProfileId);
@@ -223,6 +244,15 @@ function App() {
     setIsEntered(false);
     setStartMode('home');
   };
+  
+
+  const showToast = (message, type = 'info') => {
+    setToastMessage(message);
+    setToastType(type);
+  };
+
+
+
 
 
   const handleCopyParticipantCode = async () => {
@@ -294,6 +324,7 @@ function App() {
       gender: foundProfile.gender,
       targetGender: foundProfile.target_gender,
       grade: foundProfile.grade,
+      age: foundProfile.age ? String(foundProfile.age) : '',
       department: foundProfile.department || '',
       mbti: foundProfile.mbti || '',
       interests: foundProfile.interests,
@@ -353,6 +384,7 @@ function App() {
       gender: item.gender,
       targetGender: item.target_gender,
       grade: item.grade,
+      age: item.age ? String(item.age) : '',
       department: item.department,
       mbti: item.mbti,
       interests: item.interests,
@@ -601,6 +633,7 @@ function App() {
           gender: profile.gender,
           target_gender: profile.targetGender,
           grade: profile.grade,
+          age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
           mbti: profile.mbti || null,
           interests: profile.interests,
@@ -642,6 +675,7 @@ function App() {
           gender: profile.gender,
           target_gender: profile.targetGender,
           grade: profile.grade,
+          age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
           mbti: profile.mbti || null,
           interests: profile.interests,
@@ -708,6 +742,9 @@ function App() {
   
     const searchableText = `
       ${otherProfile.nickname}
+      ${otherProfile.gender}
+      ${otherProfile.grade}
+      ${otherProfile.age ? `${otherProfile.age}세` : ''}
       ${otherProfile.department}
       ${otherProfile.mbti}
       ${otherProfile.interests}
@@ -742,6 +779,13 @@ function App() {
   
 
 
+  const toastElement = toastMessage && (
+    <div className={`toast-message ${toastType}`}>
+      {toastMessage}
+    </div>
+  );
+
+
 
 
   
@@ -766,7 +810,12 @@ function App() {
     }
   
     const alreadyLiked = likedProfileIds.includes(profileId);
-  
+    
+    if (!alreadyLiked && likedProfileIds.length >= maxLikes) {
+      alert('관심은 최대 3명까지만 보낼 수 있어요.');
+      return;
+    }
+
     setProcessingProfileId(profileId);
 
     if (alreadyLiked) {
@@ -851,11 +900,7 @@ if (reverseLikes.length > 0) {
 
 
 
-    if (likedProfileIds.length >= maxLikes) {
-      alert('관심은 최대 3명까지만 보낼 수 있어요.');
-      return;
-    }
-  
+   
     const { data: existingLikes, error: checkError } = await supabase
       .from('likes')
       .select('id, status')
@@ -1033,6 +1078,7 @@ if (reverseLikes.length > 0) {
       gender: '',
       targetGender: '',
       grade: '',
+      age: '',
       department: '',
       mbti: '',
       interests: '',
@@ -1147,6 +1193,7 @@ if (reverseLikes.length > 0) {
   if (isProfileSaved && currentPage === 'browse') {
     return (
       <div className="app">
+        {toastElement}
         <h1>프로필 둘러보기</h1>
         <p>마음에 드는 사람에게 관심을 보내보세요.</p>
         <p className="like-count">남은 관심: {remainingLikes}회</p>
@@ -1198,6 +1245,7 @@ if (reverseLikes.length > 0) {
   if (isProfileSaved && currentPage === 'received') {
     return (
       <div className="app">
+        {toastElement}
         <h1>받은 관심</h1>
         <p>나에게 관심을 보낸 사람들을 확인할 수 있어요.</p>
   
@@ -1235,6 +1283,7 @@ if (reverseLikes.length > 0) {
   if (isProfileSaved && currentPage === 'matches') {
     return (
       <div className="app">
+        {toastElement}
         <h1>매칭</h1>
         <p>매칭된 사람의 연락수단을 확인할 수 있어요.</p>
   
@@ -1270,6 +1319,7 @@ if (reverseLikes.length > 0) {
   if (isProfileSaved) {
     return (
       <div className="app">
+        {toastElement}
         <h1>프로필 작성 완료</h1>
         <p>이제 다른 사람들의 프로필을 둘러볼 수 있어요.</p>
 
@@ -1280,6 +1330,11 @@ if (reverseLikes.length > 0) {
             <p><strong>성별:</strong> {profile.gender}</p>
             
             <p><strong>학년:</strong> {profile.grade}</p>
+            {profile.age && (
+              <p><strong>나이:</strong> {profile.age}세</p>
+            )}
+            
+            
             {profile.department && <p><strong>학과:</strong> {profile.department}</p>}
             {profile.mbti && <p><strong>MBTI:</strong> {profile.mbti}</p>}
             <p><strong>관심사:</strong> {profile.interests}</p>
@@ -1382,6 +1437,7 @@ if (reverseLikes.length > 0) {
   if (isEntered) {
     return (
       <div className="app">
+        {toastElement}
         <h1>{profileFormMode === 'edit' ? '프로필 수정' : '프로필 작성'}</h1>
         <p>
             {profileFormMode === 'edit'
@@ -1409,6 +1465,7 @@ if (reverseLikes.length > 0) {
 
   return (
     <div className="app">
+      {toastElement}
       <h1>축제 매칭 웹</h1>
       <p>마음에 드는 사람에게 관심을 보내고, 서로 수락하면 연락수단이 공개돼요.</p>
   

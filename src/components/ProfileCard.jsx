@@ -33,6 +33,7 @@ function ProfileCard({
 
       <p className="basic-info">
         {otherProfile.gender} · {otherProfile.grade}
+        {otherProfile.age && ` · ${otherProfile.age}세`}
         {otherProfile.department && ` · ${otherProfile.department}`}
         {otherProfile.mbti && ` · ${otherProfile.mbti}`}
       </p>

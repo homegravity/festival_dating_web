@@ -13,7 +13,10 @@ function ProfileForm({
         <p>관심을 보내고 상대방이 수락하면 매칭됩니다.</p>
       </div>
 
-      <label>닉네임 *</label>
+      <label className="field-label">
+        <span>닉네임</span>
+        <span className="field-badge required">필수</span>
+      </label>
       <input
         type="text"
         name="nickname"
@@ -22,7 +25,10 @@ function ProfileForm({
         onChange={onProfileChange}
       />
 
-      <label>성별 *</label>
+      <label className="field-label">
+        <span>성별</span>
+        <span className="field-badge required">필수</span>
+      </label>
       <select
         name="gender"
         value={profile.gender}
@@ -33,7 +39,10 @@ function ProfileForm({
         <option value="여성">여성</option>
       </select>
 
-      <label>매칭 희망 성별 *</label>
+      <label className="field-label">
+        <span>매칭 희망 성별</span>
+        <span className="field-badge required">필수</span>
+      </label>
       <select
         name="targetGender"
         value={profile.targetGender}
@@ -45,7 +54,10 @@ function ProfileForm({
         <option value="상관없음">상관없음</option>
       </select>
 
-      <label>학년 *</label>
+      <label className="field-label">
+        <span>학년</span>
+        <span className="field-badge required">필수</span>
+      </label>
       <select
         name="grade"
         value={profile.grade}
@@ -59,7 +71,30 @@ function ProfileForm({
         <option value="졸업생">졸업생</option>
       </select>
 
-      <label>학과</label>
+
+
+      <label className="field-label">
+        <span>나이</span>
+        <span className="field-badge optional">선택</span>
+      </label>
+        <input
+          type="number"
+          name="age"
+          placeholder="선택 입력 예: 22"
+          value={profile.age}
+          onChange={onProfileChange}
+          min="18"
+          max="99"
+        />
+
+
+
+
+
+      <label className="field-label">
+        <span>학과</span>
+        <span className="field-badge optional">선택</span>
+      </label>
       <input
         type="text"
         name="department"
@@ -68,7 +103,10 @@ function ProfileForm({
         onChange={onProfileChange}
       />
 
-      <label>MBTI</label>
+        <label className="field-label">
+          <span>MBTI</span>
+          <span className="field-badge optional">선택</span>
+        </label>
       <input
         type="text"
         name="mbti"
@@ -77,7 +115,10 @@ function ProfileForm({
         onChange={onProfileChange}
       />
 
-      <label>관심사 *</label>
+      <label className="field-label">
+        <span>관심사</span>
+        <span className="field-badge required">필수</span>
+      </label>
       <input
         type="text"
         name="interests"
@@ -86,7 +127,10 @@ function ProfileForm({
         onChange={onProfileChange}
       />
 
-      <label>자기소개 *</label>
+      <label className="field-label">
+        <span>자기소개</span>
+        <span className="field-badge required">필수</span>
+      </label>
       <textarea
         name="introduction"
         placeholder="간단하게 자신을 소개해주세요."
@@ -94,7 +138,10 @@ function ProfileForm({
         onChange={onProfileChange}
       />
 
-      <label>이상형</label>
+      <label className="field-label">
+        <span>이상형</span>
+        <span className="field-badge optional">선택</span>
+      </label>
       <textarea
         name="idealType"
         placeholder="선택 입력"
@@ -102,19 +149,28 @@ function ProfileForm({
         onChange={onProfileChange}
       />
 
-      <label>연락수단 종류 *</label>
+      <label className="field-label">
+        <span>연락수단 종류</span>
+        <span className="field-badge required">필수</span>
+      </label>
+
       <select
         name="contactType"
         value={profile.contactType}
         onChange={onProfileChange}
       >
-        <option value="instagram">인스타그램</option>
+        <option value="instagram">인스타 ID</option>
         <option value="kakao">카카오톡 ID</option>
         <option value="phone">전화번호</option>
         <option value="etc">기타</option>
       </select>
 
-      <label>연락수단 내용 *</label>
+      <label className="field-label">
+        <span>연락수단</span>
+        <span className="field-badge required">필수</span>
+      </label>
+      
+      
       <input
         type="text"
         name="contactValue"

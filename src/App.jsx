@@ -52,6 +52,7 @@ function App() {
   const [startMode, setStartMode] = useState('home');
   const [lookupCode, setLookupCode] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [processingProfileId, setProcessingProfileId] = useState(null);
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -739,11 +740,16 @@ function App() {
 
 
 
-  const handleToggleLike = async (profileId) => {
-    if (!supabaseProfileId) {
-      alert('프로필을 먼저 저장해야 관심을 보낼 수 있어요.');
-      return;
-    }
+  
+    const handleToggleLike = async (profileId) => {
+      if (processingProfileId === profileId) {
+        return;
+      }
+    
+      if (!supabaseProfileId) {
+        alert('프로필을 먼저 저장해야 관심을 보낼 수 있어요.');
+        return;
+      }
   
     if (matchedProfileIds.includes(profileId)) {
       alert('이미 매칭된 사람입니다.');
@@ -757,6 +763,8 @@ function App() {
   
     const alreadyLiked = likedProfileIds.includes(profileId);
   
+    setProcessingProfileId(profileId);
+
     if (alreadyLiked) {
       const { error } = await supabase
         .from('likes')
@@ -765,16 +773,18 @@ function App() {
         .eq('receiver_profile_id', profileId)
         .eq('status', 'pending');
   
-      if (error) {
-        console.error('관심 취소 오류:', error);
-        alert(`관심 취소 오류: ${error.message}`);
-        return;
-      }
+        if (error) {
+          console.error('관심 취소 오류:', error);
+          alert(`관심 취소 오류: ${error.message}`);
+          setProcessingProfileId(null);
+          return;
+        }
   
       setLikedProfileIds((prevIds) =>
         prevIds.filter((id) => id !== profileId)
       );
-  
+      
+      setProcessingProfileId(null);
       return;
     }
   
@@ -821,12 +831,14 @@ if (reverseLikes.length > 0) {
     await loadMyMatches(supabaseProfileId);
 
     alert('서로 관심을 보내 매칭되었어요!');
+    setProcessingProfileId(null);
     return;
   }
 
   if (reverseLike.status === 'accepted') {
     await loadMyMatches(supabaseProfileId);
     alert('이미 매칭된 사람입니다.');
+    setProcessingProfileId(null);
     return;
   }
 }
@@ -849,6 +861,7 @@ if (reverseLikes.length > 0) {
     if (checkError) {
       console.error('기존 관심 확인 오류:', checkError);
       alert(`기존 관심 확인 오류: ${checkError.message}`);
+      setProcessingProfileId(null);
       return;
     }
   
@@ -889,10 +902,12 @@ if (reverseLikes.length > 0) {
     if (error) {
       console.error('관심 보내기 오류:', error);
       alert(`관심 보내기 오류: ${error.message}`);
+      setProcessingProfileId(null);
       return;
     }
   
     setLikedProfileIds((prevIds) => [...prevIds, profileId]);
+    setProcessingProfileId(null);
   };
 
   
@@ -1115,6 +1130,7 @@ if (reverseLikes.length > 0) {
                 otherProfile={otherProfile}
                 mode="browse"
                 isLiked={likedProfileIds.includes(otherProfile.id)}
+                isProcessing={processingProfileId === otherProfile.id}
                 onToggleLike={handleToggleLike}
               />
             ))}

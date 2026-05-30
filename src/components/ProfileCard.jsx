@@ -21,6 +21,7 @@ function ProfileCard({
   otherProfile,
   mode,
   isLiked,
+  isProcessing,
   onToggleLike,
   onAcceptLike,
   onRejectLike,
@@ -46,8 +47,13 @@ function ProfileCard({
         <button
           className={isLiked ? 'cancel-button' : ''}
           onClick={() => onToggleLike(otherProfile.id)}
+          disabled={isProcessing}
         >
-          {isLiked ? '관심 취소' : '관심 보내기'}
+          {isProcessing
+            ? '처리 중...'
+            : isLiked
+              ? '관심 취소'
+              : '관심 보내기'}
         </button>
       )}
 

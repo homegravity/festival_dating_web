@@ -110,6 +110,7 @@ function App() {
       loadMyMatches(supabaseProfileId);
       checkUnseenRejectedLikes(supabaseProfileId);
       checkUnseenReceivedLikes(supabaseProfileId);
+      checkUnseenMatches(supabaseProfileId);
     }
   }, [supabaseProfileId]);
 
@@ -176,6 +177,10 @@ function App() {
           table: 'likes',
         },
         async (payload) => {
+          
+          
+          
+          
           if (
             payload.eventType === 'UPDATE' &&
             String(payload.new?.sender_profile_id) === String(supabaseProfileId) &&
@@ -194,6 +199,13 @@ function App() {
             }
           }
   
+          
+
+          
+
+
+
+
 
           if (
             payload.eventType === 'INSERT' &&
@@ -214,7 +226,7 @@ function App() {
           }
 
 
-
+          
 
 
 
@@ -272,6 +284,7 @@ function App() {
     const refreshUserState = async () => {
       await checkUnseenRejectedLikes(supabaseProfileId);
       await checkUnseenReceivedLikes(supabaseProfileId);
+      await checkUnseenMatches(supabaseProfileId);
       await loadMySentLikes(supabaseProfileId);
       await loadMyReceivedLikes(supabaseProfileId);
       await loadMyMatches(supabaseProfileId);
@@ -434,6 +447,7 @@ function App() {
     await loadMyMatches(foundProfile.id);
     await checkUnseenRejectedLikes(foundProfile.id);
     await checkUnseenReceivedLikes(foundProfile.id);
+    await checkUnseenMatches(foundProfile.id);
     setIsLoadingProfile(false);
   };
 
@@ -595,6 +609,74 @@ function App() {
       console.error('받은 관심 알림 확인 처리 오류:', updateError);
     }
   };
+
+
+  const checkUnseenMatches = async (profileId) => {
+    if (!profileId) {
+      return;
+    }
+  
+    const { data, error } = await supabase
+      .from('likes')
+      .select('id, sender_profile_id, receiver_profile_id, sender_seen_match, receiver_seen_match')
+      .eq('status', 'accepted')
+      .or(
+        `and(sender_profile_id.eq.${profileId},sender_seen_match.eq.false),and(receiver_profile_id.eq.${profileId},receiver_seen_match.eq.false)`
+      );
+  
+    if (error) {
+      console.error('미확인 매칭 알림 확인 오류:', error);
+      return;
+    }
+  
+    if (!data || data.length === 0) {
+      return;
+    }
+  
+    const message =
+      data.length === 1
+        ? '새 매칭이 있어요!'
+        : `새 매칭이 ${data.length}개 있어요!`;
+  
+    showToast(message, 'success');
+  
+    const senderMatchIds = data
+      .filter((item) => String(item.sender_profile_id) === String(profileId))
+      .map((item) => item.id);
+  
+    const receiverMatchIds = data
+      .filter((item) => String(item.receiver_profile_id) === String(profileId))
+      .map((item) => item.id);
+  
+    if (senderMatchIds.length > 0) {
+      const { error: senderUpdateError } = await supabase
+        .from('likes')
+        .update({
+          sender_seen_match: true,
+        })
+        .in('id', senderMatchIds);
+  
+      if (senderUpdateError) {
+        console.error('보낸 관심 매칭 알림 확인 처리 오류:', senderUpdateError);
+      }
+    }
+  
+    if (receiverMatchIds.length > 0) {
+      const { error: receiverUpdateError } = await supabase
+        .from('likes')
+        .update({
+          receiver_seen_match: true,
+        })
+        .in('id', receiverMatchIds);
+  
+      if (receiverUpdateError) {
+        console.error('받은 관심 매칭 알림 확인 처리 오류:', receiverUpdateError);
+      }
+    }
+  };
+
+
+
 
 
 
@@ -1070,6 +1152,8 @@ if (reverseLikes.length > 0) {
       .from('likes')
       .update({
         status: 'accepted',
+        sender_seen_match: false,
+        receiver_seen_match: true,
       })
       .eq('id', reverseLike.id);
 
@@ -1083,7 +1167,7 @@ if (reverseLikes.length > 0) {
     await loadMySentLikes(supabaseProfileId);
     await loadMyMatches(supabaseProfileId);
 
-    alert('서로 관심을 보내 매칭되었어요!');
+    showToast('서로 관심을 보내 매칭되었어요!', 'success');
     setProcessingProfileId(null);
     return;
   }
@@ -1327,6 +1411,8 @@ if (reverseLikes.length > 0) {
         .from('likes')
         .update({
           status: 'accepted',
+          sender_seen_match: false,
+          receiver_seen_match: true,
         })
         .eq('sender_profile_id', profileId)
         .eq('receiver_profile_id', supabaseProfileId);
@@ -1339,6 +1425,7 @@ if (reverseLikes.length > 0) {
   
       await loadMyReceivedLikes(supabaseProfileId);
       await loadMyMatches(supabaseProfileId);
+      showToast('매칭이 성사됐어요!', 'success');
     } finally {
       setProcessingReceivedProfileId(null);
       setProcessingReceivedAction('');

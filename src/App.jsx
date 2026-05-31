@@ -109,6 +109,7 @@ function App() {
       loadMyReceivedLikes(supabaseProfileId);
       loadMyMatches(supabaseProfileId);
       checkUnseenRejectedLikes(supabaseProfileId);
+      checkUnseenReceivedLikes(supabaseProfileId);
     }
   }, [supabaseProfileId]);
 
@@ -181,7 +182,7 @@ function App() {
             payload.new?.status === 'rejected' &&
             payload.new?.sender_seen_result === false
           ) {
-            if (document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible' && document.hasFocus()) {
               showToast('상대가 관심을 거절했어요.', 'warning');
           
               await supabase
@@ -193,6 +194,34 @@ function App() {
             }
           }
   
+
+          if (
+            payload.eventType === 'INSERT' &&
+            String(payload.new?.receiver_profile_id) === String(supabaseProfileId) &&
+            payload.new?.status === 'pending' &&
+            payload.new?.receiver_seen_like === false
+          ) {
+            if (document.visibilityState === 'visible' && document.hasFocus()) {
+              showToast('새 관심이 도착했어요.', 'info');
+          
+              await supabase
+                .from('likes')
+                .update({
+                  receiver_seen_like: true,
+                })
+                .eq('id', payload.new.id);
+            }
+          }
+
+
+
+
+
+
+
+
+
+
           await loadMySentLikes(supabaseProfileId);
           await loadMyReceivedLikes(supabaseProfileId);
           await loadMyMatches(supabaseProfileId);
@@ -218,6 +247,11 @@ function App() {
           table: 'profiles',
         },
         async () => {
+          
+          
+          
+          
+          
           await loadSupabaseProfiles();
         }
       )
@@ -231,21 +265,43 @@ function App() {
 
 
   useEffect(() => {
+    if (!supabaseProfileId) {
+      return;
+    }
+  
+    const refreshUserState = async () => {
+      await checkUnseenRejectedLikes(supabaseProfileId);
+      await checkUnseenReceivedLikes(supabaseProfileId);
+      await loadMySentLikes(supabaseProfileId);
+      await loadMyReceivedLikes(supabaseProfileId);
+      await loadMyMatches(supabaseProfileId);
+      await loadSupabaseProfiles();
+    };
+  
     const refreshOnReturn = () => {
-      if (document.visibilityState === 'visible' && supabaseProfileId) {
-        checkUnseenRejectedLikes(supabaseProfileId);
-        loadMySentLikes(supabaseProfileId);
-        loadMyReceivedLikes(supabaseProfileId);
-        loadMyMatches(supabaseProfileId);
+      if (document.visibilityState !== 'visible') {
+        return;
       }
+  
+      refreshUserState();
+  
+      setTimeout(() => {
+        refreshUserState();
+      }, 800);
+  
+      setTimeout(() => {
+        refreshUserState();
+      }, 2500);
     };
   
     document.addEventListener('visibilitychange', refreshOnReturn);
     window.addEventListener('focus', refreshOnReturn);
+    window.addEventListener('pageshow', refreshOnReturn);
   
     return () => {
       document.removeEventListener('visibilitychange', refreshOnReturn);
       window.removeEventListener('focus', refreshOnReturn);
+      window.removeEventListener('pageshow', refreshOnReturn);
     };
   }, [supabaseProfileId]);
 
@@ -377,6 +433,7 @@ function App() {
     await loadMyReceivedLikes(foundProfile.id);
     await loadMyMatches(foundProfile.id);
     await checkUnseenRejectedLikes(foundProfile.id);
+    await checkUnseenReceivedLikes(foundProfile.id);
     setIsLoadingProfile(false);
   };
 
@@ -497,7 +554,47 @@ function App() {
   };
 
 
-
+  const checkUnseenReceivedLikes = async (profileId) => {
+    if (!profileId) {
+      return;
+    }
+  
+    const { data, error } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('receiver_profile_id', profileId)
+      .eq('status', 'pending')
+      .eq('receiver_seen_like', false);
+  
+    if (error) {
+      console.error('미확인 받은 관심 알림 확인 오류:', error);
+      return;
+    }
+  
+    if (!data || data.length === 0) {
+      return;
+    }
+  
+    const message =
+      data.length === 1
+        ? '새 관심이 도착했어요.'
+        : `새 관심이 ${data.length}개 도착했어요.`;
+  
+    showToast(message, 'info');
+  
+    const likeIds = data.map((item) => item.id);
+  
+    const { error: updateError } = await supabase
+      .from('likes')
+      .update({
+        receiver_seen_like: true,
+      })
+      .in('id', likeIds);
+  
+    if (updateError) {
+      console.error('받은 관심 알림 확인 처리 오류:', updateError);
+    }
+  };
 
 
 
@@ -1049,6 +1146,7 @@ if (reverseLikes.length > 0) {
         sender_profile_id: supabaseProfileId,
         receiver_profile_id: profileId,
         status: 'pending',
+        receiver_seen_like: false,
       });
   
     if (error) {

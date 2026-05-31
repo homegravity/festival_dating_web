@@ -181,14 +181,16 @@ function App() {
             payload.new?.status === 'rejected' &&
             payload.new?.sender_seen_result === false
           ) {
-            showToast('상대가 관심을 거절했어요.', 'warning');
+            if (document.visibilityState === 'visible') {
+              showToast('상대가 관심을 거절했어요.', 'warning');
           
-            await supabase
-              .from('likes')
-              .update({
-                sender_seen_result: true,
-              })
-              .eq('id', payload.new.id);
+              await supabase
+                .from('likes')
+                .update({
+                  sender_seen_result: true,
+                })
+                .eq('id', payload.new.id);
+            }
           }
   
           await loadMySentLikes(supabaseProfileId);
@@ -228,7 +230,24 @@ function App() {
 
 
 
-
+  useEffect(() => {
+    const refreshOnReturn = () => {
+      if (document.visibilityState === 'visible' && supabaseProfileId) {
+        checkUnseenRejectedLikes(supabaseProfileId);
+        loadMySentLikes(supabaseProfileId);
+        loadMyReceivedLikes(supabaseProfileId);
+        loadMyMatches(supabaseProfileId);
+      }
+    };
+  
+    document.addEventListener('visibilitychange', refreshOnReturn);
+    window.addEventListener('focus', refreshOnReturn);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', refreshOnReturn);
+      window.removeEventListener('focus', refreshOnReturn);
+    };
+  }, [supabaseProfileId]);
 
 
   
@@ -851,6 +870,38 @@ function App() {
         return;
       }
   
+
+      const { data: currentProfile, error: currentProfileError } = await supabase
+  .from('profiles')
+  .select('id')
+  .eq('id', supabaseProfileId)
+  .maybeSingle();
+
+      if (currentProfileError) {
+        console.error('내 프로필 확인 오류:', currentProfileError);
+        alert(`내 프로필 확인 오류: ${currentProfileError.message}`);
+        return;
+      }
+
+      if (!currentProfile) {
+        alert('현재 프로필 정보를 찾을 수 없어요. 참여 코드로 다시 불러오거나 새 프로필을 만들어주세요.');
+
+        localStorage.removeItem('festivalDatingData');
+
+        setSupabaseProfileId(null);
+        setParticipantCode('');
+        setIsEntered(false);
+        setIsProfileSaved(false);
+        setCurrentPage('profileComplete');
+        setStartMode('home');
+
+        return;
+      }
+
+
+
+
+
     if (matchedProfileIds.includes(profileId)) {
       alert('이미 매칭된 사람입니다.');
       return;

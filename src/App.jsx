@@ -108,6 +108,7 @@ function App() {
       loadMySentLikes(supabaseProfileId);
       loadMyReceivedLikes(supabaseProfileId);
       loadMyMatches(supabaseProfileId);
+      checkUnseenRejectedLikes(supabaseProfileId);
     }
   }, [supabaseProfileId]);
 
@@ -177,9 +178,17 @@ function App() {
           if (
             payload.eventType === 'UPDATE' &&
             String(payload.new?.sender_profile_id) === String(supabaseProfileId) &&
-            payload.new?.status === 'rejected'
+            payload.new?.status === 'rejected' &&
+            payload.new?.sender_seen_result === false
           ) {
             showToast('상대가 관심을 거절했어요.', 'warning');
+          
+            await supabase
+              .from('likes')
+              .update({
+                sender_seen_result: true,
+              })
+              .eq('id', payload.new.id);
           }
   
           await loadMySentLikes(supabaseProfileId);
@@ -348,7 +357,7 @@ function App() {
     await loadMySentLikes(foundProfile.id);
     await loadMyReceivedLikes(foundProfile.id);
     await loadMyMatches(foundProfile.id);
-  
+    await checkUnseenRejectedLikes(foundProfile.id);
     setIsLoadingProfile(false);
   };
 
@@ -404,6 +413,9 @@ function App() {
       return;
     }
   
+
+
+
     const { data, error } = await supabase
       .from('likes')
       .select('receiver_profile_id, status')
@@ -426,6 +438,46 @@ function App() {
     setLikedProfileIds(pendingIds);
     setRejectedProfileIds(rejectedIds);
   };
+
+
+  const checkUnseenRejectedLikes = async (profileId) => {
+    if (!profileId) {
+      return;
+    }
+  
+    const { data, error } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('sender_profile_id', profileId)
+      .eq('status', 'rejected')
+      .eq('sender_seen_result', false);
+  
+    if (error) {
+      console.error('미확인 거절 알림 확인 오류:', error);
+      return;
+    }
+  
+    if (!data || data.length === 0) {
+      return;
+    }
+  
+    showToast('보낸 관심 중 거절된 관심이 있어요.', 'warning');
+  
+    const rejectedLikeIds = data.map((item) => item.id);
+  
+    const { error: updateError } = await supabase
+      .from('likes')
+      .update({
+        sender_seen_result: true,
+      })
+      .in('id', rejectedLikeIds);
+  
+    if (updateError) {
+      console.error('거절 알림 확인 처리 오류:', updateError);
+    }
+  };
+
+
 
 
 
@@ -1161,13 +1213,14 @@ if (reverseLikes.length > 0) {
   
     try {
       const { error } = await supabase
-        .from('likes')
-        .update({
-          status: 'rejected',
-        })
-        .eq('sender_profile_id', profileId)
-        .eq('receiver_profile_id', supabaseProfileId);
-  
+          .from('likes')
+          .update({
+            status: 'rejected',
+            sender_seen_result: false,
+          })
+          .eq('sender_profile_id', profileId)
+          .eq('receiver_profile_id', supabaseProfileId);
+          
       if (error) {
         console.error('관심 거절 오류:', error);
         alert(`관심 거절 오류: ${error.message}`);

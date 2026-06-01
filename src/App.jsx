@@ -60,6 +60,7 @@ function App() {
   const [isDeletingProfile, setIsDeletingProfile] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('info');
+  const [toastQueue, setToastQueue] = useState([]);
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -108,12 +109,9 @@ function App() {
       loadMySentLikes(supabaseProfileId);
       loadMyReceivedLikes(supabaseProfileId);
       loadMyMatches(supabaseProfileId);
-      checkUnseenRejectedLikes(supabaseProfileId);
-      checkUnseenReceivedLikes(supabaseProfileId);
-      checkUnseenMatches(supabaseProfileId);
+      checkUnseenNotifications(supabaseProfileId);
     }
   }, [supabaseProfileId]);
-
 
   useEffect(() => {
     const autoHideProfileIfMatchFull = async () => {
@@ -143,6 +141,20 @@ function App() {
     autoHideProfileIfMatchFull();
   }, [matchedProfileIds, supabaseProfileId, isProfileVisible]);
   
+
+
+  useEffect(() => {
+    if (toastMessage || toastQueue.length === 0) {
+      return;
+    }
+  
+    const nextToast = toastQueue[0];
+  
+    setToastMessage(nextToast.message);
+    setToastType(nextToast.type);
+    setToastQueue((prevQueue) => prevQueue.slice(1));
+  }, [toastMessage, toastQueue]);
+
 
   useEffect(() => {
     if (!toastMessage) {
@@ -282,15 +294,14 @@ function App() {
     }
   
     const refreshUserState = async () => {
-      await checkUnseenRejectedLikes(supabaseProfileId);
-      await checkUnseenReceivedLikes(supabaseProfileId);
-      await checkUnseenMatches(supabaseProfileId);
+      await checkUnseenNotifications(supabaseProfileId);
       await loadMySentLikes(supabaseProfileId);
       await loadMyReceivedLikes(supabaseProfileId);
       await loadMyMatches(supabaseProfileId);
       await loadSupabaseProfiles();
     };
-  
+    
+    
     const refreshOnReturn = () => {
       if (document.visibilityState !== 'visible') {
         return;
@@ -344,10 +355,15 @@ function App() {
   
 
   const showToast = (message, type = 'info') => {
-    setToastMessage(message);
-    setToastType(type);
+    setToastQueue((prevQueue) => [
+      ...prevQueue,
+      {
+        id: Date.now() + Math.random(),
+        message,
+        type,
+      },
+    ]);
   };
-
 
 
 
@@ -445,9 +461,8 @@ function App() {
     await loadMySentLikes(foundProfile.id);
     await loadMyReceivedLikes(foundProfile.id);
     await loadMyMatches(foundProfile.id);
-    await checkUnseenRejectedLikes(foundProfile.id);
-    await checkUnseenReceivedLikes(foundProfile.id);
-    await checkUnseenMatches(foundProfile.id);
+    await checkUnseenNotifications(foundProfile.id);
+
     setIsLoadingProfile(false);
   };
 
@@ -611,6 +626,15 @@ function App() {
   };
 
 
+
+
+
+
+
+
+
+
+
   const checkUnseenMatches = async (profileId) => {
     if (!profileId) {
       return;
@@ -676,7 +700,131 @@ function App() {
   };
 
 
-
+  const checkUnseenNotifications = async (profileId) => {
+    if (!profileId) {
+      return;
+    }
+  
+    const queuedToasts = [];
+  
+    const { data: rejectedLikes, error: rejectedError } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('sender_profile_id', profileId)
+      .eq('status', 'rejected')
+      .eq('sender_seen_result', false);
+  
+    if (rejectedError) {
+      console.error('미확인 거절 알림 확인 오류:', rejectedError);
+    }
+  
+    if (rejectedLikes && rejectedLikes.length > 0) {
+      queuedToasts.push({
+        message:
+          rejectedLikes.length === 1
+            ? '보낸 관심 중 거절된 관심이 있어요.'
+            : `보낸 관심 중 거절된 관심이 ${rejectedLikes.length}개 있어요.`,
+        type: 'warning',
+      });
+    }
+  
+    const { data: receivedLikes, error: receivedError } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('receiver_profile_id', profileId)
+      .eq('status', 'pending')
+      .eq('receiver_seen_like', false);
+  
+    if (receivedError) {
+      console.error('미확인 받은 관심 알림 확인 오류:', receivedError);
+    }
+  
+    if (receivedLikes && receivedLikes.length > 0) {
+      queuedToasts.push({
+        message:
+          receivedLikes.length === 1
+            ? '새 관심이 도착했어요.'
+            : `새 관심이 ${receivedLikes.length}개 도착했어요.`,
+        type: 'info',
+      });
+    }
+  
+    const { data: unseenMatches, error: matchError } = await supabase
+      .from('likes')
+      .select('id, sender_profile_id, receiver_profile_id, sender_seen_match, receiver_seen_match')
+      .eq('status', 'accepted')
+      .or(
+        `and(sender_profile_id.eq.${profileId},sender_seen_match.eq.false),and(receiver_profile_id.eq.${profileId},receiver_seen_match.eq.false)`
+      );
+  
+    if (matchError) {
+      console.error('미확인 매칭 알림 확인 오류:', matchError);
+    }
+  
+    if (unseenMatches && unseenMatches.length > 0) {
+      queuedToasts.push({
+        message:
+          unseenMatches.length === 1
+            ? '새 매칭이 있어요!'
+            : `새 매칭이 ${unseenMatches.length}개 있어요!`,
+        type: 'success',
+      });
+    }
+  
+    queuedToasts.forEach((toast) => {
+      showToast(toast.message, toast.type);
+    });
+  
+    if (rejectedLikes && rejectedLikes.length > 0) {
+      const rejectedIds = rejectedLikes.map((item) => item.id);
+  
+      await supabase
+        .from('likes')
+        .update({
+          sender_seen_result: true,
+        })
+        .in('id', rejectedIds);
+    }
+  
+    if (receivedLikes && receivedLikes.length > 0) {
+      const receivedIds = receivedLikes.map((item) => item.id);
+  
+      await supabase
+        .from('likes')
+        .update({
+          receiver_seen_like: true,
+        })
+        .in('id', receivedIds);
+    }
+  
+    if (unseenMatches && unseenMatches.length > 0) {
+      const senderMatchIds = unseenMatches
+        .filter((item) => String(item.sender_profile_id) === String(profileId))
+        .map((item) => item.id);
+  
+      const receiverMatchIds = unseenMatches
+        .filter((item) => String(item.receiver_profile_id) === String(profileId))
+        .map((item) => item.id);
+  
+      if (senderMatchIds.length > 0) {
+        await supabase
+          .from('likes')
+          .update({
+            sender_seen_match: true,
+          })
+          .in('id', senderMatchIds);
+      }
+  
+      if (receiverMatchIds.length > 0) {
+        await supabase
+          .from('likes')
+          .update({
+            receiver_seen_match: true,
+          })
+          .in('id', receiverMatchIds);
+      }
+    }
+  };
 
 
 

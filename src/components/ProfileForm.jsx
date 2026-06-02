@@ -16,23 +16,51 @@ function ProfileForm({
     'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ',
   ];
   
+
+
+  const faceTypeOptions = [
+    '🐶 강아지상',
+    '🐱 고양이상',
+    '🦊 여우상',
+    '🐻 곰상',
+    '🐰 토끼상',
+    '🦖 공룡상',
+    '🐹 햄스터상',
+    '🐿️ 다람쥐상',
+    '🦫 카피바라상',
+  ];
+  
+  const handleFaceTypeSelect = (faceType) => {
+    const nextValue = profile.faceType === faceType ? '' : faceType;
+  
+    onProfileChange({
+      target: {
+        name: 'faceType',
+        value: nextValue,
+      },
+    });
+  };
+
+
+
+
   const defaultInterestTags = [
-    '영화',
-    '음악',
-    '게임',
-    '운동',
-    '카페',
-    '맛집',
-    '여행',
-    '산책',
-    '애니',
-    '요리',
-    '공연/축제',
-    '반려동물',
-    '그림',
-    '춤',
-    '노래',
-    '패션',
+    { label: '영화', emoji: '🍿' },
+    { label: '음악', emoji: '🎧' },
+    { label: '게임', emoji: '🎮' },
+    { label: '운동', emoji: '🏋️' },
+    { label: '카페', emoji: '☕' },
+    { label: '맛집', emoji: '🍽️' },
+    { label: '여행', emoji: '✈️' },
+    { label: '산책', emoji: '🚶' },
+    { label: '애니', emoji: '📺' },
+    { label: '요리', emoji: '🍳' },
+    { label: '공연/축제', emoji: '🎪' },
+    { label: '반려동물', emoji: '🐾' },
+    { label: '그림', emoji: '🎨' },
+    { label: '춤', emoji: '💃' },
+    { label: '노래', emoji: '🎤' },
+    { label: '패션', emoji: '👗' },
   ];
   
   const [customInterest, setCustomInterest] = useState('');
@@ -268,6 +296,29 @@ function ProfileForm({
           ))}
         </div>
 
+        <label className="field-label">
+          <span>얼굴상</span>
+          <span className="field-badge optional">선택</span>
+        </label>
+
+        <div className="face-type-grid">
+          {faceTypeOptions.map((faceType) => (
+            <button
+              key={faceType}
+              type="button"
+              className={`face-type-button ${
+                profile.faceType === faceType ? 'selected' : ''
+              }`}
+              onClick={() => handleFaceTypeSelect(faceType)}
+            >
+              {faceType}
+            </button>
+          ))}
+        </div>
+
+          
+
+
 
 
                   <label className="field-label">
@@ -323,14 +374,15 @@ function ProfileForm({
         <div className="interest-tag-grid">
           {defaultInterestTags.map((interest) => (
             <button
-              key={interest}
+              key={interest.label}
               type="button"
               className={`interest-tag-button ${
-                selectedInterests.includes(interest) ? 'selected' : ''
+                selectedInterests.includes(interest.label) ? 'selected' : ''
               }`}
-              onClick={() => handleInterestToggle(interest)}
+              onClick={() => handleInterestToggle(interest.label)}
             >
-              {interest}
+              <span className="interest-emoji">{interest.emoji}</span>
+              <span>{interest.label}</span>
             </button>
           ))}
         </div>

@@ -28,7 +28,28 @@ function ProfileCard({
   onRejectLike,
 }) {
   
+  const interestEmojiMap = {
+    영화: '🍿',
+    음악: '🎧',
+    게임: '🎮',
+    운동: '🏋️',
+    카페: '☕',
+    맛집: '🍽️',
+    여행: '✈️',
+    산책: '🚶',
+    애니: '📺',
+    요리: '🍳',
+    '공연/축제': '🎪',
+    반려동물: '🐾',
+    그림: '🎨',
+    춤: '💃',
+    노래: '🎤',
+    패션: '👗',
+  };
   
+  const profileInterestList = otherProfile.interests
+    ? otherProfile.interests.split(',').map((item) => item.trim()).filter(Boolean)
+    : [];
   
   const hasEgenTetoScore =
     otherProfile.egenTetoScore !== '' &&
@@ -52,6 +73,11 @@ function ProfileCard({
       </p>
 
       
+      {otherProfile.faceType && (
+        <p><strong>얼굴상:</strong> {otherProfile.faceType}</p>
+      )}
+
+
       {otherProfile.egenTetoScore !== '' &&
         otherProfile.egenTetoScore !== null &&
         otherProfile.egenTetoScore !== undefined && (
@@ -61,7 +87,20 @@ function ProfileCard({
           </p>
         )}
       
-      <p><strong>관심사:</strong> {otherProfile.interests}</p>
+      <div className="profile-interest-section">
+  <strong>관심사:</strong>
+
+        <div className="profile-interest-list">
+          {profileInterestList.map((interest) => (
+            <span key={interest} className="profile-interest-chip">
+              {interestEmojiMap[interest] && (
+                <span className="interest-emoji">{interestEmojiMap[interest]}</span>
+              )}
+              <span>{interest}</span>
+            </span>
+          ))}
+        </div>
+      </div>
       <p><strong>한줄 소개:</strong> {otherProfile.introduction}</p>
 
       {otherProfile.idealType && (

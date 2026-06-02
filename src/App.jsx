@@ -25,6 +25,7 @@ function App() {
       age: '',
       department: '',
       mbti: '',
+      faceType: '',
       interests: '',
       introduction: '',
       idealType: '',
@@ -71,7 +72,7 @@ function App() {
   const [selectedInterestFilters, setSelectedInterestFilters] = useState([]);
   const [egenTetoFilter, setEgenTetoFilter] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
+  const [browseProfileIndex, setBrowseProfileIndex] = useState(0);
 
 
   const maxMatches = 3;
@@ -116,7 +117,16 @@ function App() {
   useEffect(() => {
     ensureAnonymousUser();
   }, []);
-
+  
+  
+  useEffect(() => {
+    setBrowseProfileIndex(0);
+  }, [
+    searchKeyword,
+    selectedMbtiFilter,
+    selectedInterestFilters,
+    egenTetoFilter,
+  ]);
 
 
   useEffect(() => {
@@ -127,6 +137,13 @@ function App() {
       checkUnseenNotifications(supabaseProfileId);
     }
   }, [supabaseProfileId]);
+
+
+
+
+
+
+
 
   useEffect(() => {
     const autoHideProfileIfMatchFull = async () => {
@@ -477,6 +494,7 @@ function App() {
         age,
         department,
         mbti,
+        face_type,
         interests,
         introduction,
         ideal_type,
@@ -549,6 +567,7 @@ function App() {
       age: foundProfile.age ? String(foundProfile.age) : '',
       department: foundProfile.department || '',
       mbti: foundProfile.mbti || '',
+      faceType: foundProfile.face_type || '',
       interests: foundProfile.interests,
       introduction: foundProfile.introduction,
       idealType: foundProfile.ideal_type || '',
@@ -607,6 +626,7 @@ function App() {
         age,
         department,
         mbti,
+        face_type,
         interests,
         introduction,
         ideal_type,
@@ -630,6 +650,7 @@ function App() {
       age: item.age ? String(item.age) : '',
       department: item.department,
       mbti: item.mbti,
+      faceType: item.face_type || '',
       interests: item.interests,
       introduction: item.introduction,
       idealType: item.ideal_type,
@@ -1225,6 +1246,7 @@ function App() {
           age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
           mbti: profile.mbti || null,
+          face_type: profile.faceType || null,
           interests: profile.interests,
           introduction: profile.introduction,
           ideal_type: profile.idealType || null,
@@ -1269,6 +1291,7 @@ function App() {
           age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
           mbti: profile.mbti || null,
+          face_type: profile.faceType || null,
           interests: profile.interests,
           introduction: profile.introduction,
           ideal_type: profile.idealType || null,
@@ -1334,6 +1357,24 @@ function App() {
     '패션',
   ];
 
+  const interestEmojiMap = {
+    영화: '🍿',
+    음악: '🎧',
+    게임: '🎮',
+    운동: '🏋️',
+    카페: '☕',
+    맛집: '🍽️',
+    여행: '✈️',
+    산책: '🚶',
+    애니: '📺',
+    요리: '🍳',
+    '공연/축제': '🎪',
+    반려동물: '🐾',
+    그림: '🎨',
+    춤: '💃',
+    노래: '🎤',
+    패션: '👗',
+  };
 
 
 
@@ -1393,6 +1434,7 @@ function App() {
       ${otherProfile.age ? `${otherProfile.age}세` : ''}
       ${otherProfile.department}
       ${otherProfile.mbti}
+      ${otherProfile.faceType}
       ${otherProfile.interests}
       ${otherProfile.introduction}
       ${otherProfile.idealType}
@@ -1415,6 +1457,24 @@ function App() {
     );
   });
   
+
+  const hasVisibleProfiles = visibleProfiles.length > 0;
+
+  const safeBrowseProfileIndex = hasVisibleProfiles
+    ? Math.min(browseProfileIndex, visibleProfiles.length - 1)
+    : 0;
+
+  const currentBrowseProfile = hasVisibleProfiles
+    ? visibleProfiles[safeBrowseProfileIndex]
+    : null;
+
+  const canGoPreviousProfile = safeBrowseProfileIndex > 0;
+
+  const canGoNextProfile = safeBrowseProfileIndex < visibleProfiles.length - 1;
+
+
+
+
   const receivedProfiles = supabaseProfiles.filter((otherProfile) =>
     receivedLikeIds.includes(otherProfile.id)
   );
@@ -1766,6 +1826,7 @@ if (reverseLikes.length > 0) {
       age: '',
       department: '',
       mbti: '',
+      faceType: '',
       interests: '',
       introduction: '',
       idealType: '',
@@ -1887,7 +1948,15 @@ if (reverseLikes.length > 0) {
     setEgenTetoFilter('');
   };
 
+  const goToPreviousProfile = () => {
+    setBrowseProfileIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
   
+  const goToNextProfile = () => {
+    setBrowseProfileIndex((prevIndex) =>
+      Math.min(prevIndex + 1, visibleProfiles.length - 1)
+    );
+  };
 
 
 
@@ -2012,18 +2081,21 @@ if (reverseLikes.length > 0) {
       <p className="filter-title">관심사</p>
 
       <div className="filter-chip-list">
-        {interestFilterOptions.map((interest) => (
-          <button
-            key={interest}
-            type="button"
-            className={`filter-chip ${
-              selectedInterestFilters.includes(interest) ? 'selected' : ''
-            }`}
-            onClick={() => handleInterestFilterToggle(interest)}
-          >
-            {interest}
-          </button>
-        ))}
+      {interestFilterOptions.map((interest) => (
+        <button
+          key={interest}
+          type="button"
+          className={`filter-chip ${
+            selectedInterestFilters.includes(interest) ? 'selected' : ''
+          }`}
+          onClick={() => handleInterestFilterToggle(interest)}
+        >
+          {interestEmojiMap[interest] && (
+            <span className="interest-emoji">{interestEmojiMap[interest]}</span>
+          )}
+          <span>{interest}</span>
+        </button>
+      ))}
       </div>
     </div>
 
@@ -2068,23 +2140,49 @@ if (reverseLikes.length > 0) {
 
 
         <div className="profile-list">
-            {visibleProfiles.length === 0 && (
-                <div className="empty-message">
-                    조건에 맞는 프로필이 없어요.
-                </div>
-            )}
+              {!hasVisibleProfiles ? (
+        <div className="empty-profile-box">
+          <p>조건에 맞는 프로필이 없어요.</p>
+          <p>검색어나 필터를 조금 바꿔보세요.</p>
+        </div>
+      ) : (
+        <div className="single-browse-section">
+          <div className="browse-progress">
+            <span>
+              {safeBrowseProfileIndex + 1} / {visibleProfiles.length}
+            </span>
+          </div>
 
-            
-            {visibleProfiles.map((otherProfile) => (
-              <ProfileCard
-                key={otherProfile.id}
-                otherProfile={otherProfile}
-                mode="browse"
-                isLiked={likedProfileIds.includes(otherProfile.id)}
-                isProcessing={processingProfileId === otherProfile.id}
-                onToggleLike={handleToggleLike}
-              />
-            ))}
+          <ProfileCard
+            key={currentBrowseProfile.id}
+            otherProfile={currentBrowseProfile}
+            mode="browse"
+            isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
+            isProcessing={processingProfileId === currentBrowseProfile.id}
+            onToggleLike={handleToggleLike}
+          />
+
+          <div className="browse-navigation">
+            <button
+              type="button"
+              className="sub-button"
+              onClick={goToPreviousProfile}
+              disabled={!canGoPreviousProfile}
+            >
+              ← 이전
+            </button>
+
+            <button
+              type="button"
+              className="sub-button"
+              onClick={goToNextProfile}
+              disabled={!canGoNextProfile}
+            >
+              다음 →
+            </button>
+          </div>
+        </div>
+      )}
             
             
             
@@ -2199,7 +2297,11 @@ if (reverseLikes.length > 0) {
             {profile.department && <p><strong>학과:</strong> {profile.department}</p>}
             {profile.mbti && <p><strong>MBTI:</strong> {profile.mbti}</p>}
             
-            
+            {profile.faceType && (
+              <p><strong>얼굴상:</strong> {profile.faceType}</p>
+            )}
+
+
             {profile.egenTetoScore !== '' &&
                 profile.egenTetoScore !== null &&
                 profile.egenTetoScore !== undefined &&

@@ -73,6 +73,8 @@ function App() {
   const [egenTetoFilter, setEgenTetoFilter] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [browseProfileIndex, setBrowseProfileIndex] = useState(0);
+  const previousVisibleProfileIdsRef = useRef([]);
+  const [newProfileNoticeCount, setNewProfileNoticeCount] = useState(0);
 
 
   const maxMatches = 3;
@@ -1457,6 +1459,12 @@ function App() {
     );
   });
   
+  const visibleProfileIdKey = visibleProfiles
+  .map((item) => String(item.id))
+  .join('|');
+
+
+
 
   const hasVisibleProfiles = visibleProfiles.length > 0;
 
@@ -1467,6 +1475,8 @@ function App() {
   const currentBrowseProfile = hasVisibleProfiles
     ? visibleProfiles[safeBrowseProfileIndex]
     : null;
+
+  
 
   const canGoPreviousProfile = safeBrowseProfileIndex > 0;
 
@@ -1495,7 +1505,34 @@ function App() {
     </div>
   );
 
-
+  useEffect(() => {
+    const currentVisibleProfileIds = visibleProfileIdKey
+      ? visibleProfileIdKey.split('|')
+      : [];
+  
+    if (currentVisibleProfileIds.length === 0) {
+      previousVisibleProfileIdsRef.current = [];
+      setNewProfileNoticeCount(0);
+      return;
+    }
+  
+    if (previousVisibleProfileIdsRef.current.length === 0) {
+      previousVisibleProfileIdsRef.current = currentVisibleProfileIds;
+      return;
+    }
+  
+    const previousIds = previousVisibleProfileIdsRef.current;
+  
+    const newlyAddedIds = currentVisibleProfileIds.filter(
+      (id) => !previousIds.includes(id)
+    );
+  
+    if (newlyAddedIds.length > 0 && browseProfileIndex > 0) {
+      setNewProfileNoticeCount((prevCount) => prevCount + newlyAddedIds.length);
+    }
+  
+    previousVisibleProfileIdsRef.current = currentVisibleProfileIds;
+  }, [visibleProfileIdKey, browseProfileIndex]);
 
 
   
@@ -1972,6 +2009,17 @@ if (reverseLikes.length > 0) {
       );
     };
 
+    const goToNewProfiles = () => {
+      setBrowseProfileIndex(0);
+      setNewProfileNoticeCount(0);
+    
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    };
+
+
 
     const renderPageHeader = ({ title, description }) => (
       <div className="app-page-header">
@@ -2250,6 +2298,22 @@ if (reverseLikes.length > 0) {
         </div>
       ) : (
         <div className="single-browse-section">
+          
+          {newProfileNoticeCount > 0 && (
+            <button
+              type="button"
+              className="new-profile-notice"
+              onClick={goToNewProfiles}
+            >
+              새 프로필 {newProfileNoticeCount}명 보기
+            </button>
+          )}
+                    
+          
+          
+          
+          
+          
           <div className="browse-progress">
             <span>
               {safeBrowseProfileIndex + 1} / {visibleProfiles.length}
@@ -2462,9 +2526,19 @@ if (reverseLikes.length > 0) {
                     </span>
                   )}
     
-                  {hasMyEgenTetoScore && (
-                    <span className="profile-feature-chip">
-                      {myEgenTetoText}
+                      {hasMyEgenTetoScore && (
+                    <span className="profile-feature-chip egen-teto-chip">
+                      <span className="egen-teto-label">에겐</span>
+                      <span className="egen-teto-percent">
+                        {100 - Number(profile.egenTetoScore)}%
+                      </span>
+
+                      <span className="egen-teto-divider">·</span>
+
+                      <span className="egen-teto-label">테토</span>
+                      <span className="egen-teto-percent">
+                        {Number(profile.egenTetoScore)}%
+                      </span>
                     </span>
                   )}
                 </div>
@@ -2494,7 +2568,7 @@ if (reverseLikes.length > 0) {
     
               {profile.idealType && (
                 <div className="my-profile-section">
-                  <p className="profile-section-title">이런 사람이 좋아요</p>
+                  <p className="profile-section-title">이상형</p>
                   <p className="profile-section-text">{profile.idealType}</p>
                 </div>
               )}

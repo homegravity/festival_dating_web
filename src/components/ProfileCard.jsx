@@ -110,8 +110,18 @@ function ProfileCard({
           )}
 
           {hasEgenTetoScore && (
-            <span className="profile-feature-chip">
-              {getEgenTetoText()}
+            <span className="profile-feature-chip egen-teto-chip">
+              <span className="egen-teto-label">에겐</span>
+              <span className="egen-teto-percent">
+                {100 - Number(otherProfile.egenTetoScore)}%
+              </span>
+
+              <span className="egen-teto-divider">·</span>
+
+              <span className="egen-teto-label">테토</span>
+              <span className="egen-teto-percent">
+                {Number(otherProfile.egenTetoScore)}%
+              </span>
             </span>
           )}
         </div>
@@ -174,7 +184,7 @@ function ProfileCard({
               </button>
             )}
 
-            
+
         {mode === 'received' && (
           <div className="button-row">
             <button

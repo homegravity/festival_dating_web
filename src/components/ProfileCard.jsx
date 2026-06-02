@@ -142,7 +142,7 @@ function ProfileCard({
 
   {otherProfile.idealType && (
     <div className="profile-section">
-      <p className="profile-section-title">이런 사람이 좋아요</p>
+      <p className="profile-section-title">이상형</p>
       <p className="profile-section-text">{otherProfile.idealType}</p>
     </div>
   )}

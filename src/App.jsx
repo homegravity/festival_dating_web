@@ -1973,6 +1973,36 @@ if (reverseLikes.length > 0) {
     };
 
 
+    const renderPageHeader = ({ title, description }) => (
+      <div className="app-page-header">
+        <p className="app-brand-name" aria-label="두유는 사랑을 타고">
+            <span className="brand-word">
+              <span className="brand-main">두</span>
+              <span className="brand-sub">유는</span>
+            </span>
+
+            <span className="brand-word">
+              <span className="brand-main">사</span>
+              <span className="brand-sub">랑을</span>
+            </span>
+
+            <span className="brand-word">
+              <span className="brand-main">타</span>
+              <span className="brand-sub">고</span>
+            </span>
+          </p>
+    
+        <h1 className="app-page-title">{title}</h1>
+    
+        {description && (
+          <p className="app-page-description">{description}</p>
+        )}
+      </div>
+    );
+
+
+
+
 
 
     if (isProfileSaved && currentPage === 'sentLikes') {
@@ -1980,8 +2010,10 @@ if (reverseLikes.length > 0) {
         <div className="app">
           {toastElement}
     
-          <h1>보낸 관심 관리</h1>
-          <p>내가 관심을 보낸 사람들을 확인하고 취소할 수 있어요.</p>
+          {renderPageHeader({
+            title: '보낸 관심 관리',
+            description: '내가 보낸 관심을 확인하고 취소할 수 있어요.',
+          })}
     
           {sentLikeProfiles.length === 0 ? (
             <div className="empty-profile-box">
@@ -2019,9 +2051,12 @@ if (reverseLikes.length > 0) {
     return (
       <div className="app">
         {toastElement}
-        <h1>프로필 둘러보기</h1>
-        <p>마음에 드는 사람에게 관심을 보내보세요.</p>
-        <p className="like-count">남은 관심: {remainingLikes}회</p>
+        {renderPageHeader({
+          title: '프로필 둘러보기',
+          description: '한 명씩 천천히 보고, 마음이 가면 관심을 보내보세요.',
+        })}
+
+<p className="like-count">남은 관심: {remainingLikes}회</p>
         {sentLikeProfiles.length > 0 && (
           <button
           type="button"
@@ -2271,8 +2306,10 @@ if (reverseLikes.length > 0) {
     return (
       <div className="app">
         {toastElement}
-        <h1>받은 관심</h1>
-        <p>나에게 관심을 보낸 사람들을 확인할 수 있어요.</p>
+        {renderPageHeader({
+            title: '받은 관심',
+            description: '나에게 관심을 보낸 사람을 확인해보세요.',
+          })}
   
         <div className="profile-list">
           {receivedProfiles.length === 0 && (
@@ -2309,8 +2346,10 @@ if (reverseLikes.length > 0) {
     return (
       <div className="app">
         {toastElement}
-        <h1>매칭</h1>
-        <p>매칭된 사람의 연락수단을 확인할 수 있어요.</p>
+        {renderPageHeader({
+          title: '매칭',
+          description: '서로 관심이 통한 사람의 연락수단을 확인해보세요.',
+        })}
   
         <div className="profile-list">
           {matchedProfiles.length === 0 && (
@@ -2345,8 +2384,10 @@ if (reverseLikes.length > 0) {
     return (
       <div className="app">
         {toastElement}
-        <h1>프로필 작성 완료</h1>
-        <p>이제 다른 사람들의 프로필을 둘러볼 수 있어요.</p>
+        {renderPageHeader({
+          title: '내 프로필',
+          description: '내 정보와 참여 코드를 확인하고 관리할 수 있어요.',
+        })}
 
         <div className="card">
           <h2>{profile.nickname}님의 프로필</h2>

@@ -1711,7 +1711,7 @@ if (reverseLikes.length > 0) {
 
   const getContactTypeLabel = (contactType) => {
     if (contactType === 'instagram') {
-      return '인스타그램';
+      return '인스타 ID';
     }
   
     if (contactType === 'kakao') {
@@ -2001,7 +2001,7 @@ if (reverseLikes.length > 0) {
     );
 
 
-
+ 
 
 
 
@@ -2389,148 +2389,224 @@ if (reverseLikes.length > 0) {
     );
   }
 
+  const myInterestEmojiMap = {
+    영화: '🍿',
+    음악: '🎧',
+    게임: '🎮',
+    운동: '🏋️',
+    카페: '☕',
+    맛집: '🍽️',
+    여행: '✈️',
+    산책: '🚶',
+    애니: '📺',
+    요리: '🍳',
+    '공연/축제': '🎪',
+    반려동물: '🐾',
+    그림: '🎨',
+    춤: '💃',
+    노래: '🎤',
+    패션: '👗',
+  };
+  
+  const myProfileInterestList = profile.interests
+    ? profile.interests.split(',').map((item) => item.trim()).filter(Boolean)
+    : [];
+  
+  const myProfileMetaItems = [
+    profile.gender,
+    profile.grade,
+    profile.age ? `${profile.age}세` : '',
+    profile.department,
+    profile.mbti,
+  ].filter(Boolean);
+  
+  const hasMyEgenTetoScore =
+    profile.egenTetoScore !== '' &&
+    profile.egenTetoScore !== null &&
+    profile.egenTetoScore !== undefined &&
+    !Number.isNaN(Number(profile.egenTetoScore));
+  
+  const myEgenTetoText = hasMyEgenTetoScore
+    ? `에겐 ${100 - Number(profile.egenTetoScore)}% · 테토 ${Number(profile.egenTetoScore)}%`
+    : '';
 
 
-
-  if (isProfileSaved) {
-    return (
-      <div className="app">
-        {toastElement}
-        {renderPageHeader({
-          title: '내 프로필',
-          description: '내 정보와 참여 코드를 확인하고 관리할 수 있어요.',
-        })}
-
-        <div className="card">
-          <h2>{profile.nickname}님의 프로필</h2>
-
-          <div className="profile-summary">
-            <p><strong>성별:</strong> {profile.gender}</p>
-            
-            {profile.grade && (
-              <p><strong>학년:</strong> {profile.grade}</p>
-            )}
-            {profile.age && (
-              <p><strong>나이:</strong> {profile.age}세</p>
-            )}
-            
-            
-            {profile.department && <p><strong>학과:</strong> {profile.department}</p>}
-            {profile.mbti && <p><strong>MBTI:</strong> {profile.mbti}</p>}
-            
-            {profile.faceType && (
-              <p><strong>얼굴상:</strong> {profile.faceType}</p>
-            )}
-
-
-            {profile.egenTetoScore !== '' &&
-                profile.egenTetoScore !== null &&
-                profile.egenTetoScore !== undefined &&
-                !Number.isNaN(Number(profile.egenTetoScore)) && (
-                  <p>
-                    <strong>에겐-테토:</strong>{' '}
-                    에겐 {100 - Number(profile.egenTetoScore)}% · 테토 {Number(profile.egenTetoScore)}%
+    if (isProfileSaved) {
+      return (
+        <div className="app">
+          {toastElement}
+    
+          {renderPageHeader({
+            title: '내 프로필',
+            description: '내 정보와 참여 코드를 확인하고 관리할 수 있어요.',
+          })}
+    
+          <div className="my-profile-layout">
+            <section className="my-profile-card">
+              <div className="my-profile-header">
+                <p className="my-profile-label">내 프로필</p>
+                <h2>{profile.nickname}</h2>
+    
+                {myProfileMetaItems.length > 0 && (
+                  <p className="profile-meta">
+                    {myProfileMetaItems.join(' · ')}
                   </p>
                 )}
-                                      
-            
-            
-            <p><strong>관심사:</strong> {profile.interests}</p>
-            <p><strong>한줄 소개:</strong> {profile.introduction}</p>
-            {profile.idealType && <p><strong>이상형:</strong> {profile.idealType}</p>}
-          </div>
-
-          <div className="status-box">
-            <p><strong>매칭 현황:</strong> {matchedProfileIds.length} / {maxMatches}</p>
-            <p><strong>프로필 상태:</strong> {profileStatus}</p>
-
-            {isMatchFull && (
-              <p className="status-message">매칭 가능 인원이 가득 찼어요.</p>
-            )}
-          </div>
-
-
-
-          {participantCode && (
-              <div className="code-box">
-                <p><strong>내 참여 코드</strong></p>
-                <p className="participant-code">{participantCode}</p>
-
+              </div>
+    
+              {(profile.faceType || hasMyEgenTetoScore) && (
+                <div className="profile-feature-row">
+                  {profile.faceType && (
+                    <span className="profile-feature-chip">
+                      {profile.faceType}
+                    </span>
+                  )}
+    
+                  {hasMyEgenTetoScore && (
+                    <span className="profile-feature-chip">
+                      {myEgenTetoText}
+                    </span>
+                  )}
+                </div>
+              )}
+    
+              <div className="my-profile-section">
+                <p className="profile-section-title">관심사</p>
+    
+                <div className="profile-interest-list">
+                  {myProfileInterestList.map((interest) => (
+                    <span key={interest} className="profile-interest-chip">
+                      {myInterestEmojiMap[interest] && (
+                        <span className="interest-emoji">
+                          {myInterestEmojiMap[interest]}
+                        </span>
+                      )}
+                      <span>{interest}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+    
+              <div className="my-profile-section">
+                <p className="profile-section-title">한줄 소개</p>
+                <p className="profile-section-text">{profile.introduction}</p>
+              </div>
+    
+              {profile.idealType && (
+                <div className="my-profile-section">
+                  <p className="profile-section-title">이런 사람이 좋아요</p>
+                  <p className="profile-section-text">{profile.idealType}</p>
+                </div>
+              )}
+            </section>
+    
+            <section className="my-info-card">
+              <p className="my-card-title">활동 상태</p>
+    
+              <div className="my-info-row">
+                <span>매칭 현황</span>
+                <strong>{matchedProfileIds.length} / {maxMatches}</strong>
+              </div>
+    
+              <div className="my-info-row">
+                <span>프로필 상태</span>
+                <strong>{profileStatus}</strong>
+              </div>
+    
+              {isMatchFull && (
+                <p className="status-message">매칭 가능 인원이 가득 찼어요.</p>
+              )}
+            </section>
+    
+            {participantCode && (
+              <section className="my-info-card">
+                <p className="my-card-title">내 참여 코드</p>
+    
+                <div className="participant-code-display">
+                  {participantCode}
+                </div>
+    
                 <button
+                  type="button"
                   className="copy-button"
                   onClick={handleCopyParticipantCode}
                 >
                   코드 복사하기
                 </button>
-
+    
                 <p className="code-guide">
                   나중에 내 프로필을 다시 불러올 때 필요해요. 캡처하거나 메모해두세요.
                 </p>
+              </section>
+            )}
+    
+            <section className="my-info-card">
+              <p className="my-card-title">내 연락수단</p>
+    
+              <div className="contact-value-box">
+                <span>{getContactTypeLabel(profile.contactType)}</span>
+                <strong>{profile.contactValue}</strong>
               </div>
-            )}
+    
+              <p className="contact-guide">
+                연락수단은 매칭된 상대에게만 공개돼요.
+              </p>
+            </section>
+    
+            <section className="my-profile-actions">
+              <p className="my-card-title">프로필 관리</p>
 
-
-
-
-
-
-
-
-          <div className="contact-box">
-            <p><strong>내 연락수단</strong></p>
-            <p>
-              {getContactTypeLabel(profile.contactType)}: {profile.contactValue}
-            </p>
-            <p className="contact-guide">
-              매칭된 상대에게만 공개돼요.
-            </p>
-          </div>
-
-
-
-
-
-
-
-          {!isMatchFull && (
               <button
-                className="sub-button"
-                onClick={handleToggleProfileVisibility}
-                disabled={isUpdatingVisibility}
+                type="button"
+                className="my-action-button"
+                onClick={handleEditProfile}
               >
-                {isUpdatingVisibility
-                  ? '처리 중...'
-                  : isProfileVisible
-                    ? '프로필 숨기기'
-                    : '다시 공개하기'}
+                프로필 수정하기
               </button>
-            )}
 
+              {!isMatchFull && (
+                <button
+                  type="button"
+                  className="my-action-button"
+                  onClick={handleToggleProfileVisibility}
+                  disabled={isUpdatingVisibility}
+                >
+                  {isUpdatingVisibility
+                    ? '처리 중...'
+                    : isProfileVisible
+                      ? '프로필 숨기기'
+                      : '다시 공개하기'}
+                </button>
+              )}
 
+              <button
+                type="button"
+                className="my-action-button"
+                onClick={() => setCurrentPage('browse')}
+              >
+                프로필 둘러보기
+              </button>
 
-          <button onClick={handleEditProfile}>프로필 수정하기</button>
-          <button onClick={() => setCurrentPage('browse')}>프로필 둘러보기</button>
-          <button
-            className="danger-button"
-            onClick={handleResetData}
-            disabled={isDeletingProfile}
-          >
-            {isDeletingProfile ? '삭제 중...' : '프로필 삭제하기'}
-          </button>
-
-
-
+              <button
+                type="button"
+                className="my-action-button danger"
+                onClick={handleResetData}
+                disabled={isDeletingProfile}
+              >
+                {isDeletingProfile ? '삭제 중...' : '프로필 삭제하기'}
+              </button>
+            </section>
+          </div>
+    
+          <BottomNav
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            receivedCount={receivedProfiles.length}
+            matchCount={matchedProfiles.length}
+          />
         </div>
-        <BottomNav
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          receivedCount={receivedProfiles.length}
-          matchCount={matchedProfiles.length}
-        />
-      
-      </div>
-    );
-  }
+      );
+    }
 
   if (isEntered) {
     return (

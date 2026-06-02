@@ -67,6 +67,11 @@ function App() {
   const recentToastKeysRef = useRef(new Set());
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
+  const [selectedMbtiFilter, setSelectedMbtiFilter] = useState('');
+  const [selectedInterestFilters, setSelectedInterestFilters] = useState([]);
+  const [egenTetoFilter, setEgenTetoFilter] = useState('');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
 
 
   const maxMatches = 3;
@@ -1303,6 +1308,33 @@ function App() {
   };
 
 
+  const mbtiFilterOptions = [
+    'ISTJ', 'ISFJ', 'INFJ', 'INTJ',
+    'ISTP', 'ISFP', 'INFP', 'INTP',
+    'ESTP', 'ESFP', 'ENFP', 'ENTP',
+    'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ',
+  ];
+  
+  const interestFilterOptions = [
+    '영화',
+    '음악',
+    '게임',
+    '운동',
+    '카페',
+    '맛집',
+    '여행',
+    '산책',
+    '애니',
+    '요리',
+    '공연/축제',
+    '반려동물',
+    '그림',
+    '춤',
+    '노래',
+    '패션',
+  ];
+
+
 
 
 
@@ -1314,43 +1346,73 @@ function App() {
 
 
   const visibleProfiles = supabaseProfiles.filter((otherProfile) => {
-    const isNotMyProfile = String(otherProfile.id) !== String(supabaseProfileId); 
+    const isNotMyProfile = String(otherProfile.id) !== String(supabaseProfileId);
     const isVisible = otherProfile.isVisible !== false;
     const isNotMatched = !matchedProfileIds.includes(otherProfile.id);
     const isNotRejected = !rejectedProfileIds.includes(otherProfile.id);
-    
+  
     const matchesGender =
       profile.targetGender === '상관없음' ||
       otherProfile.gender === profile.targetGender;
   
-
-
-
+    const matchesMbti =
+      !selectedMbtiFilter || otherProfile.mbti === selectedMbtiFilter;
+  
+    const profileInterests = otherProfile.interests
+      ? otherProfile.interests.split(',').map((item) => item.trim())
+      : [];
+  
+    const matchesInterests =
+      selectedInterestFilters.length === 0 ||
+      selectedInterestFilters.every((interest) =>
+        profileInterests.includes(interest)
+      );
+  
+    const hasEgenTetoScore =
+      otherProfile.egenTetoScore !== '' &&
+      otherProfile.egenTetoScore !== null &&
+      otherProfile.egenTetoScore !== undefined &&
+      !Number.isNaN(Number(otherProfile.egenTetoScore));
+  
+    const tetoScore = hasEgenTetoScore
+      ? Number(otherProfile.egenTetoScore)
+      : null;
+  
+    const matchesEgenTeto =
+      !egenTetoFilter ||
+      (egenTetoFilter === 'egen' && hasEgenTetoScore && tetoScore <= 50) ||
+      (egenTetoFilter === 'teto' && hasEgenTetoScore && tetoScore >= 50);
+  
     const keyword = searchKeyword.trim().toLowerCase();
   
     const searchableText = `
       ${otherProfile.nickname}
       ${otherProfile.gender}
       ${otherProfile.grade}
+      ${otherProfile.age}
       ${otherProfile.age ? `${otherProfile.age}세` : ''}
       ${otherProfile.department}
       ${otherProfile.mbti}
       ${otherProfile.interests}
       ${otherProfile.introduction}
       ${otherProfile.idealType}
+      ${hasEgenTetoScore ? `에겐 ${100 - tetoScore}% 테토 ${tetoScore}%` : ''}
     `.toLowerCase();
   
     const matchesKeyword =
       keyword === '' || searchableText.includes(keyword);
   
-      return (
-        isNotMyProfile &&
-        isVisible &&
-        isNotMatched &&
-        isNotRejected &&
-        matchesGender &&
-        matchesKeyword
-      );
+    return (
+      isNotMyProfile &&
+      isVisible &&
+      isNotMatched &&
+      isNotRejected &&
+      matchesGender &&
+      matchesMbti &&
+      matchesInterests &&
+      matchesEgenTeto &&
+      matchesKeyword
+    );
   });
   
   const receivedProfiles = supabaseProfiles.filter((otherProfile) =>
@@ -1811,7 +1873,19 @@ if (reverseLikes.length > 0) {
 
 
 
-
+  const handleInterestFilterToggle = (interest) => {
+    setSelectedInterestFilters((prevFilters) =>
+      prevFilters.includes(interest)
+        ? prevFilters.filter((item) => item !== interest)
+        : [...prevFilters, interest]
+    );
+  };
+  
+  const clearAllFilters = () => {
+    setSelectedMbtiFilter('');
+    setSelectedInterestFilters([]);
+    setEgenTetoFilter('');
+  };
 
   
 
@@ -1825,14 +1899,171 @@ if (reverseLikes.length > 0) {
         <h1>프로필 둘러보기</h1>
         <p>마음에 드는 사람에게 관심을 보내보세요.</p>
         <p className="like-count">남은 관심: {remainingLikes}회</p>
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="키워드 검색 예: 노래, 영화, 운동"
-            value={searchKeyword}
-            onChange={(event) => setSearchKeyword(event.target.value)}
-          />
+        <div className="browse-control-row">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="키워드 검색 예: 노래, 영화, 운동"
+              value={searchKeyword}
+              onChange={(event) => setSearchKeyword(event.target.value)}
+            />
+          </div>
+
+          <button
+            type="button"
+            className={`filter-toggle-button ${
+              isFilterOpen ||
+              selectedMbtiFilter ||
+              selectedInterestFilters.length > 0 ||
+              egenTetoFilter
+                ? 'active'
+                : ''
+            }`}
+            onClick={() => setIsFilterOpen((prev) => !prev)}
+          >
+            필터
+          </button>
         </div>
+
+
+{(selectedMbtiFilter ||
+  selectedInterestFilters.length > 0 ||
+  egenTetoFilter) && (
+  <div className="active-filter-summary">
+    <span>적용 중</span>
+
+    {selectedMbtiFilter && (
+      <button
+        type="button"
+        onClick={() => setSelectedMbtiFilter('')}
+      >
+        {selectedMbtiFilter} ×
+      </button>
+    )}
+
+    {selectedInterestFilters.map((interest) => (
+      <button
+        key={interest}
+        type="button"
+        onClick={() => handleInterestFilterToggle(interest)}
+      >
+        {interest} ×
+      </button>
+    ))}
+
+    {egenTetoFilter && (
+      <button
+        type="button"
+        onClick={() => setEgenTetoFilter('')}
+      >
+        {egenTetoFilter === 'egen' ? '에겐' : '테토'} ×
+      </button>
+    )}
+  </div>
+)}
+
+
+
+
+
+
+{isFilterOpen && (
+  <div className="filter-section">
+    <div className="filter-header">
+      <h3>필터</h3>
+
+      {(selectedMbtiFilter ||
+        selectedInterestFilters.length > 0 ||
+        egenTetoFilter) && (
+        <button
+          type="button"
+          className="filter-reset-button"
+          onClick={clearAllFilters}
+        >
+          초기화
+        </button>
+      )}
+    </div>
+
+    <div className="filter-group">
+      <p className="filter-title">MBTI</p>
+
+      <div className="filter-chip-list">
+        {mbtiFilterOptions.map((mbti) => (
+          <button
+            key={mbti}
+            type="button"
+            className={`filter-chip ${
+              selectedMbtiFilter === mbti ? 'selected' : ''
+            }`}
+            onClick={() =>
+              setSelectedMbtiFilter((prevMbti) =>
+                prevMbti === mbti ? '' : mbti
+              )
+            }
+          >
+            {mbti}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div className="filter-group">
+      <p className="filter-title">관심사</p>
+
+      <div className="filter-chip-list">
+        {interestFilterOptions.map((interest) => (
+          <button
+            key={interest}
+            type="button"
+            className={`filter-chip ${
+              selectedInterestFilters.includes(interest) ? 'selected' : ''
+            }`}
+            onClick={() => handleInterestFilterToggle(interest)}
+          >
+            {interest}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div className="filter-group">
+      <p className="filter-title">에겐-테토</p>
+
+      <div className="filter-chip-list">
+        <button
+          type="button"
+          className={`filter-chip ${
+            egenTetoFilter === 'egen' ? 'selected' : ''
+          }`}
+          onClick={() =>
+            setEgenTetoFilter((prevFilter) =>
+              prevFilter === 'egen' ? '' : 'egen'
+            )
+          }
+        >
+          에겐
+        </button>
+
+        <button
+          type="button"
+          className={`filter-chip ${
+            egenTetoFilter === 'teto' ? 'selected' : ''
+          }`}
+          onClick={() =>
+            setEgenTetoFilter((prevFilter) =>
+              prevFilter === 'teto' ? '' : 'teto'
+            )
+          }
+        >
+          테토
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
 
 

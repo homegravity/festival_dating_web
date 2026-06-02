@@ -1953,6 +1953,11 @@ if (reverseLikes.length > 0) {
   };
   
   const goToNextProfile = () => {
+    if (visibleProfiles.length === 0) {
+      setBrowseProfileIndex(0);
+      return;
+    }
+  
     setBrowseProfileIndex((prevIndex) =>
       Math.min(prevIndex + 1, visibleProfiles.length - 1)
     );

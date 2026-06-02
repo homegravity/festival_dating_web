@@ -16,6 +16,8 @@ body {
   padding: 32px 16px 96px;
   box-sizing: border-box;
   text-align: center;
+  
+  
 }
 
 h1 {
@@ -220,9 +222,9 @@ textarea {
 
 
 .bottom-nav {
-  position: sticky;
+  position: fixed;
   bottom: 16px;
-  max-width: 520px;
+  max-width: 488px;
   margin: 28px auto 0;
   padding: 10px;
   display: grid;
@@ -231,9 +233,12 @@ textarea {
   background: white;
   border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  width: 100%;
+  width: calc(100% - 32px);
   box-sizing: border-box;
-
+  
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
 
 .bottom-nav button {

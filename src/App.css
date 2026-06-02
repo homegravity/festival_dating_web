@@ -1265,3 +1265,45 @@ label {
 .profile-card-actions button {
   margin-top: 0;
 }
+
+
+.sent-likes-shortcut-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  width: auto;
+  margin: 8px auto 18px;
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6f9d, #ff4f84);
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+
+  box-shadow: 0 7px 16px rgba(255, 79, 132, 0.24);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sent-likes-shortcut-button::after {
+  content: '›';
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 900;
+  margin-top: -1px;
+}
+
+.sent-likes-shortcut-button:hover,
+.sent-likes-shortcut-button:focus,
+.sent-likes-shortcut-button:active {
+  background: linear-gradient(135deg, #ff6f9d, #ff4f84);
+  color: #ffffff;
+  outline: none;
+  box-shadow: 0 7px 16px rgba(255, 79, 132, 0.24);
+}

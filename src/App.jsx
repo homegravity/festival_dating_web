@@ -1473,7 +1473,7 @@ function App() {
   const canGoNextProfile = safeBrowseProfileIndex < visibleProfiles.length - 1;
 
 
-
+ 
 
   const receivedProfiles = supabaseProfiles.filter((otherProfile) =>
     receivedLikeIds.includes(otherProfile.id)
@@ -1932,7 +1932,11 @@ if (reverseLikes.length > 0) {
     }
   };
 
+  const sentLikeProfiles = supabaseProfiles.filter((otherProfile) =>
 
+    likedProfileIds.includes(otherProfile.id)
+
+  );
 
   const handleInterestFilterToggle = (interest) => {
     setSelectedInterestFilters((prevFilters) =>
@@ -1948,22 +1952,67 @@ if (reverseLikes.length > 0) {
     setEgenTetoFilter('');
   };
 
-  const goToPreviousProfile = () => {
-    setBrowseProfileIndex((prevIndex) => Math.max(prevIndex - 1, 0));
-  };
+    const goToPreviousProfile = () => {
+      if (visibleProfiles.length <= 1) {
+        return;
+      }
+    
+      setBrowseProfileIndex((prevIndex) =>
+        prevIndex === 0 ? visibleProfiles.length - 1 : prevIndex - 1
+      );
+    };
   
-  const goToNextProfile = () => {
-    if (visibleProfiles.length === 0) {
-      setBrowseProfileIndex(0);
-      return;
+    const goToNextProfile = () => {
+      if (visibleProfiles.length <= 1) {
+        return;
+      }
+    
+      setBrowseProfileIndex((prevIndex) =>
+        prevIndex === visibleProfiles.length - 1 ? 0 : prevIndex + 1
+      );
+    };
+
+
+
+
+    if (isProfileSaved && currentPage === 'sentLikes') {
+      return (
+        <div className="app">
+          {toastElement}
+    
+          <h1>보낸 관심 관리</h1>
+          <p>내가 관심을 보낸 사람들을 확인하고 취소할 수 있어요.</p>
+    
+          {sentLikeProfiles.length === 0 ? (
+            <div className="empty-profile-box">
+              <p>아직 보낸 관심이 없어요.</p>
+              <p>둘러보기에서 마음에 드는 사람에게 관심을 보내보세요.</p>
+            </div>
+          ) : (
+            <div className="sent-likes-list">
+              {sentLikeProfiles.map((otherProfile) => (
+                <ProfileCard
+                  key={otherProfile.id}
+                  otherProfile={otherProfile}
+                  mode="browse"
+                  isLiked={true}
+                  isProcessing={processingProfileId === otherProfile.id}
+                  onToggleLike={handleToggleLike}
+                />
+              ))}
+            </div>
+          )}
+    
+          <button
+            type="button"
+            className="sub-button"
+            onClick={() => setCurrentPage('browse')}
+          >
+            둘러보기로 돌아가기
+          </button>
+        </div>
+      );
     }
-  
-    setBrowseProfileIndex((prevIndex) =>
-      Math.min(prevIndex + 1, visibleProfiles.length - 1)
-    );
-  };
-
-
 
 
   if (isProfileSaved && currentPage === 'browse') {
@@ -1973,6 +2022,20 @@ if (reverseLikes.length > 0) {
         <h1>프로필 둘러보기</h1>
         <p>마음에 드는 사람에게 관심을 보내보세요.</p>
         <p className="like-count">남은 관심: {remainingLikes}회</p>
+        {sentLikeProfiles.length > 0 && (
+          <button
+          type="button"
+          className="sent-likes-shortcut-button"
+          onClick={(event) => {
+            event.currentTarget.blur();
+            setCurrentPage('sentLikes');
+          }}
+        >
+          보낸 관심 {sentLikeProfiles.length}명 관리하기
+        </button>
+        )}
+                
+        
         <div className="browse-control-row">
           <div className="search-box">
             <input
@@ -2163,7 +2226,7 @@ if (reverseLikes.length > 0) {
                   type="button"
                   className="card-side-button card-side-button-prev"
                   onClick={goToPreviousProfile}
-                  disabled={!canGoPreviousProfile}
+                  disabled={visibleProfiles.length <= 1}
                   aria-label="이전 프로필"
                 />
 
@@ -2182,7 +2245,7 @@ if (reverseLikes.length > 0) {
                   type="button"
                   className="card-side-button card-side-button-next"
                   onClick={goToNextProfile}
-                  disabled={!canGoNextProfile}
+                  disabled={visibleProfiles.length <= 1}
                   aria-label="다음 프로필"
                 />
             </div>

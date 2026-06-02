@@ -58,54 +58,86 @@ function ProfileCard({
     !Number.isNaN(Number(otherProfile.egenTetoScore));
   
   
-  
+    const getEgenTetoText = () => {
+      if (!hasEgenTetoScore) {
+        return '';
+      }
+    
+      const tetoScore = Number(otherProfile.egenTetoScore);
+      const egenScore = 100 - tetoScore;
+    
+      return `에겐 ${egenScore}% · 테토 ${tetoScore}%`;
+    };
+
+
+
+    const profileMetaItems = [
+      otherProfile.gender,
+      otherProfile.grade,
+      otherProfile.age ? `${otherProfile.age}세` : '',
+      otherProfile.department,
+      otherProfile.mbti,
+    ].filter(Boolean);
+
+
+
+
   
   return (
     <div className="profile-card">
-      <h2>{otherProfile.nickname}</h2>
+            <div className="profile-card-header">
+        <div>
+          <h2>{otherProfile.nickname}</h2>
 
-      <p className="basic-info">
-        {otherProfile.gender}
-        {otherProfile.grade && ` · ${otherProfile.grade}`}
-        {otherProfile.age && ` · ${otherProfile.age}세`}
-        {otherProfile.department && ` · ${otherProfile.department}`}
-        {otherProfile.mbti && ` · ${otherProfile.mbti}`}
-      </p>
-
-      
-      {otherProfile.faceType && (
-        <p><strong>얼굴상:</strong> {otherProfile.faceType}</p>
-      )}
-
-
-      {otherProfile.egenTetoScore !== '' &&
-        otherProfile.egenTetoScore !== null &&
-        otherProfile.egenTetoScore !== undefined && (
-          <p>
-            <strong>에겐-테토:</strong>{' '}
-            에겐 {100 - Number(otherProfile.egenTetoScore)}% · 테토 {Number(otherProfile.egenTetoScore)}%
-          </p>
-        )}
-      
-      <div className="profile-interest-section">
-  <strong>관심사:</strong>
-
-        <div className="profile-interest-list">
-          {profileInterestList.map((interest) => (
-            <span key={interest} className="profile-interest-chip">
-              {interestEmojiMap[interest] && (
-                <span className="interest-emoji">{interestEmojiMap[interest]}</span>
-              )}
-              <span>{interest}</span>
-            </span>
-          ))}
+          {profileMetaItems.length > 0 && (
+            <p className="profile-meta">
+              {profileMetaItems.join(' · ')}
+            </p>
+          )}
         </div>
       </div>
-      <p><strong>한줄 소개:</strong> {otherProfile.introduction}</p>
 
-      {otherProfile.idealType && (
-        <p><strong>이상형:</strong> {otherProfile.idealType}</p>
+      {(otherProfile.faceType || hasEgenTetoScore) && (
+        <div className="profile-feature-row">
+          {otherProfile.faceType && (
+            <span className="profile-feature-chip">
+              {otherProfile.faceType}
+            </span>
+          )}
+
+          {hasEgenTetoScore && (
+            <span className="profile-feature-chip">
+              {getEgenTetoText()}
+            </span>
+          )}
+        </div>
       )}
+      
+      <div className="profile-section">
+          <p className="profile-section-title">관심사</p>
+
+          <div className="profile-interest-list">
+            {profileInterestList.map((interest) => (
+              <span key={interest} className="profile-interest-chip">
+                {interestEmojiMap[interest] && (
+                  <span className="interest-emoji">{interestEmojiMap[interest]}</span>
+                )}
+                <span>{interest}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="profile-section">
+          <p className="profile-section-title">한줄 소개</p>
+          <p className="profile-section-text">{otherProfile.introduction}</p>
+        </div>
+
+        {otherProfile.idealType && (
+          <div className="profile-section">
+            <p className="profile-section-title">이상형</p>
+            <p className="profile-section-text">{otherProfile.idealType}</p>
+          </div>
+        )}
 
 
 

@@ -27,23 +27,50 @@ function ProfileCard({
   onAcceptLike,
   onRejectLike,
 }) {
+  
+  
+  
+  const hasEgenTetoScore =
+    otherProfile.egenTetoScore !== '' &&
+    otherProfile.egenTetoScore !== null &&
+    otherProfile.egenTetoScore !== undefined &&
+    !Number.isNaN(Number(otherProfile.egenTetoScore));
+  
+  
+  
+  
   return (
     <div className="profile-card">
       <h2>{otherProfile.nickname}</h2>
 
       <p className="basic-info">
-        {otherProfile.gender} · {otherProfile.grade}
+        {otherProfile.gender}
+        {otherProfile.grade && ` · ${otherProfile.grade}`}
         {otherProfile.age && ` · ${otherProfile.age}세`}
         {otherProfile.department && ` · ${otherProfile.department}`}
         {otherProfile.mbti && ` · ${otherProfile.mbti}`}
       </p>
 
+      
+      {otherProfile.egenTetoScore !== '' &&
+        otherProfile.egenTetoScore !== null &&
+        otherProfile.egenTetoScore !== undefined && (
+          <p>
+            <strong>에겐-테토:</strong>{' '}
+            에겐 {100 - Number(otherProfile.egenTetoScore)}% · 테토 {Number(otherProfile.egenTetoScore)}%
+          </p>
+        )}
+      
       <p><strong>관심사:</strong> {otherProfile.interests}</p>
-      <p><strong>자기소개:</strong> {otherProfile.introduction}</p>
+      <p><strong>한줄 소개:</strong> {otherProfile.introduction}</p>
 
       {otherProfile.idealType && (
         <p><strong>이상형:</strong> {otherProfile.idealType}</p>
       )}
+
+
+
+
 
       {mode === 'browse' && (
         <button

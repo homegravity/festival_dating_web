@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 function ProfileForm({
   profile,
   profileFormMode,
@@ -5,6 +7,147 @@ function ProfileForm({
   onProfileChange,
   onProfileSubmit,
 }) {
+
+
+  const mbtiTypes = [
+    'ISTJ', 'ISFJ', 'INFJ', 'INTJ',
+    'ISTP', 'ISFP', 'INFP', 'INTP',
+    'ESTP', 'ESFP', 'ENFP', 'ENTP',
+    'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ',
+  ];
+  
+  const defaultInterestTags = [
+    '영화',
+    '음악',
+    '게임',
+    '운동',
+    '카페',
+    '맛집',
+    '여행',
+    '산책',
+    '애니',
+    '요리',
+    '공연/축제',
+    '반려동물',
+    '그림',
+    '춤',
+    '노래',
+    '패션',
+  ];
+  
+  const [customInterest, setCustomInterest] = useState('');
+
+  const selectedInterests = profile.interests
+  ? profile.interests.split(',').map((item) => item.trim()).filter(Boolean)
+  : [];
+
+  const updateInterests = (nextInterests) => {
+    onProfileChange({
+      target: {
+        name: 'interests',
+        value: nextInterests.join(', '),
+      },
+    });
+  };
+  
+
+
+  const getEgenTetoLabel = (score) => {
+    if (score === '' || score === null || score === undefined) {
+      return '';
+    }
+  
+    const tetoPercent = Number(score);
+    const egenPercent = 100 - tetoPercent;
+  
+    return `에겐 ${egenPercent}% · 테토 ${tetoPercent}%`;
+  };
+  
+  const handleEgenTetoChange = (event) => {
+    onProfileChange({
+      target: {
+        name: 'egenTetoScore',
+        value: event.target.value,
+      },
+    });
+  };
+  
+  const clearEgenTeto = () => {
+    onProfileChange({
+      target: {
+        name: 'egenTetoScore',
+        value: '',
+      },
+    });
+  };
+
+
+
+
+
+  const getContactPlaceholder = () => {
+    if (profile.contactType === 'instagram') {
+      return '예: @mango_123';
+    }
+  
+    if (profile.contactType === 'kakao') {
+      return '예: 카카오톡 ID';
+    }
+  
+    if (profile.contactType === 'phone') {
+      return '예: 010-0000-0000';
+    }
+  
+    return '연락 가능한 수단을 입력해주세요';
+  };
+
+
+
+
+  const handleInterestToggle = (interest) => {
+    const isSelected = selectedInterests.includes(interest);
+  
+    const nextInterests = isSelected
+      ? selectedInterests.filter((item) => item !== interest)
+      : [...selectedInterests, interest];
+  
+    updateInterests(nextInterests);
+  };
+
+
+  const handleAddCustomInterest = () => {
+    const trimmedInterest = customInterest.trim();
+  
+    if (!trimmedInterest) {
+      return;
+    }
+  
+    if (selectedInterests.includes(trimmedInterest)) {
+      setCustomInterest('');
+      return;
+    }
+  
+    updateInterests([...selectedInterests, trimmedInterest]);
+    setCustomInterest('');
+  };
+
+
+
+
+
+  const handleMbtiSelect = (mbti) => {
+    const nextValue = profile.mbti === mbti ? '' : mbti;
+  
+    onProfileChange({
+      target: {
+        name: 'mbti',
+        value: nextValue,
+      },
+    });
+  };
+
+
+
   
   return (
     <form className="card" onSubmit={onProfileSubmit}>
@@ -56,19 +199,23 @@ function ProfileForm({
 
       <label className="field-label">
         <span>학년</span>
-        <span className="field-badge required">필수</span>
+        <span className="field-badge optional">선택</span>
       </label>
+            
+      
+      
       <select
         name="grade"
         value={profile.grade}
         onChange={onProfileChange}
       >
-        <option value="">선택해주세요</option>
+        <option value="">선택하지 않음</option>
         <option value="1학년">1학년</option>
         <option value="2학년">2학년</option>
         <option value="3학년">3학년</option>
         <option value="4학년">4학년</option>
         <option value="졸업생">졸업생</option>
+        
       </select>
 
 
@@ -107,77 +254,182 @@ function ProfileForm({
           <span>MBTI</span>
           <span className="field-badge optional">선택</span>
         </label>
-      <input
-        type="text"
-        name="mbti"
-        placeholder="선택 입력 예: ENFP"
-        value={profile.mbti}
-        onChange={onProfileChange}
-      />
+
+        <div className="mbti-grid">
+          {mbtiTypes.map((mbti) => (
+            <button
+              key={mbti}
+              type="button"
+              className={`mbti-button ${profile.mbti === mbti ? 'selected' : ''}`}
+              onClick={() => handleMbtiSelect(mbti)}
+            >
+              {mbti}
+            </button>
+          ))}
+        </div>
+
+
+
+                  <label className="field-label">
+            <span>에겐-테토 성향</span>
+            <span className="field-badge optional">선택</span>
+          </label>
+
+          <div className="egen-teto-box">
+            <div className="egen-teto-label-row">
+              <span>에겐</span>
+              <span>테토</span>
+            </div>
+
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={profile.egenTetoScore === '' ? 50 : profile.egenTetoScore}
+              onChange={handleEgenTetoChange}
+              className="egen-teto-slider"
+            />
+
+            {profile.egenTetoScore !== '' && (
+              <p className="egen-teto-result">
+                {getEgenTetoLabel(profile.egenTetoScore)}
+              </p>
+            )}
+            
+            
+            {profile.egenTetoScore !== '' && (
+              <button
+                type="button"
+                className="clear-small-button"
+                onClick={clearEgenTeto}
+              >
+                선택 해제
+              </button>
+            )}
+          </div>
+
+
+
+
+
+
+
+                <label className="field-label">
+          <span>관심사</span>
+          <span className="field-badge required">필수</span>
+        </label>
+
+        <div className="interest-tag-grid">
+          {defaultInterestTags.map((interest) => (
+            <button
+              key={interest}
+              type="button"
+              className={`interest-tag-button ${
+                selectedInterests.includes(interest) ? 'selected' : ''
+              }`}
+              onClick={() => handleInterestToggle(interest)}
+            >
+              {interest}
+            </button>
+          ))}
+        </div>
+
+        <div className="custom-interest-row">
+          <input
+            type="text"
+            placeholder="직접 추가 예: 드라이브"
+            value={customInterest}
+            onChange={(event) => setCustomInterest(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                handleAddCustomInterest();
+              }
+            }}
+          />
+
+          <button
+            type="button"
+            className="add-interest-button"
+            onClick={handleAddCustomInterest}
+          >
+            추가
+          </button>
+        </div>
+
+        {selectedInterests.length > 0 && (
+          <div className="selected-interest-box">
+            <p>선택한 관심사</p>
+
+            <div className="selected-interest-list">
+              {selectedInterests.map((interest) => (
+                <button
+                  key={interest}
+                  type="button"
+                  className="selected-interest-chip"
+                  onClick={() => handleInterestToggle(interest)}
+                >
+                  {interest} ×
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
       <label className="field-label">
-        <span>관심사</span>
-        <span className="field-badge required">필수</span>
-      </label>
-      <input
-        type="text"
-        name="interests"
-        placeholder="예: 노래, 영화, 산책"
-        value={profile.interests}
-        onChange={onProfileChange}
-      />
-
-      <label className="field-label">
-        <span>자기소개</span>
+        <span>한줄 소개</span>
         <span className="field-badge required">필수</span>
       </label>
       <textarea
         name="introduction"
-        placeholder="간단하게 자신을 소개해주세요."
+        placeholder="예: 카페 가는 거 좋아하고 편하게 대화하는 걸 좋아해요."
         value={profile.introduction}
         onChange={onProfileChange}
       />
 
-      <label className="field-label">
-        <span>이상형</span>
-        <span className="field-badge optional">선택</span>
-      </label>
-      <textarea
-        name="idealType"
-        placeholder="선택 입력"
-        value={profile.idealType}
-        onChange={onProfileChange}
-      />
-
-      <label className="field-label">
-        <span>연락수단 종류</span>
-        <span className="field-badge required">필수</span>
-      </label>
-
-      <select
-        name="contactType"
-        value={profile.contactType}
-        onChange={onProfileChange}
-      >
-        <option value="instagram">인스타 ID</option>
-        <option value="kakao">카카오톡 ID</option>
-        <option value="phone">전화번호</option>
-        <option value="etc">기타</option>
-      </select>
+        <label className="field-label">
+          <span>이상형</span>
+          <span className="field-badge optional">선택</span>
+        </label>
+        <textarea
+          name="idealType"
+          placeholder="예: 대화가 잘 통하고 편하게 웃을 수 있는 사람"
+          value={profile.idealType}
+          onChange={onProfileChange}
+        />
 
       <label className="field-label">
         <span>연락수단</span>
         <span className="field-badge required">필수</span>
       </label>
-      
-      
-      <input
-        type="text"
-        name="contactValue"
-        placeholder="예: @mango_2026"
-        value={profile.contactValue}
-        onChange={onProfileChange}
-      />
+
+      <div className="contact-input-group">
+        <select
+          name="contactType"
+          value={profile.contactType}
+          onChange={onProfileChange}
+          className="contact-type-select"
+        >
+          <option value="instagram">인스타 ID</option>
+          <option value="kakao">카카오톡 ID</option>
+          <option value="phone">전화번호</option>
+          <option value="etc">기타</option>
+        </select>
+
+        <input
+          type="text"
+          name="contactValue"
+          placeholder={getContactPlaceholder()}
+          value={profile.contactValue}
+          onChange={onProfileChange}
+          className="contact-value-input"
+        />
+      </div>
+
+      <p className="contact-guide">
+        연락수단은 서로 매칭된 사람에게만 공개돼요.
+      </p>
 
         <button type="submit" disabled={isSubmittingProfile}>
           {isSubmittingProfile

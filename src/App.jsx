@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { sampleProfiles } from './data/sampleProfiles';
 import BottomNav from './components/BottomNav';
@@ -28,6 +28,7 @@ function App() {
       interests: '',
       introduction: '',
       idealType: '',
+      egenTetoScore: '',
       contactType: 'instagram',
       contactValue: '',
     }
@@ -50,6 +51,7 @@ function App() {
   const [isProfileVisible, setIsProfileVisible] = useState(savedData.isProfileVisible ?? true);
   const [supabaseProfileId, setSupabaseProfileId] = useState(savedData.supabaseProfileId || null);
   const [participantCode, setParticipantCode] = useState(savedData.participantCode || '');
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [startMode, setStartMode] = useState('home');
   const [lookupCode, setLookupCode] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
@@ -61,6 +63,8 @@ function App() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('info');
   const [toastQueue, setToastQueue] = useState([]);
+  const isCheckingNotificationsRef = useRef(false);
+  const recentToastKeysRef = useRef(new Set());
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
 
@@ -102,6 +106,12 @@ function App() {
   useEffect(() => {
     loadSupabaseProfiles();
   }, []);
+
+
+  useEffect(() => {
+    ensureAnonymousUser();
+  }, []);
+
 
 
   useEffect(() => {
@@ -301,7 +311,7 @@ function App() {
       await loadSupabaseProfiles();
     };
     
-    
+
     const refreshOnReturn = () => {
       if (document.visibilityState !== 'visible') {
         return;
@@ -354,15 +364,66 @@ function App() {
   };
   
 
-  const showToast = (message, type = 'info') => {
-    setToastQueue((prevQueue) => [
-      ...prevQueue,
-      {
-        id: Date.now() + Math.random(),
-        message,
-        type,
-      },
-    ]);
+  const showToast = (message, type = 'info', key = '') => {
+    const toastKey = key || `${type}:${message}`;
+  
+    if (recentToastKeysRef.current.has(toastKey)) {
+      return;
+    }
+  
+    recentToastKeysRef.current.add(toastKey);
+  
+    setToastQueue((prevQueue) => {
+      const alreadyQueued = prevQueue.some(
+        (toast) => toast.key === toastKey
+      );
+  
+      if (alreadyQueued) {
+        return prevQueue;
+      }
+  
+      return [
+        ...prevQueue,
+        {
+          id: Date.now() + Math.random(),
+          key: toastKey,
+          message,
+          type,
+        },
+      ];
+    });
+  
+    setTimeout(() => {
+      recentToastKeysRef.current.delete(toastKey);
+    }, 8000);
+  };
+
+
+  const ensureAnonymousUser = async () => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  
+    if (sessionError) {
+      console.error('세션 확인 오류:', sessionError);
+      return null;
+    }
+  
+    if (sessionData.session?.user) {
+      console.log('기존 사용자 ID:', sessionData.session.user.id);
+      setCurrentUserId(sessionData.session.user.id);
+      return sessionData.session.user;
+    }
+  
+    const { data, error } = await supabase.auth.signInAnonymously();
+  
+    if (error) {
+      console.error('익명 로그인 오류:', error);
+      alert(`익명 로그인 오류: ${error.message}`);
+      return null;
+    }
+  
+    console.log('익명 사용자 ID:', data.user.id);
+    setCurrentUserId(data.user.id);
+    return data.user;
   };
 
 
@@ -402,7 +463,22 @@ function App() {
   
     const { data: foundProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('*')
+      .select(`
+        id,
+        nickname,
+        gender,
+        target_gender,
+        grade,
+        age,
+        department,
+        mbti,
+        interests,
+        introduction,
+        ideal_type,
+        egen_teto_score,
+        is_visible,
+        participant_code
+      `)
       .eq('participant_code', code)
       .maybeSingle();
   
@@ -419,13 +495,41 @@ function App() {
       return;
     }
   
+    const user = await ensureAnonymousUser();
+
+    if (!user) {
+      setIsLoadingProfile(false);
+      return;
+    }
+
+    const { error: ownerUpdateError } = await supabase
+      .from('profiles')
+      .update({
+        owner_id: user.id,
+      })
+      .eq('id', foundProfile.id);
+
+    if (ownerUpdateError) {
+      console.error('프로필 소유자 연결 오류:', ownerUpdateError);
+      alert(`프로필 소유자 연결 오류: ${ownerUpdateError.message}`);
+      setIsLoadingProfile(false);
+      return;
+    }
+
+
+
+
+
+
+
     const { data: foundContact, error: contactError } = await supabase
       .from('contacts')
       .select('contact_type, contact_value')
       .eq('profile_id', foundProfile.id)
       .maybeSingle();
   
-    if (contactError) {
+    
+      if (contactError) {
       console.error('연락수단 불러오기 오류:', contactError);
       alert(`연락수단 불러오기 오류: ${contactError.message}`);
       setIsLoadingProfile(false);
@@ -436,13 +540,19 @@ function App() {
       nickname: foundProfile.nickname,
       gender: foundProfile.gender,
       targetGender: foundProfile.target_gender,
-      grade: foundProfile.grade,
+      grade: foundProfile.grade || '',
       age: foundProfile.age ? String(foundProfile.age) : '',
       department: foundProfile.department || '',
       mbti: foundProfile.mbti || '',
       interests: foundProfile.interests,
       introduction: foundProfile.introduction,
       idealType: foundProfile.ideal_type || '',
+      egenTetoScore:
+        foundProfile.egen_teto_score !== null && foundProfile.egen_teto_score !== undefined
+          ? String(foundProfile.egen_teto_score)
+          : '',
+      
+      
       contactType: foundContact?.contact_type || 'instagram',
       contactValue: foundContact?.contact_value || '',
     });
@@ -483,7 +593,21 @@ function App() {
   const loadSupabaseProfiles = async () => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select(`
+        id,
+        nickname,
+        gender,
+        target_gender,
+        grade,
+        age,
+        department,
+        mbti,
+        interests,
+        introduction,
+        ideal_type,
+        egen_teto_score,
+        is_visible
+      `)
       .order('created_at', { ascending: false });
   
     if (error) {
@@ -497,15 +621,20 @@ function App() {
       nickname: item.nickname,
       gender: item.gender,
       targetGender: item.target_gender,
-      grade: item.grade,
+      grade: item.grade || '',
       age: item.age ? String(item.age) : '',
       department: item.department,
       mbti: item.mbti,
       interests: item.interests,
       introduction: item.introduction,
       idealType: item.ideal_type,
+      egenTetoScore:
+        item.egen_teto_score !== null && item.egen_teto_score !== undefined
+          ? String(item.egen_teto_score)
+          : '',
+      
       isVisible: item.is_visible,
-      participantCode: item.participant_code,
+      
     }));
   
     setSupabaseProfiles(formattedProfiles);
@@ -701,11 +830,14 @@ function App() {
 
 
   const checkUnseenNotifications = async (profileId) => {
-    if (!profileId) {
+    if (!profileId || isCheckingNotificationsRef.current) {
       return;
     }
   
-    const queuedToasts = [];
+    isCheckingNotificationsRef.current = true;
+  
+    try {
+      const queuedToasts = [];
   
     const { data: rejectedLikes, error: rejectedError } = await supabase
       .from('likes')
@@ -824,6 +956,9 @@ function App() {
           .in('id', receiverMatchIds);
       }
     }
+  } finally {
+    isCheckingNotificationsRef.current = false;
+  }
   };
 
 
@@ -940,6 +1075,48 @@ function App() {
 
 
   const saveOrUpdateContactToSupabase = async (profileId) => {
+    
+    
+    
+      if (!profileId) {
+        alert('프로필 정보가 없어 연락수단을 저장할 수 없어요.');
+        return false;
+      }
+    
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', profileId)
+        .maybeSingle();
+    
+      if (profileCheckError) {
+        console.error('프로필 확인 오류:', profileCheckError);
+        alert(`프로필 확인 오류: ${profileCheckError.message}`);
+        return false;
+      }
+    
+      if (!existingProfile) {
+        alert('현재 프로필 정보를 찾을 수 없어요. 참여 코드로 다시 불러오거나 새 프로필을 만들어주세요.');
+    
+        localStorage.removeItem('festivalDatingData');
+    
+        setSupabaseProfileId(null);
+        setParticipantCode('');
+        setIsEntered(false);
+        setIsProfileSaved(false);
+        setCurrentPage('profileComplete');
+        setStartMode('home');
+    
+        return false;
+      }
+    
+      // 여기 아래는 기존 연락수단 저장/수정 코드 그대로
+    
+    
+    
+    
+    
+    
     const { error } = await supabase
       .from('contacts')
       .upsert(
@@ -1006,7 +1183,6 @@ function App() {
       !profile.nickname ||
       !profile.gender ||
       !profile.targetGender ||
-      !profile.grade ||
       !profile.interests ||
       !profile.introduction ||
       !profile.contactValue
@@ -1022,21 +1198,33 @@ function App() {
 
 
     if (!supabaseProfileId) {
+      const user = await ensureAnonymousUser();
+
+        if (!user) {
+          setIsSubmittingProfile(false);
+          return;
+        }
+      
+      
       
       const newParticipantCode = participantCode || generateParticipantCode();
+      
       const { data, error } = await supabase
         .from('profiles')
         .insert({
+          owner_id: user.id,
           nickname: profile.nickname,
           gender: profile.gender,
           target_gender: profile.targetGender,
-          grade: profile.grade,
+          grade: profile.grade || null,
           age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
           mbti: profile.mbti || null,
           interests: profile.interests,
           introduction: profile.introduction,
           ideal_type: profile.idealType || null,
+          egen_teto_score:
+            profile.egenTetoScore !== '' ? Number(profile.egenTetoScore) : null,
           is_visible: isProfileVisible,
           participant_code: newParticipantCode,
         })
@@ -1072,13 +1260,15 @@ function App() {
           nickname: profile.nickname,
           gender: profile.gender,
           target_gender: profile.targetGender,
-          grade: profile.grade,
+          grade: profile.grade || null,
           age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
           mbti: profile.mbti || null,
           interests: profile.interests,
           introduction: profile.introduction,
           ideal_type: profile.idealType || null,
+          egen_teto_score:
+            profile.egenTetoScore !== '' ? Number(profile.egenTetoScore) : null,
           is_visible: isProfileVisible,
         })
         .eq('id', supabaseProfileId);
@@ -1517,6 +1707,7 @@ if (reverseLikes.length > 0) {
       interests: '',
       introduction: '',
       idealType: '',
+      egenTetoScore: '',
       contactType: 'instagram',
       contactValue: '',
     });
@@ -1766,7 +1957,9 @@ if (reverseLikes.length > 0) {
           <div className="profile-summary">
             <p><strong>성별:</strong> {profile.gender}</p>
             
-            <p><strong>학년:</strong> {profile.grade}</p>
+            {profile.grade && (
+              <p><strong>학년:</strong> {profile.grade}</p>
+            )}
             {profile.age && (
               <p><strong>나이:</strong> {profile.age}세</p>
             )}
@@ -1774,8 +1967,22 @@ if (reverseLikes.length > 0) {
             
             {profile.department && <p><strong>학과:</strong> {profile.department}</p>}
             {profile.mbti && <p><strong>MBTI:</strong> {profile.mbti}</p>}
+            
+            
+            {profile.egenTetoScore !== '' &&
+                profile.egenTetoScore !== null &&
+                profile.egenTetoScore !== undefined &&
+                !Number.isNaN(Number(profile.egenTetoScore)) && (
+                  <p>
+                    <strong>에겐-테토:</strong>{' '}
+                    에겐 {100 - Number(profile.egenTetoScore)}% · 테토 {Number(profile.egenTetoScore)}%
+                  </p>
+                )}
+                                      
+            
+            
             <p><strong>관심사:</strong> {profile.interests}</p>
-            <p><strong>자기소개:</strong> {profile.introduction}</p>
+            <p><strong>한줄 소개:</strong> {profile.introduction}</p>
             {profile.idealType && <p><strong>이상형:</strong> {profile.idealType}</p>}
           </div>
 

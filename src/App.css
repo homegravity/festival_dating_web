@@ -496,3 +496,180 @@ label {
 .toast-message.success {
   background: #1f9d55;
 }
+
+
+
+.mbti-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mbti-button {
+  padding: 10px 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #333;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.mbti-button.selected {
+  border-color: #ff3f78;
+  background: #ffe3ec;
+  color: #ff3f78;
+}
+
+
+.interest-tag-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.interest-tag-button {
+  width: auto;
+  padding: 9px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.interest-tag-button.selected {
+  border-color: #ff3f78;
+  background: #ffe3ec;
+  color: #ff3f78;
+}
+
+.custom-interest-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.custom-interest-row input {
+  flex: 1;
+  margin-top: 0;
+}
+
+.add-interest-button {
+  width: auto;
+  min-width: 64px;
+  padding: 0 14px;
+  margin-top: 0;
+  font-size: 13px;
+}
+
+.selected-interest-box {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #fafafa;
+  border: 1px solid #eeeeee;
+  text-align: left;
+}
+
+.selected-interest-box p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+}
+
+.selected-interest-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selected-interest-chip {
+  width: auto;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #ff3f78;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.contact-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.contact-type-select {
+  width: 120px;
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+.contact-value-input {
+  flex: 1;
+  margin-top: 0;
+}
+
+.contact-guide {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #777;
+  text-align: left;
+}
+
+@media (max-width: 420px) {
+  .contact-input-group {
+    flex-direction: column;
+  }
+
+  .contact-type-select {
+    width: 100%;
+  }
+}
+
+.egen-teto-box {
+  margin-top: 8px;
+  padding: 14px;
+  border: 1px solid #eeeeee;
+  border-radius: 16px;
+  background: #fafafa;
+}
+
+.egen-teto-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+}
+
+.egen-teto-slider {
+  width: 100%;
+  margin: 0;
+  accent-color: #ff3f78;
+}
+
+.egen-teto-result {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+}
+
+.clear-small-button {
+  margin-top: 10px;
+  background: #f1f1f1;
+  color: #666;
+  font-size: 13px;
+}

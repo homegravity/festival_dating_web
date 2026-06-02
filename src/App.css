@@ -998,11 +998,7 @@ label {
   font-weight: 700;
 }
 
-.browse-navigation {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
+
 
 .browse-navigation button {
   flex: 1;
@@ -1116,4 +1112,156 @@ label {
   border: 1px solid #eeeeee;
   font-size: 12px;
   font-weight: 800;
+}
+
+
+.browse-card-layout {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.browse-card-center {
+  min-width: 0;
+}
+
+.browse-card-center .card {
+  width: 100%;
+  margin: 0;
+}
+
+.browse-card-layout {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  align-items: start;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.browse-card-center {
+  min-width: 0;
+}
+
+.browse-card-center .card {
+  width: 100%;
+  margin: 0;
+  min-height: 560px;
+}
+
+.card-side-button {
+  width: 34px;
+  height: 34px;
+  margin-top: 230px;
+  padding: 0;
+
+  border: 1px solid #eeeeee;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #555;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.card-side-button::before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+}
+
+.card-side-button-prev::before {
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 8px solid #555;
+  margin-left: -2px;
+}
+
+.card-side-button-next::before {
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid #555;
+  margin-right: -2px;
+}
+
+.card-side-button:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 420px) {
+  .browse-card-layout {
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+    gap: 6px;
+  }
+
+  .card-side-button {
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
+  }
+}
+
+
+@media (max-width: 420px) {
+  .browse-card-layout {
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+    gap: 6px;
+  }
+
+  .browse-card-center .card {
+    min-height: 540px;
+  }
+
+  .card-side-button {
+    width: 32px;
+    height: 32px;
+    margin-top: 220px;
+  }
+
+  .card-side-button-prev::before {
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-right-width: 7px;
+  }
+
+  .card-side-button-next::before {
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-left-width: 7px;
+  }
+}
+
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.browse-profile-card {
+  height: 560px;
+  overflow: hidden;
+}
+
+.profile-card-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.profile-card-actions {
+  flex-shrink: 0;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f1f1;
+}
+
+.profile-card-actions button {
+  margin-top: 0;
 }

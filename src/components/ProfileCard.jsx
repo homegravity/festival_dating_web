@@ -84,7 +84,11 @@ function ProfileCard({
 
   
   return (
-    <div className="profile-card">
+    
+      <div className={`profile-card ${mode === 'browse' ? 'browse-profile-card' : ''}`}>
+            
+            
+        <div className="profile-card-top">
             <div className="profile-card-header">
         <div>
           <h2>{otherProfile.nickname}</h2>
@@ -112,50 +116,56 @@ function ProfileCard({
           )}
         </div>
       )}
+      </div>
       
-      <div className="profile-section">
-          <p className="profile-section-title">관심사</p>
+      
+      <div className="profile-card-scroll">
+  <div className="profile-section">
+    <p className="profile-section-title">관심사</p>
 
-          <div className="profile-interest-list">
-            {profileInterestList.map((interest) => (
-              <span key={interest} className="profile-interest-chip">
-                {interestEmojiMap[interest] && (
-                  <span className="interest-emoji">{interestEmojiMap[interest]}</span>
-                )}
-                <span>{interest}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="profile-section">
-          <p className="profile-section-title">한줄 소개</p>
-          <p className="profile-section-text">{otherProfile.introduction}</p>
-        </div>
+    <div className="profile-interest-list">
+      {profileInterestList.map((interest) => (
+        <span key={interest} className="profile-interest-chip">
+          {interestEmojiMap[interest] && (
+            <span className="interest-emoji">{interestEmojiMap[interest]}</span>
+          )}
+          <span>{interest}</span>
+        </span>
+      ))}
+    </div>
+  </div>
 
-        {otherProfile.idealType && (
-          <div className="profile-section">
-            <p className="profile-section-title">이상형</p>
-            <p className="profile-section-text">{otherProfile.idealType}</p>
-          </div>
+  <div className="profile-section">
+    <p className="profile-section-title">한줄 소개</p>
+    <p className="profile-section-text">{otherProfile.introduction}</p>
+  </div>
+
+  {otherProfile.idealType && (
+    <div className="profile-section">
+      <p className="profile-section-title">이런 사람이 좋아요</p>
+      <p className="profile-section-text">{otherProfile.idealType}</p>
+    </div>
+  )}
+</div>
+
+
+
+
+
+      <div className="profile-card-actions">
+        {mode === 'browse' && (
+          <button
+            className={isLiked ? 'cancel-button' : ''}
+            onClick={() => onToggleLike(otherProfile.id)}
+            disabled={isProcessing}
+          >
+            {isProcessing
+              ? '처리 중...'
+              : isLiked
+                ? '관심 취소'
+                : '관심 보내기'}
+          </button>
         )}
-
-
-
-
-
-      {mode === 'browse' && (
-        <button
-          className={isLiked ? 'cancel-button' : ''}
-          onClick={() => onToggleLike(otherProfile.id)}
-          disabled={isProcessing}
-        >
-          {isProcessing
-            ? '처리 중...'
-            : isLiked
-              ? '관심 취소'
-              : '관심 보내기'}
-        </button>
-      )}
 
         {mode === 'received' && (
           <div className="button-row">
@@ -194,7 +204,8 @@ function ProfileCard({
             )}
           </div>
         )}
-    </div>
+      </div>
+          </div>
   );
 }
 

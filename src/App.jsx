@@ -2158,34 +2158,34 @@ if (reverseLikes.length > 0) {
             </span>
           </div>
 
-          <ProfileCard
-            key={currentBrowseProfile.id}
-            otherProfile={currentBrowseProfile}
-            mode="browse"
-            isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
-            isProcessing={processingProfileId === currentBrowseProfile.id}
-            onToggleLike={handleToggleLike}
-          />
+          <div className="browse-card-layout">
+                <button
+                  type="button"
+                  className="card-side-button card-side-button-prev"
+                  onClick={goToPreviousProfile}
+                  disabled={!canGoPreviousProfile}
+                  aria-label="이전 프로필"
+                />
 
-          <div className="browse-navigation">
-            <button
-              type="button"
-              className="sub-button"
-              onClick={goToPreviousProfile}
-              disabled={!canGoPreviousProfile}
-            >
-              ← 이전
-            </button>
+              <div className="browse-card-center">
+                <ProfileCard
+                  key={currentBrowseProfile.id}
+                  otherProfile={currentBrowseProfile}
+                  mode="browse"
+                  isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
+                  isProcessing={processingProfileId === currentBrowseProfile.id}
+                  onToggleLike={handleToggleLike}
+                />
+              </div>
 
-            <button
-              type="button"
-              className="sub-button"
-              onClick={goToNextProfile}
-              disabled={!canGoNextProfile}
-            >
-              다음 →
-            </button>
-          </div>
+              <button
+                  type="button"
+                  className="card-side-button card-side-button-next"
+                  onClick={goToNextProfile}
+                  disabled={!canGoNextProfile}
+                  aria-label="다음 프로필"
+                />
+            </div>
         </div>
       )}
             

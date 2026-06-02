@@ -2686,27 +2686,36 @@ if (reverseLikes.length > 0) {
     return (
       <div className="app">
         {toastElement}
-        <h1>{profileFormMode === 'edit' ? '프로필 수정' : '프로필 작성'}</h1>
-        <p>
-            {profileFormMode === 'edit'
+        {renderPageHeader({
+          title: profileFormMode === 'edit' ? '프로필 수정' : '프로필 작성',
+          description:
+            profileFormMode === 'edit'
               ? '수정한 내용을 저장하면 내 프로필에 반영돼요.'
-              : '프로필을 작성하고 마음에 드는 사람에게 관심을 보내보세요.'}
-        </p>
+              : '프로필을 작성하고 두사타를 시작해보세요.',
+        })}
 
 
-        <button className="sub-button" onClick={handleCancelProfileForm}>
-          {profileFormMode === 'edit' ? '수정 취소' : '첫 화면으로 돌아가기'}
-        </button>
+        <div className="form-top-action">
+          <button
+            type="button"
+            className="form-cancel-button"
+            onClick={handleCancelProfileForm}
+          >
+            {profileFormMode === 'edit' ? '수정 취소' : '첫 화면으로 돌아가기'}
+          </button>
+        </div>
 
 
 
-        <ProfileForm
-          profile={profile}
-          profileFormMode={profileFormMode}
-          isSubmittingProfile={isSubmittingProfile}
-          onProfileChange={handleProfileChange}
-          onProfileSubmit={handleProfileSubmit}
-        />
+            <div className="profile-form-shell">
+            <ProfileForm
+              profile={profile}
+              profileFormMode={profileFormMode}
+              isSubmittingProfile={isSubmittingProfile}
+              onProfileChange={handleProfileChange}
+              onProfileSubmit={handleProfileSubmit}
+            />
+          </div>
       </div>
     );
   }
@@ -2734,8 +2743,8 @@ if (reverseLikes.length > 0) {
           </p>
 
           <h1 className="start-title">
-            축제에서 만나는<br />
-            가벼운 프로필 매칭
+            온라인으로 즐기는<br />
+            프로필 매칭
           </h1>
 
           <p className="start-description">

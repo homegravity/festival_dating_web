@@ -2257,13 +2257,19 @@ if (reverseLikes.length > 0) {
           </div>
 
           <div className="browse-card-layout">
-                <button
-                  type="button"
-                  className="card-side-button card-side-button-prev"
-                  onClick={goToPreviousProfile}
-                  disabled={visibleProfiles.length <= 1}
-                  aria-label="이전 프로필"
-                />
+          <button
+              type="button"
+              className="card-side-button card-side-button-prev"
+              onClick={(event) => {
+                event.currentTarget.blur();
+                goToPreviousProfile();
+              }}
+              onPointerUp={(event) => {
+                event.currentTarget.blur();
+              }}
+              disabled={visibleProfiles.length <= 1}
+              aria-label="이전 프로필"
+            />
 
               <div className="browse-card-center">
                 <ProfileCard
@@ -2277,12 +2283,18 @@ if (reverseLikes.length > 0) {
               </div>
 
               <button
-                  type="button"
-                  className="card-side-button card-side-button-next"
-                  onClick={goToNextProfile}
-                  disabled={visibleProfiles.length <= 1}
-                  aria-label="다음 프로필"
-                />
+                type="button"
+                className="card-side-button card-side-button-next"
+                onClick={(event) => {
+                  event.currentTarget.blur();
+                  goToNextProfile();
+                }}
+                onPointerUp={(event) => {
+                  event.currentTarget.blur();
+                }}
+                disabled={visibleProfiles.length <= 1}
+                aria-label="다음 프로필"
+              />
             </div>
         </div>
       )}
@@ -2550,38 +2562,77 @@ if (reverseLikes.length > 0) {
   }
 
   return (
-    <div className="app">
-      {toastElement}
-      <h1>축제 매칭 웹</h1>
-      <p>마음에 드는 사람에게 관심을 보내고, 서로 수락하면 연락수단이 공개돼요.</p>
-  
-      {startMode === 'home' && (
-          <div className="card">
-            <h2>시작하기</h2>
-            <p>
-              처음 참여한다면 프로필을 만들고, 이미 참여했다면 참여 코드로
-              내 프로필을 다시 불러올 수 있어요.
-            </p>
+          <div className="app">
+        {toastElement}
 
-            <button onClick={handleStartNewProfile}>
-              프로필 만들기
-            </button>
-  
-          <button
-            className="sub-button"
-            onClick={() => setStartMode('lookup')}
-          >
-            내 프로필 불러오기
-          </button>
+        <div className="start-hero">
+          <p className="start-brand" aria-label="두유는 사랑을 타고">
+            <span className="brand-word">
+              <span className="brand-main">두</span>
+              <span className="brand-sub">유는</span>
+            </span>
+
+            <span className="brand-word">
+              <span className="brand-main">사</span>
+              <span className="brand-sub">랑을</span>
+            </span>
+
+            <span className="brand-word">
+              <span className="brand-main">타</span>
+              <span className="brand-sub">고</span>
+            </span>
+          </p>
+
+          <h1 className="start-title">
+            축제에서 만나는<br />
+            가벼운 프로필 매칭
+          </h1>
+
+          <p className="start-description">
+            프로필을 만들고, 마음이 가는 사람에게 관심을 보내보세요.
+            서로 관심이 통하면 연락수단을 확인할 수 있어요.
+          </p>
         </div>
-      )}
-  
-          {startMode === 'lookup' && (
-          <div className="card">
-            <h2>내 프로필 불러오기</h2>
-            <p>프로필을 만들 때 발급받은 참여 코드를 입력해주세요.</p>
-  
+
+        {startMode === 'home' && (
+          <div className="start-card">
+            <div className="start-card-header">
+              <h2>시작하기</h2>
+              <p>
+                처음 참여한다면 프로필을 만들고, 이미 참여했다면 참여 코드로
+                내 프로필을 다시 불러올 수 있어요.
+              </p>
+            </div>
+
+            <div className="start-action-box">
+              <button
+                type="button"
+                className="start-primary-button"
+                onClick={handleStartNewProfile}
+              >
+                프로필 만들기
+              </button>
+
+              <button
+                type="button"
+                className="start-secondary-button"
+                onClick={() => setStartMode('lookup')}
+              >
+                내 프로필 불러오기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {startMode === 'lookup' && (
+          <div className="start-card">
+            <div className="start-card-header">
+              <h2>내 프로필 불러오기</h2>
+              <p>프로필을 만들 때 발급받은 참여 코드를 입력해주세요.</p>
+            </div>
+
             <input
+              className="lookup-code-input"
               type="text"
               placeholder="예: MANGO-ABC-2345"
               value={lookupCode}
@@ -2592,20 +2643,28 @@ if (reverseLikes.length > 0) {
                 }
               }}
             />
-  
-            <button onClick={handleLoadProfileByCode} disabled={isLoadingProfile}>
-            {isLoadingProfile ? '불러오는 중...' : '불러오기'}
-          </button>
-            
-          <button
-            className="sub-button"
-            onClick={() => setStartMode('home')}
-          >
-            돌아가기
-          </button>
-        </div>
-      )}
-    </div>
+
+            <div className="start-action-box">
+              <button
+                type="button"
+                className="start-primary-button"
+                onClick={handleLoadProfileByCode}
+                disabled={isLoadingProfile}
+              >
+                {isLoadingProfile ? '불러오는 중...' : '불러오기'}
+              </button>
+
+              <button
+                type="button"
+                className="start-secondary-button"
+                onClick={() => setStartMode('home')}
+              >
+                돌아가기
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
   );
 }
 

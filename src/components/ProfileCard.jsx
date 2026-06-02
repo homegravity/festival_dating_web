@@ -153,20 +153,28 @@ function ProfileCard({
 
 
       <div className="profile-card-actions">
-        {mode === 'browse' && (
-          <button
-            className={isLiked ? 'cancel-button' : ''}
-            onClick={() => onToggleLike(otherProfile.id)}
-            disabled={isProcessing}
-          >
-            {isProcessing
-              ? '처리 중...'
-              : isLiked
-                ? '관심 취소'
-                : '관심 보내기'}
-          </button>
-        )}
+      {mode === 'browse' && (
+              <button
+                type="button"
+                className={`like-action-button ${isLiked ? 'liked' : ''}`}
+                onClick={() => onToggleLike(otherProfile.id)}
+                disabled={isProcessing}
+              >
+                <span className="like-action-icon">
+                  {isLiked ? '↺' : '♥'}
+                </span>
 
+                <span>
+                  {isProcessing
+                    ? '처리 중...'
+                    : isLiked
+                      ? '관심 취소'
+                      : '관심 보내기'}
+                </span>
+              </button>
+            )}
+
+            
         {mode === 'received' && (
           <div className="button-row">
             <button

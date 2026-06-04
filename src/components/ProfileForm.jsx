@@ -28,15 +28,27 @@ function ProfileForm({
     '🐹 햄스터상',
     '🐿️ 다람쥐상',
     '🦫 카피바라상',
+    '🐢 꼬부기상',
+    '🐺 늑대상',
   ];
   
   const handleFaceTypeSelect = (faceType) => {
-    const nextValue = profile.faceType === faceType ? '' : faceType;
+    const selectedFaceTypes = profile.faceType
+      ? profile.faceType.split(',').map((item) => item.trim()).filter(Boolean)
+      : [];
+  
+    const isAlreadySelected = selectedFaceTypes.includes(faceType);
+  
+    const nextSelectedFaceTypes = isAlreadySelected
+      ? selectedFaceTypes.filter((item) => item !== faceType)
+      : selectedFaceTypes.length >= 2
+        ? selectedFaceTypes
+        : [...selectedFaceTypes, faceType];
   
     onProfileChange({
       target: {
         name: 'faceType',
-        value: nextValue,
+        value: nextSelectedFaceTypes.join(', '),
       },
     });
   };
@@ -312,13 +324,19 @@ function ProfileForm({
       <div className="mbti-grid">
         {mbtiTypes.map((mbti) => (
           <button
-            key={mbti}
-            type="button"
-            className={`mbti-button ${profile.mbti === mbti ? 'selected' : ''}`}
-            onClick={() => handleMbtiSelect(mbti)}
-          >
-            {mbti}
-          </button>
+          key={mbti}
+          type="button"
+          className={`mbti-button ${profile.mbti === mbti ? 'selected' : ''}`}
+          onClick={(event) => {
+            event.currentTarget.blur();
+            handleMbtiSelect(mbti);
+          }}
+          onPointerUp={(event) => {
+            event.currentTarget.blur();
+          }}
+        >
+          {mbti}
+        </button>
         ))}
       </div>
     </div>
@@ -328,20 +346,42 @@ function ProfileForm({
         <span>얼굴상</span>
         <span className="field-badge optional">선택</span>
       </label>
+      
+      <p className="field-help-text">
+          최대 2개까지 선택할 수 있어요.
+        </p>
+
+
+
+
 
       <div className="face-type-grid">
-        {faceTypeOptions.map((faceType) => (
-          <button
-            key={faceType}
-            type="button"
-            className={`face-type-button ${
-              profile.faceType === faceType ? 'selected' : ''
-            }`}
-            onClick={() => handleFaceTypeSelect(faceType)}
-          >
-            {faceType}
-          </button>
-        ))}
+        {faceTypeOptions.map((faceType) => {
+          const selectedFaceTypes = profile.faceType
+            ? profile.faceType.split(',').map((item) => item.trim()).filter(Boolean)
+            : [];
+
+          const isSelected = selectedFaceTypes.includes(faceType);
+          const isDisabled = !isSelected && selectedFaceTypes.length >= 2;
+
+          return (
+            <button
+              key={faceType}
+              type="button"
+              className={`face-type-button ${isSelected ? 'selected' : ''}`}
+              onClick={(event) => {
+                event.currentTarget.blur();
+                handleFaceTypeSelect(faceType);
+              }}
+              onPointerUp={(event) => {
+                event.currentTarget.blur();
+              }}
+              disabled={isDisabled}
+            >
+              {faceType}
+            </button>
+          );
+        })}
       </div>
     </div>
 
@@ -394,13 +434,19 @@ function ProfileForm({
       <div className="interest-tag-grid">
         {defaultInterestTags.map((interest) => (
           <button
-            key={interest.label}
-            type="button"
-            className={`interest-tag-button ${
-              selectedInterests.includes(interest.label) ? 'selected' : ''
-            }`}
-            onClick={() => handleInterestToggle(interest.label)}
-          >
+              key={interest.label}
+              type="button"
+              className={`interest-tag-button ${
+                selectedInterests.includes(interest.label) ? 'selected' : ''
+              }`}
+              onClick={(event) => {
+                event.currentTarget.blur();
+                handleInterestToggle(interest.label);
+              }}
+              onPointerUp={(event) => {
+                event.currentTarget.blur();
+              }}
+            >
             <span className="interest-emoji">{interest.emoji}</span>
             <span>{interest.label}</span>
           </button>
@@ -440,10 +486,16 @@ function ProfileForm({
                 key={interest}
                 type="button"
                 className="selected-interest-chip"
-                onClick={() => handleInterestToggle(interest)}
+                onClick={(event) => {
+                  event.currentTarget.blur();
+                  handleInterestToggle(interest);
+                }}
+                onPointerUp={(event) => {
+                  event.currentTarget.blur();
+                }}
               >
                 {interest} ×
-              </button>
+            </button>
             ))}
           </div>
         </div>

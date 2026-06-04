@@ -79,9 +79,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background: #ff3f78;
-}
+
 
 .error {
   margin-top: 12px;
@@ -2184,3 +2182,89 @@ label {
   cursor: not-allowed;
   transform: none;
 }
+
+
+.filter-toggle-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-toggle-button:focus,
+.filter-toggle-button:focus-visible {
+  outline: none;
+}
+
+.filter-toggle-button:not(.active) {
+  background: #ffffff;
+  color: #555;
+  border-color: #eeeeee;
+}
+
+.filter-toggle-button:not(.active):focus,
+.filter-toggle-button:not(.active):active {
+  background: #ffffff;
+  color: #555;
+  border-color: #eeeeee;
+}
+
+.filter-toggle-button.active,
+.filter-toggle-button.active:focus,
+.filter-toggle-button.active:active {
+  background: #ffe3ec;
+  color: #ff3f78;
+  border-color: #ffbfd2;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .filter-toggle-button:not(.active):hover {
+    background: #fff5f8;
+    color: #ff4f84;
+    border-color: #ffd6e3;
+  }
+
+  .filter-toggle-button.active:hover {
+    background: #ffe3ec;
+    color: #ff3f78;
+    border-color: #ffbfd2;
+  }
+}
+
+.field-help-text {
+  margin: 6px 0 0;
+  color: #888;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+}
+
+.face-type-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  background: #f8f8f8;
+  color: #aaa;
+  border-color: #eeeeee;
+}
+
+
+.mbti-button,
+.face-type-button,
+.interest-tag-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mbti-button.selected,
+.face-type-button.selected,
+.interest-tag-button.selected {
+  background: #ffe3ec;
+  color: #ff3f78;
+  border-color: #ffbfd2;
+}
+
+.face-type-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  background: #f8f8f8;
+  color: #aaa;
+  border-color: #eeeeee;
+}
+

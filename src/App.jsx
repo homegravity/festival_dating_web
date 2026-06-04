@@ -2139,7 +2139,13 @@ if (reverseLikes.length > 0) {
                 ? 'active'
                 : ''
             }`}
-            onClick={() => setIsFilterOpen((prev) => !prev)}
+            onClick={(event) => {
+              event.currentTarget.blur();
+              setIsFilterOpen((prev) => !prev);
+            }}
+            onPointerUp={(event) => {
+              event.currentTarget.blur();
+            }}
           >
             필터
           </button>
@@ -2476,6 +2482,11 @@ if (reverseLikes.length > 0) {
     ? profile.interests.split(',').map((item) => item.trim()).filter(Boolean)
     : [];
   
+    const myProfileFaceTypeList = profile.faceType
+    ? profile.faceType.split(',').map((item) => item.trim()).filter(Boolean)
+    : [];
+
+
   const myProfileMetaItems = [
     profile.gender,
     profile.grade,
@@ -2518,15 +2529,15 @@ if (reverseLikes.length > 0) {
                 )}
               </div>
     
-              {(profile.faceType || hasMyEgenTetoScore) && (
+              {(myProfileFaceTypeList.length > 0 || hasMyEgenTetoScore) && (
                 <div className="profile-feature-row">
-                  {profile.faceType && (
-                    <span className="profile-feature-chip">
-                      {profile.faceType}
+                  {myProfileFaceTypeList.map((faceType) => (
+                    <span key={faceType} className="profile-feature-chip">
+                      {faceType}
                     </span>
-                  )}
-    
-                      {hasMyEgenTetoScore && (
+                  ))}
+
+                  {hasMyEgenTetoScore && (
                     <span className="profile-feature-chip egen-teto-chip">
                       <span className="egen-teto-label">에겐</span>
                       <span className="egen-teto-percent">

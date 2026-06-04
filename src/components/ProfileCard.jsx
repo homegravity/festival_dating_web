@@ -57,7 +57,12 @@ function ProfileCard({
     otherProfile.egenTetoScore !== undefined &&
     !Number.isNaN(Number(otherProfile.egenTetoScore));
   
-  
+    const profileFaceTypeList = otherProfile.faceType
+  ? otherProfile.faceType.split(',').map((item) => item.trim()).filter(Boolean)
+  : [];
+
+
+
     const getEgenTetoText = () => {
       if (!hasEgenTetoScore) {
         return '';
@@ -101,13 +106,13 @@ function ProfileCard({
         </div>
       </div>
 
-      {(otherProfile.faceType || hasEgenTetoScore) && (
+      {(profileFaceTypeList.length > 0 || hasEgenTetoScore) && (
         <div className="profile-feature-row">
-          {otherProfile.faceType && (
-            <span className="profile-feature-chip">
-              {otherProfile.faceType}
+          {profileFaceTypeList.map((faceType) => (
+            <span key={faceType} className="profile-feature-chip">
+              {faceType}
             </span>
-          )}
+          ))}
 
           {hasEgenTetoScore && (
             <span className="profile-feature-chip egen-teto-chip">

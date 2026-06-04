@@ -525,11 +525,6 @@ label {
   box-shadow: none;
 }
 
-.mbti-button.selected {
-  border-color: #ff3f78;
-  background: #ffe3ec;
-  color: #ff3f78;
-}
 
 
 .interest-tag-grid {
@@ -552,11 +547,6 @@ label {
   box-shadow: none;
 }
 
-.interest-tag-button.selected {
-  border-color: #ff3f78;
-  background: #ffe3ec;
-  color: #ff3f78;
-}
 
 .custom-interest-row {
   display: flex;
@@ -611,21 +601,31 @@ label {
 
 
 .contact-input-group {
-  display: flex;
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
   gap: 8px;
   margin-top: 8px;
 }
 
+.contact-type-select,
+.contact-value-input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .contact-type-select {
-  width: 120px;
-  flex-shrink: 0;
-  margin-top: 0;
+  padding-left: 11px;
+  padding-right: 28px;
 }
 
 .contact-value-input {
-  flex: 1;
-  margin-top: 0;
+  padding-left: 13px;
 }
+
+
+
+
 
 .contact-guide {
   margin-top: 8px;
@@ -968,11 +968,6 @@ label {
   box-shadow: none;
 }
 
-.face-type-button.selected {
-  border-color: #ff3f78;
-  background: #ffe3ec;
-  color: #ff3f78;
-}
 
 
 
@@ -2133,14 +2128,7 @@ label {
   margin-top: 8px;
 }
 
-.profile-form .contact-guide {
-  margin: 10px 0 0;
-  color: #777;
-  font-size: 12px;
-  line-height: 1.5;
-  font-weight: 650;
-  letter-spacing: -0.2px;
-}
+
 
 .profile-submit-button {
   width: 100%;
@@ -2252,6 +2240,29 @@ label {
   -webkit-tap-highlight-color: transparent;
 }
 
+.mbti-button,
+.face-type-button,
+.interest-tag-button {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #333;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mbti-button {
+  padding: 10px 0;
+}
+
+.face-type-button,
+.interest-tag-button {
+  padding: 9px 10px;
+}
+
 .mbti-button.selected,
 .face-type-button.selected,
 .interest-tag-button.selected {
@@ -2259,6 +2270,7 @@ label {
   color: #ff3f78;
   border-color: #ffbfd2;
 }
+
 
 .face-type-button:disabled {
   opacity: 0.38;
@@ -2268,3 +2280,122 @@ label {
   border-color: #eeeeee;
 }
 
+.contact-input-group {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.contact-input-group .contact-type-select,
+.contact-input-group .contact-value-input {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  margin-top: 0;
+  box-sizing: border-box;
+
+  border-radius: 14px;
+  border: 1px solid #e8e8e8;
+  background: #ffffff;
+
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.3px;
+}
+
+.contact-input-group .contact-type-select {
+  padding: 0 28px 0 10px;
+}
+
+.contact-input-group .contact-value-input {
+  padding: 0 12px;
+}
+
+
+/* 프로필 카드 답답함 완화 1차 조정 */
+
+.profile-card {
+  padding: 18px 16px;
+}
+
+.browse-profile-card {
+  height: 560px;
+}
+
+.profile-card::before {
+  margin: -18px -16px 16px;
+}
+
+.profile-card-header h2 {
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+}
+
+.profile-meta {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.profile-feature-row {
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.profile-feature-chip {
+  padding: 6px 9px;
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+
+.profile-section {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 16px;
+}
+
+.profile-section-title {
+  margin-bottom: 7px;
+  font-size: 12.5px;
+}
+
+.profile-section-text {
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.profile-interest-list {
+  gap: 6px;
+}
+
+.profile-interest-chip {
+  padding: 7px 9px;
+  font-size: 12.5px;
+  border-radius: 999px;
+}
+
+.interest-emoji {
+  font-size: 13px;
+}
+
+.profile-card-actions {
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.like-action-button {
+  height: 44px;
+  border-radius: 15px;
+  font-size: 14px;
+}
+
+.like-recovery-text {
+  display: inline-block;
+  margin-left: 4px;
+  color: #777;
+  font-size: 13px;
+  font-weight: 700;
+}

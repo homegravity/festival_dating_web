@@ -45,7 +45,81 @@ function App() {
 
 
   const maxLikes = 3;
-  const remainingLikes = maxLikes - likedProfileIds.length;
+  const likeRecoveryHours = 2;
+  const likeRecoveryMs = likeRecoveryHours * 60 * 60 * 1000;
+  
+
+  const [likeCredits, setLikeCredits] = useState(
+    savedData.likeCredits ?? maxLikes
+  );
+
+  const [lastLikeRecoveredAt, setLastLikeRecoveredAt] = useState(
+    savedData.lastLikeRecoveredAt || new Date().toISOString()
+  );
+
+
+  const [nowTime, setNowTime] = useState(Date.now());
+  const remainingLikes = likeCredits;
+  
+  
+  const recoverLikeCredits = () => {
+    const lastRecoveredTime = new Date(lastLikeRecoveredAt).getTime();
+    const now = Date.now();
+  
+    if (!lastRecoveredTime || likeCredits >= maxLikes) {
+      return;
+    }
+  
+    const elapsedMs = now - lastRecoveredTime;
+    const recoveredCount = Math.floor(elapsedMs / likeRecoveryMs);
+  
+    if (recoveredCount <= 0) {
+      return;
+    }
+  
+    const nextLikeCredits = Math.min(maxLikes, likeCredits + recoveredCount);
+    const nextRecoveredAt = new Date(
+      lastRecoveredTime + recoveredCount * likeRecoveryMs
+    ).toISOString();
+  
+    setLikeCredits(nextLikeCredits);
+    setLastLikeRecoveredAt(nextRecoveredAt);
+  };
+  
+  const getLikeRecoveryText = () => {
+    if (likeCredits >= maxLikes) {
+      return '';
+    }
+  
+    const lastRecoveredTime = new Date(lastLikeRecoveredAt).getTime();
+  
+    if (!lastRecoveredTime) {
+      return '';
+    }
+  
+    const elapsedMs = nowTime - lastRecoveredTime;
+    const remainingMs = Math.max(
+      0,
+      likeRecoveryMs - (elapsedMs % likeRecoveryMs)
+    );
+  
+    const totalSeconds = Math.ceil(remainingMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+  
+    if (hours > 0) {
+      return `${hours}:${String(minutes).padStart(2, '0')} 후 +1`;
+    }
+  
+    if (minutes > 0) {
+      return `${minutes}분 후 +1`;
+    }
+  
+    return `${seconds}초 후 +1`;
+  };
+  
+  
   const [receivedLikeIds, setReceivedLikeIds] = useState([]);
   const [matchedProfileIds, setMatchedProfileIds] = useState(savedData.matchedProfileIds || []);
   
@@ -68,9 +142,18 @@ function App() {
   const recentToastKeysRef = useRef(new Set());
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
-  const [selectedMbtiFilter, setSelectedMbtiFilter] = useState('');
+  const [selectedMbtiFilters, setSelectedMbtiFilters] = useState([]);
   const [selectedInterestFilters, setSelectedInterestFilters] = useState([]);
   const [egenTetoFilter, setEgenTetoFilter] = useState('');
+  const mbtiTypes = [
+    'INTJ', 'INTP', 'ENTJ', 'ENTP',
+    'INFJ', 'INFP', 'ENFJ', 'ENFP',
+    'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ',
+    'ISTP', 'ISFP', 'ESTP', 'ESFP',
+  ];
+  
+  
+  
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [browseProfileIndex, setBrowseProfileIndex] = useState(0);
   const previousVisibleProfileIdsRef = useRef([]);
@@ -90,9 +173,14 @@ function App() {
       likedProfileIds,
       receivedLikeIds,
       matchedProfileIds,
+      likeCredits,
+      lastLikeRecoveredAt,
+      
       isProfileVisible,
       supabaseProfileId,
       participantCode,
+    
+    
     };
   
     localStorage.setItem('festivalDatingData', JSON.stringify(dataToSave));
@@ -121,11 +209,13 @@ function App() {
   }, []);
   
   
+
+
   useEffect(() => {
     setBrowseProfileIndex(0);
   }, [
     searchKeyword,
-    selectedMbtiFilter,
+    selectedMbtiFilters,
     selectedInterestFilters,
     egenTetoFilter,
   ]);
@@ -142,8 +232,33 @@ function App() {
 
 
 
+  useEffect(() => {
+    recoverLikeCredits();
+  
+    const timer = setInterval(() => {
+      recoverLikeCredits();
+    }, 60 * 1000);
+  
+    return () => clearInterval(timer);
+  }, [likeCredits, lastLikeRecoveredAt]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowTime(Date.now());
+    }, 1000);
+  
+    return () => clearInterval(timer);
+  }, []);
 
 
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowTime(Date.now());
+    }, 1000);
+  
+    return () => clearInterval(timer);
+  }, []);
 
 
 
@@ -1394,12 +1509,16 @@ function App() {
     const isNotMatched = !matchedProfileIds.includes(otherProfile.id);
     const isNotRejected = !rejectedProfileIds.includes(otherProfile.id);
   
+
+    
+
     const matchesGender =
       profile.targetGender === '상관없음' ||
       otherProfile.gender === profile.targetGender;
   
-    const matchesMbti =
-      !selectedMbtiFilter || otherProfile.mbti === selectedMbtiFilter;
+      const matchesMbti =
+      selectedMbtiFilters.length === 0 ||
+      selectedMbtiFilters.includes(otherProfile.mbti);
   
     const profileInterests = otherProfile.interests
       ? otherProfile.interests.split(',').map((item) => item.trim())
@@ -1456,9 +1575,17 @@ function App() {
       matchesInterests &&
       matchesEgenTeto &&
       matchesKeyword
+      
     );
   });
   
+
+  
+
+
+
+
+
   const visibleProfileIdKey = visibleProfiles
   .map((item) => String(item.id))
   .join('|');
@@ -1590,8 +1717,8 @@ function App() {
   
     const alreadyLiked = likedProfileIds.includes(profileId);
     
-    if (!alreadyLiked && likedProfileIds.length >= maxLikes) {
-      alert('관심은 최대 3명까지만 보낼 수 있어요.');
+    if (!alreadyLiked && likeCredits <= 0) {
+      alert('지금은 보낼 수 있는 관심이 없어요. 시간이 지나면 다시 회복돼요.');
       return;
     }
 
@@ -1616,6 +1743,9 @@ function App() {
         prevIds.filter((id) => id !== profileId)
       );
       
+      setLikeCredits((prevCredits) => Math.min(maxLikes, prevCredits + 1));
+      setLastLikeRecoveredAt(new Date().toISOString());
+
       setProcessingProfileId(null);
       return;
     }
@@ -1663,6 +1793,19 @@ if (reverseLikes.length > 0) {
     await loadMyReceivedLikes(supabaseProfileId);
     await loadMySentLikes(supabaseProfileId);
     await loadMyMatches(supabaseProfileId);
+
+
+
+    setLikeCredits((prevCredits) => {
+      if (prevCredits >= maxLikes) {
+        setLastLikeRecoveredAt(new Date().toISOString());
+      }
+    
+      return Math.max(0, prevCredits - 1);
+    });
+
+
+
 
     showToast('서로 관심을 보내 매칭되었어요!', 'success');
     setProcessingProfileId(null);
@@ -1738,8 +1881,17 @@ if (reverseLikes.length > 0) {
     }
   
     setLikedProfileIds((prevIds) => [...prevIds, profileId]);
+
+    setLikeCredits((prevCredits) => {
+      if (prevCredits >= maxLikes) {
+        setLastLikeRecoveredAt(new Date().toISOString());
+      }
+
+      return Math.max(0, prevCredits - 1);
+    });
+
     setProcessingProfileId(null);
-  };
+      };
 
   
   
@@ -1984,10 +2136,23 @@ if (reverseLikes.length > 0) {
   };
   
   const clearAllFilters = () => {
-    setSelectedMbtiFilter('');
+    setSelectedMbtiFilters([]);
     setSelectedInterestFilters([]);
     setEgenTetoFilter('');
   };
+
+
+  const handleMbtiFilterToggle = (mbti) => {
+    setSelectedMbtiFilters((prevFilters) =>
+      prevFilters.includes(mbti)
+        ? prevFilters.filter((item) => item !== mbti)
+        : [...prevFilters, mbti]
+    );
+  };
+
+
+
+
 
     const goToPreviousProfile = () => {
       if (visibleProfiles.length <= 1) {
@@ -1999,6 +2164,11 @@ if (reverseLikes.length > 0) {
       );
     };
   
+
+
+
+
+
     const goToNextProfile = () => {
       if (visibleProfiles.length <= 1) {
         return;
@@ -2104,7 +2274,12 @@ if (reverseLikes.length > 0) {
           description: '한 명씩 천천히 보고, 마음이 가면 관심을 보내보세요.',
         })}
 
-<p className="like-count">남은 관심: {remainingLikes}회</p>
+        <p className="like-count">
+          남은 관심 {remainingLikes}회
+          <span className="like-recovery-text">
+            · {getLikeRecoveryText()}
+          </span>
+        </p>
         {sentLikeProfiles.length > 0 && (
           <button
           type="button"
@@ -2133,7 +2308,7 @@ if (reverseLikes.length > 0) {
             type="button"
             className={`filter-toggle-button ${
               isFilterOpen ||
-              selectedMbtiFilter ||
+              selectedMbtiFilters.length > 0 ||
               selectedInterestFilters.length > 0 ||
               egenTetoFilter
                 ? 'active'
@@ -2152,43 +2327,51 @@ if (reverseLikes.length > 0) {
         </div>
 
 
-{(selectedMbtiFilter ||
-  selectedInterestFilters.length > 0 ||
-  egenTetoFilter) && (
-  <div className="active-filter-summary">
-    <span>적용 중</span>
+        {(selectedMbtiFilters.length > 0 ||
+          selectedInterestFilters.length > 0 ||
+          egenTetoFilter) && (
+          <div className="active-filter-summary">
+            <span>적용 중</span>
 
-    {selectedMbtiFilter && (
-      <button
-        type="button"
-        onClick={() => setSelectedMbtiFilter('')}
-      >
-        {selectedMbtiFilter} ×
-      </button>
-    )}
+            {selectedMbtiFilters.map((mbti) => (
+              <button
+                key={mbti}
+                type="button"
+                onClick={(event) => {
+                  event.currentTarget.blur();
+                  handleMbtiFilterToggle(mbti);
+                }}
+              >
+                {mbti} ×
+              </button>
+            ))}
 
-    {selectedInterestFilters.map((interest) => (
-      <button
-        key={interest}
-        type="button"
-        onClick={() => handleInterestFilterToggle(interest)}
-      >
-        {interest} ×
-      </button>
-    ))}
+            {selectedInterestFilters.map((interest) => (
+              <button
+                key={interest}
+                type="button"
+                onClick={(event) => {
+                  event.currentTarget.blur();
+                  handleInterestFilterToggle(interest);
+                }}
+              >
+                {interest} ×
+              </button>
+            ))}
 
-    {egenTetoFilter && (
-      <button
-        type="button"
-        onClick={() => setEgenTetoFilter('')}
-      >
-        {egenTetoFilter === 'egen' ? '에겐' : '테토'} ×
-      </button>
-    )}
-  </div>
-)}
-
-
+            {egenTetoFilter && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.currentTarget.blur();
+                  setEgenTetoFilter('');
+                }}
+              >
+                {egenTetoFilter === 'egen' ? '에겐' : '테토'} ×
+              </button>
+            )}
+          </div>
+        )}
 
 
 
@@ -2198,7 +2381,7 @@ if (reverseLikes.length > 0) {
     <div className="filter-header">
       <h3>필터</h3>
 
-      {(selectedMbtiFilter ||
+      {(selectedMbtiFilters.length > 0 ||
         selectedInterestFilters.length > 0 ||
         egenTetoFilter) && (
         <button
@@ -2215,22 +2398,21 @@ if (reverseLikes.length > 0) {
       <p className="filter-title">MBTI</p>
 
       <div className="filter-chip-list">
-        {mbtiFilterOptions.map((mbti) => (
-          <button
-            key={mbti}
-            type="button"
-            className={`filter-chip ${
-              selectedMbtiFilter === mbti ? 'selected' : ''
-            }`}
-            onClick={() =>
-              setSelectedMbtiFilter((prevMbti) =>
-                prevMbti === mbti ? '' : mbti
-              )
-            }
-          >
-            {mbti}
-          </button>
-        ))}
+      {mbtiTypes.map((mbti) => (
+            <button
+              key={mbti}
+              type="button"
+              className={`filter-chip ${
+                selectedMbtiFilters.includes(mbti) ? 'selected' : ''
+              }`}
+              onClick={(event) => {
+                event.currentTarget.blur();
+                handleMbtiFilterToggle(mbti);
+              }}
+            >
+              {mbti}
+            </button>
+          ))}
       </div>
     </div>
 

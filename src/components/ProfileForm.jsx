@@ -578,9 +578,7 @@ function ProfileForm({
       </div>
     </div>
 
-    <p className="contact-guide">
-      연락수단은 서로 매칭된 사람에게만 공개돼요.
-    </p>
+   
   </section>
 
   <button

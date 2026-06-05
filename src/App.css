@@ -2405,3 +2405,10 @@ label {
   touch-action: pan-y;
   user-select: none;
 }
+
+
+@media (max-width: 768px) {
+  .card-side-button {
+    display: none;
+  }
+}

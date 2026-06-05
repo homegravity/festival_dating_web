@@ -373,9 +373,7 @@ textarea {
   background: #0077b6;
 }
 
-.copy-button:hover {
-  background: #005f8f;
-}
+
 
 button:disabled {
   opacity: 0.6;
@@ -2010,22 +2008,7 @@ label {
   gap: 14px;
 }
 
-.form-notice-card {
-  padding: 14px 15px;
-  border-radius: 18px;
-  background: #fff5f8;
-  border: 1px solid #ffd6e3;
-  text-align: left;
-}
 
-.form-notice-card p {
-  margin: 4px 0;
-  color: #555;
-  font-size: 13px;
-  line-height: 1.5;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-}
 
 .form-section {
   padding: 20px 18px;
@@ -2446,3 +2429,52 @@ label {
     content: ' →';
   }
 }
+
+.form-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.form-section-title-row .form-section-title {
+  margin: 0;
+}
+
+
+.sent-likes-top-action {
+  display: flex;
+  justify-content: flex-start;
+  margin: -4px 0 14px;
+}
+
+.sent-likes-back-button {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  margin: 0;
+  padding: 7px 12px;
+
+  border-radius: 999px;
+  border: 1px solid #eeeeee;
+  background: #ffffff;
+  color: #666;
+
+  font-size: 12.5px;
+  font-weight: 850;
+  letter-spacing: -0.3px;
+
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sent-likes-back-button:active {
+  transform: scale(0.98);
+}
+
+.my-code-card {
+  margin-bottom: 16px;
+}
+
+

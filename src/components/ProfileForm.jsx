@@ -24,12 +24,14 @@ function ProfileForm({
     '🦊 여우상',
     '🐻 곰상',
     '🐰 토끼상',
+    '🦌 사슴상',
     '🦖 공룡상',
     '🐹 햄스터상',
     '🐿️ 다람쥐상',
     '🦫 카피바라상',
     '🐢 꼬부기상',
     '🐺 늑대상',
+    
   ];
   
   const handleFaceTypeSelect = (faceType) => {
@@ -191,10 +193,7 @@ function ProfileForm({
   
   return (
    <form className="profile-form" onSubmit={onProfileSubmit}>
-  <div className="form-notice-card">
-    <p>연락수단은 매칭된 상대에게만 공개돼요.</p>
-    <p>관심을 보내고 상대방이 수락하면 매칭됩니다.</p>
-  </div>
+  
 
   <section className="form-section">
     <div className="form-section-header">
@@ -540,46 +539,43 @@ function ProfileForm({
     </div>
   </section>
 
-  <section className="form-section">
-    <div className="form-section-header">
-      <p className="form-section-title">연락수단</p>
-      <p className="form-section-description">
-        연락수단은 서로 매칭된 상대에게만 공개돼요.
-      </p>
-    </div>
+        <section className="form-section">
+        <div className="form-section-header">
+        <div className="form-section-title-row">
+            <p className="form-section-title">연락수단</p>
+            <span className="field-badge required">필수</span>
+          </div>
+          <p className="form-section-description">
+          연락수단은 서로 매칭된 상대에게만 공개돼요.
+          </p>
+        </div>
 
-    <div className="form-field">
-      <label className="field-label">
-        <span>연락수단</span>
-        <span className="field-badge required">필수</span>
-      </label>
+        <div className="form-field">
+          
+          <div className="contact-input-group">
+            <select
+              name="contactType"
+              value={profile.contactType}
+              onChange={onProfileChange}
+              className="contact-type-select"
+            >
+              <option value="instagram">인스타 ID</option>
+              <option value="kakao">카카오톡 ID</option>
+              <option value="phone">전화번호</option>
+              <option value="etc">기타</option>
+            </select>
 
-      <div className="contact-input-group">
-        <select
-          name="contactType"
-          value={profile.contactType}
-          onChange={onProfileChange}
-          className="contact-type-select"
-        >
-          <option value="instagram">인스타 ID</option>
-          <option value="kakao">카카오톡 ID</option>
-          <option value="phone">전화번호</option>
-          <option value="etc">기타</option>
-        </select>
-
-        <input
-          type="text"
-          name="contactValue"
-          placeholder={getContactPlaceholder()}
-          value={profile.contactValue}
-          onChange={onProfileChange}
-          className="contact-value-input"
-        />
-      </div>
-    </div>
-
-   
-  </section>
+            <input
+              type="text"
+              name="contactValue"
+              placeholder={getContactPlaceholder()}
+              value={profile.contactValue}
+              onChange={onProfileChange}
+              className="contact-value-input"
+            />
+          </div>
+        </div>
+      </section>
 
   <button
     type="submit"

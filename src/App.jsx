@@ -542,6 +542,11 @@ function App() {
     }, 8000);
   };
 
+  
+
+
+
+
 
   const ensureAnonymousUser = async () => {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -1280,7 +1285,14 @@ function App() {
   };
 
 
-
+  const scrollToTop = () => {
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'auto',
+      });
+    }, 0);
+  };
 
 
 
@@ -1422,6 +1434,7 @@ function App() {
     setCurrentPage('profileComplete');
     setProfileFormMode('create');
     setIsSubmittingProfile(false);
+    scrollToTop();
   };
 
 
@@ -1747,11 +1760,7 @@ if (reverseLikes.length > 0) {
   const reverseLike = reverseLikes[0];
 
   if (reverseLike.status === 'pending') {
-    if (matchedProfileIds.length >= maxMatches) {
-      alert('매칭은 최대 3명까지만 가능해요.');
-      return;
-    }
-
+    
     const { error: acceptError } = await supabase
       .from('likes')
       .update({
@@ -2279,6 +2288,21 @@ if (reverseLikes.length > 0) {
             description: '내가 보낸 관심을 확인하고 취소할 수 있어요.',
           })}
     
+    <div className="sent-likes-top-action">
+          <button
+            type="button"
+            className="sent-likes-back-button"
+            onClick={() => setCurrentPage('browse')}
+          >
+            ← 둘러보기
+          </button>
+        </div>
+
+
+
+
+
+
           {sentLikeProfiles.length === 0 ? (
             <div className="empty-profile-box">
               <p>아직 보낸 관심이 없어요.</p>
@@ -2299,13 +2323,7 @@ if (reverseLikes.length > 0) {
             </div>
           )}
     
-          <button
-            type="button"
-            className="sub-button"
-            onClick={() => setCurrentPage('browse')}
-          >
-            둘러보기로 돌아가기
-          </button>
+          
         </div>
       );
     }
@@ -2317,7 +2335,7 @@ if (reverseLikes.length > 0) {
         {toastElement}
         {renderPageHeader({
           title: '프로필 둘러보기',
-          description: '한 명씩 천천히 보고, 마음이 가면 관심을 보내보세요.',
+          description: '두사타에서 새로운 인연을 찾아보세요.',
         })}
 
         <p className="like-count">
@@ -2669,7 +2687,7 @@ if (reverseLikes.length > 0) {
         {toastElement}
         {renderPageHeader({
           title: '매칭',
-          description: '서로 관심이 통한 사람의 연락수단을 확인해보세요.',
+          description: '매칭된 사람의 연락수단을 확인할 수 있어요.',
         })}
   
         <div className="profile-list">
@@ -2755,6 +2773,36 @@ if (reverseLikes.length > 0) {
             description: '내 정보와 참여 코드를 확인하고 관리할 수 있어요.',
           })}
     
+
+    {participantCode && (
+               <section className="my-info-card my-code-card">
+                <p className="my-card-title">내 참여 코드</p>
+    
+                <div className="participant-code-display">
+                  {participantCode}
+                </div>
+    
+                <button
+                  type="button"
+                  className="copy-button"
+                  onClick={(event) => {
+                    event.currentTarget.blur();
+                    handleCopyParticipantCode();
+                  }}
+                  onPointerUp={(event) => {
+                    event.currentTarget.blur();
+                  }}
+                >
+                  코드 복사하기
+                </button>
+    
+                <p className="code-guide">
+                  나중에 내 프로필을 다시 불러올 때 필요해요. 캡처하거나 메모해두세요.
+                </p>
+              </section>
+            )}
+
+
           <div className="my-profile-layout">
             <section className="my-profile-card">
               <div className="my-profile-header">
@@ -2824,46 +2872,7 @@ if (reverseLikes.length > 0) {
               )}
             </section>
     
-            <section className="my-info-card">
-              <p className="my-card-title">활동 상태</p>
-    
-              <div className="my-info-row">
-                <span>매칭 현황</span>
-                <strong>{matchedProfileIds.length} / {maxMatches}</strong>
-              </div>
-    
-              <div className="my-info-row">
-                <span>프로필 상태</span>
-                <strong>{profileStatus}</strong>
-              </div>
-    
-              {isMatchFull && (
-                <p className="status-message">매칭 가능 인원이 가득 찼어요.</p>
-              )}
-            </section>
-    
-            {participantCode && (
-              <section className="my-info-card">
-                <p className="my-card-title">내 참여 코드</p>
-    
-                <div className="participant-code-display">
-                  {participantCode}
-                </div>
-    
-                <button
-                  type="button"
-                  className="copy-button"
-                  onClick={handleCopyParticipantCode}
-                >
-                  코드 복사하기
-                </button>
-    
-                <p className="code-guide">
-                  나중에 내 프로필을 다시 불러올 때 필요해요. 캡처하거나 메모해두세요.
-                </p>
-              </section>
-            )}
-    
+
             <section className="my-info-card">
               <p className="my-card-title">내 연락수단</p>
     
@@ -2876,6 +2885,18 @@ if (reverseLikes.length > 0) {
                 연락수단은 매칭된 상대에게만 공개돼요.
               </p>
             </section>
+
+
+            <section className="my-info-card">
+              <p className="my-card-title">활동 상태</p>
+    
+              <p><strong>현재 매칭:</strong> {matchedProfileIds.length}명</p>
+              <p><strong>프로필 공개 상태:</strong> {profileStatus}</p>
+            </section>
+    
+            
+    
+            
     
             <section className="my-profile-actions">
               <p className="my-card-title">프로필 관리</p>
@@ -2888,7 +2909,7 @@ if (reverseLikes.length > 0) {
                 프로필 수정하기
               </button>
 
-              {!isMatchFull && (
+             
                 <button
                   type="button"
                   className="my-action-button"
@@ -2901,7 +2922,7 @@ if (reverseLikes.length > 0) {
                       ? '프로필 숨기기'
                       : '다시 공개하기'}
                 </button>
-              )}
+             
 
               <button
                 type="button"
@@ -2994,7 +3015,7 @@ if (reverseLikes.length > 0) {
 
           <h1 className="start-title">
             온라인으로 즐기는<br />
-            프로필 매칭
+            이상형 매칭
           </h1>
 
           <p className="start-description">

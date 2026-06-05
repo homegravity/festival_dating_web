@@ -80,7 +80,7 @@ function ProfileCard({
       otherProfile.gender,
       otherProfile.grade,
       otherProfile.age ? `${otherProfile.age}세` : '',
-      otherProfile.department,
+      otherProfile.department ? `🎓 ${otherProfile.department}` : '',
       otherProfile.mbti,
     ].filter(Boolean);
 

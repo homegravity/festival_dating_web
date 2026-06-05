@@ -156,6 +156,9 @@ function App() {
   
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [browseProfileIndex, setBrowseProfileIndex] = useState(0);
+  const profileTouchStartRef = useRef({ x: 0, y: 0 });
+  const profileTouchEndRef = useRef({ x: 0, y: 0 });
+  
   const previousVisibleProfileIdsRef = useRef([]);
   const [newProfileNoticeCount, setNewProfileNoticeCount] = useState(0);
 
@@ -600,40 +603,27 @@ function App() {
   
     setIsLoadingProfile(true);
   
-    const { data: foundProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select(`
-        id,
-        nickname,
-        gender,
-        target_gender,
-        grade,
-        age,
-        department,
-        mbti,
-        face_type,
-        interests,
-        introduction,
-        ideal_type,
-        egen_teto_score,
-        is_visible,
-        participant_code
-      `)
-      .eq('participant_code', code)
-      .maybeSingle();
-  
-    if (profileError) {
-      console.error('프로필 불러오기 오류:', profileError);
-      alert(`프로필 불러오기 오류: ${profileError.message}`);
-      setIsLoadingProfile(false);
-      return;
-    }
-  
-    if (!foundProfile) {
-      alert('해당 참여 코드로 등록된 프로필을 찾을 수 없어요.');
-      setIsLoadingProfile(false);
-      return;
-    }
+    setIsLoadingProfile(true);
+
+      const { data, error: profileError } = await supabase
+        .rpc('load_profile_by_participant_code', {
+          input_code: code,
+        });
+
+      if (profileError) {
+        console.error('프로필 불러오기 오류:', profileError);
+        alert(`프로필 불러오기 오류: ${profileError.message}`);
+        setIsLoadingProfile(false);
+        return;
+      }
+
+      const foundProfile = Array.isArray(data) ? data[0] : data;
+        
+          if (!foundProfile) {
+            alert('해당 참여 코드로 등록된 프로필을 찾을 수 없어요.');
+            setIsLoadingProfile(false);
+            return;
+          }
   
     const user = await ensureAnonymousUser();
 
@@ -733,23 +723,8 @@ function App() {
 
   const loadSupabaseProfiles = async () => {
     const { data, error } = await supabase
-      .from('profiles')
-      .select(`
-        id,
-        nickname,
-        gender,
-        target_gender,
-        grade,
-        age,
-        department,
-        mbti,
-        face_type,
-        interests,
-        introduction,
-        ideal_type,
-        egen_teto_score,
-        is_visible
-      `)
+      .from('public_profiles')
+      .select('*')
       .order('created_at', { ascending: false });
   
     if (error) {
@@ -1675,10 +1650,10 @@ function App() {
   
 
       const { data: currentProfile, error: currentProfileError } = await supabase
-  .from('profiles')
-  .select('id')
-  .eq('id', supabaseProfileId)
-  .maybeSingle();
+          .from('profiles')
+          .select('id')
+          .eq('id', supabaseProfileId)
+          .maybeSingle();
 
       if (currentProfileError) {
         console.error('내 프로필 확인 오류:', currentProfileError);
@@ -2178,6 +2153,61 @@ if (reverseLikes.length > 0) {
         prevIndex === visibleProfiles.length - 1 ? 0 : prevIndex + 1
       );
     };
+    
+
+    const handleProfileTouchStart = (event) => {
+      const touch = event.touches[0];
+    
+      profileTouchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+      };
+    
+      profileTouchEndRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+      };
+    };
+    
+    const handleProfileTouchMove = (event) => {
+      const touch = event.touches[0];
+    
+      profileTouchEndRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+      };
+    };
+    
+    const handleProfileTouchEnd = () => {
+      const diffX =
+        profileTouchEndRef.current.x - profileTouchStartRef.current.x;
+    
+      const diffY =
+        profileTouchEndRef.current.y - profileTouchStartRef.current.y;
+    
+      const absX = Math.abs(diffX);
+      const absY = Math.abs(diffY);
+    
+      const minSwipeDistance = 60;
+    
+      if (absX < minSwipeDistance) {
+        return;
+      }
+    
+      if (absX < absY * 1.25) {
+        return;
+      }
+    
+      if (diffX < 0) {
+        goToNextProfile();
+        return;
+      }
+    
+      goToPreviousProfile();
+    };
+
+
+
 
     const goToNewProfiles = () => {
       setBrowseProfileIndex(0);
@@ -2523,16 +2553,21 @@ if (reverseLikes.length > 0) {
               aria-label="이전 프로필"
             />
 
-              <div className="browse-card-center">
-                <ProfileCard
-                  key={currentBrowseProfile.id}
-                  otherProfile={currentBrowseProfile}
-                  mode="browse"
-                  isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
-                  isProcessing={processingProfileId === currentBrowseProfile.id}
-                  onToggleLike={handleToggleLike}
-                />
-              </div>
+            <div
+              className="browse-card-center"
+              onTouchStart={handleProfileTouchStart}
+              onTouchMove={handleProfileTouchMove}
+              onTouchEnd={handleProfileTouchEnd}
+            >
+              <ProfileCard
+                key={currentBrowseProfile.id}
+                otherProfile={currentBrowseProfile}
+                mode="browse"
+                isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
+                isProcessing={processingProfileId === currentBrowseProfile.id}
+                onToggleLike={handleToggleLike}
+              />
+            </div>
 
               <button
                 type="button"

@@ -2408,7 +2408,17 @@ label {
 
 
 @media (max-width: 768px) {
+  .browse-card-layout {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+
   .card-side-button {
-    display: none;
+    display: none !important;
+  }
+
+  .browse-card-center {
+    width: 100%;
+    max-width: 100%;
   }
 }

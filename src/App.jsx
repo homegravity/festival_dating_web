@@ -158,6 +158,8 @@ function App() {
   const [browseProfileIndex, setBrowseProfileIndex] = useState(0);
   const profileTouchStartRef = useRef({ x: 0, y: 0 });
   const profileTouchEndRef = useRef({ x: 0, y: 0 });
+  const profileSwipeModeRef = useRef(null);
+
   
   const previousVisibleProfileIdsRef = useRef([]);
   const [newProfileNoticeCount, setNewProfileNoticeCount] = useState(0);
@@ -2167,6 +2169,8 @@ if (reverseLikes.length > 0) {
         x: touch.clientX,
         y: touch.clientY,
       };
+    
+      profileSwipeModeRef.current = null;
     };
     
     const handleProfileTouchMove = (event) => {
@@ -2176,9 +2180,7 @@ if (reverseLikes.length > 0) {
         x: touch.clientX,
         y: touch.clientY,
       };
-    };
     
-    const handleProfileTouchEnd = () => {
       const diffX =
         profileTouchEndRef.current.x - profileTouchStartRef.current.x;
     
@@ -2188,13 +2190,28 @@ if (reverseLikes.length > 0) {
       const absX = Math.abs(diffX);
       const absY = Math.abs(diffY);
     
-      const minSwipeDistance = 60;
+      if (!profileSwipeModeRef.current && (absX > 10 || absY > 10)) {
+        profileSwipeModeRef.current =
+          absX > absY * 1.15 ? 'horizontal' : 'vertical';
+      }
     
-      if (absX < minSwipeDistance) {
+      if (profileSwipeModeRef.current === 'horizontal') {
+        event.preventDefault();
+      }
+    };
+    
+    const handleProfileTouchEnd = () => {
+      if (profileSwipeModeRef.current !== 'horizontal') {
         return;
       }
     
-      if (absX < absY * 1.25) {
+      const diffX =
+        profileTouchEndRef.current.x - profileTouchStartRef.current.x;
+    
+      const absX = Math.abs(diffX);
+      const minSwipeDistance = 55;
+    
+      if (absX < minSwipeDistance) {
         return;
       }
     
@@ -2205,7 +2222,6 @@ if (reverseLikes.length > 0) {
     
       goToPreviousProfile();
     };
-
 
 
 

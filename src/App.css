@@ -2422,3 +2422,27 @@ label {
     max-width: 100%;
   }
 }
+
+.swipe-guide {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .swipe-guide {
+    display: block;
+    margin: -2px 0 10px;
+    color: #999;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    text-align: center;
+  }
+
+  .swipe-guide::before {
+    content: '← ';
+  }
+
+  .swipe-guide::after {
+    content: ' →';
+  }
+}

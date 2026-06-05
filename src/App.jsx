@@ -2554,6 +2554,12 @@ if (reverseLikes.length > 0) {
             </span>
           </div>
 
+          <p className="swipe-guide">
+            좌우로 밀어서 넘겨보세요
+          </p>
+
+
+
           <div className="browse-card-layout">
           <button
               type="button"

@@ -167,7 +167,7 @@ function App() {
 
   const maxMatches = 3;
   const isMatchFull = matchedProfileIds.length >= maxMatches;
-  const profileStatus = isProfileVisible && !isMatchFull ? '공개 중' : '숨김';
+  const profileStatus = isProfileVisible ? '공개 중' : '숨김 중';
 
   useEffect(() => {
     const dataToSave = {
@@ -267,33 +267,6 @@ function App() {
 
 
 
-  useEffect(() => {
-    const autoHideProfileIfMatchFull = async () => {
-      if (!supabaseProfileId) {
-        return;
-      }
-  
-      if (matchedProfileIds.length >= maxMatches && isProfileVisible) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            is_visible: false,
-          })
-          .eq('id', supabaseProfileId);
-  
-        if (error) {
-          console.error('자동 프로필 숨김 오류:', error);
-          alert(`자동 프로필 숨김 오류: ${error.message}`);
-          return;
-        }
-  
-        setIsProfileVisible(false);
-        await loadSupabaseProfiles();
-      }
-    };
-  
-    autoHideProfileIfMatchFull();
-  }, [matchedProfileIds, supabaseProfileId, isProfileVisible]);
   
 
 
@@ -486,12 +459,20 @@ function App() {
 
   
 
-
+  
   const handleStartNewProfile = () => {
     setIsEntered(true);
     setIsProfileSaved(false);
     setProfileFormMode('create');
     setCurrentPage('profileComplete');
+    setLikedProfileIds([]);
+    setRejectedProfileIds([]);
+    setMatchedProfileIds([]);
+    setLikeCredits(maxLikes);
+    setLastLikeRecoveredAt(new Date().toISOString());
+  
+  
+  
   };
 
 
@@ -1326,7 +1307,11 @@ function App() {
     setIsSubmittingProfile(true);
 
 
-
+    if (profileFormMode === 'create') {
+      setLikeCredits(maxLikes);
+      setLastLikeRecoveredAt(new Date().toISOString());
+      setLikedProfileIds([]);
+    }
 
 
     if (!supabaseProfileId) {
@@ -2035,10 +2020,8 @@ if (reverseLikes.length > 0) {
       return;
     }
   
-    if (matchedProfileIds.length >= maxMatches) {
-      alert('매칭은 최대 3명까지만 가능해요.');
-      return;
-    }
+
+    
   
     setProcessingReceivedProfileId(profileId);
     setProcessingReceivedAction('accept');

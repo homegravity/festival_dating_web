@@ -133,6 +133,9 @@ function App() {
   const [isProfileVisible, setIsProfileVisible] = useState(savedData.isProfileVisible ?? true);
   const [supabaseProfileId, setSupabaseProfileId] = useState(savedData.supabaseProfileId || null);
   const [participantCode, setParticipantCode] = useState(savedData.participantCode || '');
+  
+  
+  
   const [currentUserId, setCurrentUserId] = useState(null);
   const [startMode, setStartMode] = useState('home');
   const [lookupCode, setLookupCode] = useState('');
@@ -701,6 +704,10 @@ useEffect(() => {
     setStartMode('home');
     setLookupCode('');
   
+    setNewProfileNoticeCount(0);
+    previousVisibleProfileIdsRef.current = [];
+    hasInitializedVisibleProfileIdsRef.current = false;
+
     await loadSupabaseProfiles();
     await loadMySentLikes(foundProfile.id);
     await loadMyReceivedLikes(foundProfile.id);
@@ -1446,6 +1453,11 @@ useEffect(() => {
     
       setSupabaseProfileId(data.id);
       setParticipantCode(newParticipantCode);
+
+      setNewProfileNoticeCount(0);
+      previousVisibleProfileIdsRef.current = [];
+      hasInitializedVisibleProfileIdsRef.current = false;
+
 
       const contactSaved = await saveOrUpdateContactToSupabase(data.id);
 

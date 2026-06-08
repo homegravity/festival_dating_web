@@ -1679,34 +1679,7 @@ function App() {
     </div>
   );
 
-  useEffect(() => {
-    const currentVisibleProfileIds = visibleProfileIdKey
-      ? visibleProfileIdKey.split('|')
-      : [];
   
-    if (currentVisibleProfileIds.length === 0) {
-      previousVisibleProfileIdsRef.current = [];
-      setNewProfileNoticeCount(0);
-      return;
-    }
-  
-    if (previousVisibleProfileIdsRef.current.length === 0) {
-      previousVisibleProfileIdsRef.current = currentVisibleProfileIds;
-      return;
-    }
-    
-
-    const previousIds = previousVisibleProfileIdsRef.current;
-  
-    const newlyAddedIds = currentVisibleProfileIds.filter(
-      (id) => !previousIds.includes(id)
-    );
-  
-    
-  
-    previousVisibleProfileIdsRef.current = currentVisibleProfileIds;
-  }, [visibleProfileIdKey, browseProfileIndex]);
-
 
   
     const handleToggleLike = async (profileId) => {

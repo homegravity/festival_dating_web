@@ -270,7 +270,7 @@ function App() {
   }
 
   const refreshMyActivity = async () => {
-    await loadSupabaseProfiles();
+    
     await loadMyReceivedLikes(supabaseProfileId);
     await loadMySentLikes(supabaseProfileId);
     await loadMyMatches(supabaseProfileId);
@@ -285,7 +285,19 @@ function App() {
   return () => clearInterval(timer);
 }, [supabaseProfileId, isProfileSaved]);
 
- 
+useEffect(() => {
+  if (!isProfileSaved) {
+    return;
+  }
+
+  loadSupabaseProfiles();
+
+  const timer = setInterval(() => {
+    loadSupabaseProfiles();
+  }, 8000);
+
+  return () => clearInterval(timer);
+}, [isProfileSaved]);
 
 
 

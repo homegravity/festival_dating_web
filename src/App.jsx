@@ -781,6 +781,7 @@ useEffect(() => {
 
 
   const loadSupabaseProfiles = async () => {
+    console.log('프로필 목록 새로고침 실행');
     const { data, error } = await supabase
       .from('public_profiles')
       .select('*')
@@ -793,7 +794,7 @@ useEffect(() => {
     }
   
     const loadedProfiles = data || [];
-  
+    console.log('불러온 프로필 수:', loadedProfiles.length);
     const formattedProfiles = loadedProfiles.map((item) => ({
       id: item.id,
       nickname: item.nickname,
@@ -831,19 +832,11 @@ useEffect(() => {
             !previousVisibleProfileIdsRef.current.includes(profileId)
         );
   
+
+
+        
         if (newProfileIds.length > 0) {
-          const uniqueNewProfileIds = newProfileIds.filter(
-            (profileId) => !newProfileNoticeIdsRef.current.includes(profileId)
-          );
-        
-          if (uniqueNewProfileIds.length > 0) {
-            newProfileNoticeIdsRef.current = [
-              ...newProfileNoticeIdsRef.current,
-              ...uniqueNewProfileIds,
-            ];
-        
-            setNewProfileNoticeCount(newProfileNoticeIdsRef.current.length);
-          }
+          setNewProfileNoticeCount((prevCount) => prevCount + newProfileIds.length);
         }
   
         previousVisibleProfileIdsRef.current = currentProfileIds;
@@ -851,7 +844,7 @@ useEffect(() => {
     }
   
     const orderedProfiles = orderProfilesForBrowse(formattedProfiles);
-  
+    console.log('formattedProfiles 수:', formattedProfiles.length);
     setSupabaseProfiles(orderedProfiles);
   };
 

@@ -42,7 +42,7 @@ function App() {
   const [rejectedProfileIds, setRejectedProfileIds] = useState([]);
   const [profileFormMode, setProfileFormMode] = useState('create');
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
-
+  const profileOrderRef = useRef([]);
 
   const maxLikes = 3;
   const likeRecoveryHours = 2;
@@ -258,13 +258,24 @@ function App() {
 
 
   useEffect(() => {
+    if (!supabaseProfileId || !isProfileSaved) {
+      return;
+    }
+  
+    const refreshMyActivity = async () => {
+      await loadMyReceivedLikes(supabaseProfileId);
+      await loadMySentLikes(supabaseProfileId);
+      await loadMyMatches(supabaseProfileId);
+    };
+  
+    refreshMyActivity();
+  
     const timer = setInterval(() => {
-      setNowTime(Date.now());
-    }, 1000);
+      refreshMyActivity();
+    }, 8000);
   
     return () => clearInterval(timer);
-  }, []);
-
+  }, [supabaseProfileId, isProfileSaved]);
 
 
   
@@ -709,6 +720,63 @@ function App() {
   };
 
 
+
+  const shuffleProfiles = (profiles) => {
+    const shuffledProfiles = [...profiles];
+  
+    for (let i = shuffledProfiles.length - 1; i > 0; i -= 1) {
+      const randomIndex = Math.floor(Math.random() * (i + 1));
+  
+      [shuffledProfiles[i], shuffledProfiles[randomIndex]] = [
+        shuffledProfiles[randomIndex],
+        shuffledProfiles[i],
+      ];
+    }
+  
+    return shuffledProfiles;
+  };
+  
+
+  const orderProfilesForBrowse = (profiles) => {
+    const profileMap = new Map(
+      profiles.map((profileItem) => [profileItem.id, profileItem])
+    );
+  
+    if (profileOrderRef.current.length === 0) {
+      const shuffledProfiles = shuffleProfiles(profiles);
+      profileOrderRef.current = shuffledProfiles.map(
+        (profileItem) => profileItem.id
+      );
+  
+      return shuffledProfiles;
+    }
+  
+    const existingOrderedIds = profileOrderRef.current.filter((profileId) =>
+      profileMap.has(profileId)
+    );
+  
+    const existingIdSet = new Set(existingOrderedIds);
+  
+    const newProfiles = profiles.filter(
+      (profileItem) => !existingIdSet.has(profileItem.id)
+    );
+  
+    const shuffledNewProfiles = shuffleProfiles(newProfiles);
+  
+    profileOrderRef.current = [
+      ...shuffledNewProfiles.map((profileItem) => profileItem.id),
+      ...existingOrderedIds,
+    ];
+  
+    return profileOrderRef.current
+      .map((profileId) => profileMap.get(profileId))
+      .filter(Boolean);
+  };
+
+
+
+
+
   const loadSupabaseProfiles = async () => {
     const { data, error } = await supabase
       .from('public_profiles')
@@ -743,7 +811,10 @@ function App() {
       
     }));
   
-    setSupabaseProfiles(formattedProfiles);
+    const loadedProfiles = data || [];
+      const orderedProfiles = orderProfilesForBrowse(loadedProfiles);
+
+      setSupabaseProfiles(orderedProfiles);
   };
 
   const loadMySentLikes = async (profileId) => {

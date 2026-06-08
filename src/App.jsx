@@ -43,7 +43,7 @@ function App() {
   const [profileFormMode, setProfileFormMode] = useState('create');
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
   const hasInitializedVisibleProfileIdsRef = useRef(false);
-  
+  const skipNextNewProfileNoticeRef = useRef(false);
   
   
   const profileOrderRef = useRef([]);
@@ -826,29 +826,30 @@ useEffect(() => {
       .map((profileItem) => String(profileItem.id))
       .filter((profileId) => profileId !== String(supabaseProfileId));
   
-    if (isProfileSaved && supabaseProfileId) {
-      if (!hasInitializedVisibleProfileIdsRef.current) {
-        previousVisibleProfileIdsRef.current = currentProfileIds;
-        hasInitializedVisibleProfileIdsRef.current = true;
-        
-        setNewProfileNoticeCount(0);
-      } else {
-        const newProfileIds = currentProfileIds.filter(
-          (profileId) =>
-            profileId !== String(supabaseProfileId) &&
-            !previousVisibleProfileIdsRef.current.includes(profileId)
-        );
-  
-
-
-        
-        if (newProfileIds.length > 0) {
-          setNewProfileNoticeCount((prevCount) => prevCount + newProfileIds.length);
+      if (isProfileSaved && supabaseProfileId) {
+        if (skipNextNewProfileNoticeRef.current) {
+          previousVisibleProfileIdsRef.current = currentProfileIds;
+          hasInitializedVisibleProfileIdsRef.current = true;
+          skipNextNewProfileNoticeRef.current = false;
+          setNewProfileNoticeCount(0);
+        } else if (!hasInitializedVisibleProfileIdsRef.current) {
+          previousVisibleProfileIdsRef.current = currentProfileIds;
+          hasInitializedVisibleProfileIdsRef.current = true;
+          setNewProfileNoticeCount(0);
+        } else {
+          const newProfileIds = currentProfileIds.filter(
+            (profileId) =>
+              profileId !== String(supabaseProfileId) &&
+              !previousVisibleProfileIdsRef.current.includes(profileId)
+          );
+      
+          if (newProfileIds.length > 0) {
+            setNewProfileNoticeCount((prevCount) => prevCount + newProfileIds.length);
+          }
+      
+          previousVisibleProfileIdsRef.current = currentProfileIds;
         }
-  
-        previousVisibleProfileIdsRef.current = currentProfileIds;
       }
-    }
   
     const orderedProfiles = orderProfilesForBrowse(formattedProfiles);
     console.log('formattedProfiles 수:', formattedProfiles.length);
@@ -1457,6 +1458,7 @@ useEffect(() => {
       setNewProfileNoticeCount(0);
       previousVisibleProfileIdsRef.current = [];
       hasInitializedVisibleProfileIdsRef.current = false;
+      skipNextNewProfileNoticeRef.current = true;
 
 
       const contactSaved = await saveOrUpdateContactToSupabase(data.id);

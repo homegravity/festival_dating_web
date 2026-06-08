@@ -756,8 +756,8 @@ function App() {
     const shuffledNewProfiles = shuffleProfiles(newProfiles);
   
     profileOrderRef.current = [
-      ...existingOrderedIds,
       ...shuffledNewProfiles.map((profileItem) => profileItem.id),
+      ...existingOrderedIds,
     ];
     return profileOrderRef.current
       .map((profileId) => profileMap.get(profileId))
@@ -810,6 +810,7 @@ function App() {
       if (!hasInitializedVisibleProfileIdsRef.current) {
         previousVisibleProfileIdsRef.current = currentProfileIds;
         hasInitializedVisibleProfileIdsRef.current = true;
+        
         setNewProfileNoticeCount(0);
       } else {
         const newProfileIds = currentProfileIds.filter(
@@ -819,7 +820,18 @@ function App() {
         );
   
         if (newProfileIds.length > 0) {
-          setNewProfileNoticeCount((prevCount) => prevCount + newProfileIds.length);
+          const uniqueNewProfileIds = newProfileIds.filter(
+            (profileId) => !newProfileNoticeIdsRef.current.includes(profileId)
+          );
+        
+          if (uniqueNewProfileIds.length > 0) {
+            newProfileNoticeIdsRef.current = [
+              ...newProfileNoticeIdsRef.current,
+              ...uniqueNewProfileIds,
+            ];
+        
+            setNewProfileNoticeCount(newProfileNoticeIdsRef.current.length);
+          }
         }
   
         previousVisibleProfileIdsRef.current = currentProfileIds;
@@ -2261,12 +2273,7 @@ if (reverseLikes.length > 0) {
 
 
     const goToNewProfiles = () => {
-      const firstNewProfileIndex = Math.max(
-        0,
-        visibleProfiles.length - newProfileNoticeCount
-      );
-    
-      setBrowseProfileIndex(firstNewProfileIndex);
+      setBrowseProfileIndex(0);
       setNewProfileNoticeCount(0);
     
       window.scrollTo({
@@ -2274,7 +2281,6 @@ if (reverseLikes.length > 0) {
         behavior: 'smooth',
       });
     };
-
 
     const renderPageHeader = ({ title, description }) => (
       <div className="app-page-header">

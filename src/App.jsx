@@ -2587,6 +2587,12 @@ if (reverseLikes.length > 0) {
       ) : (
         <div className="single-browse-section">
           
+
+
+          <p style={{ fontSize: '12px', color: 'red', textAlign: 'center' }}>
+            debug: 새프로필 {newProfileNoticeCount} / 전체 {supabaseProfiles.length}
+          </p>
+
           {newProfileNoticeCount > 0 && (
             <button
               type="button"

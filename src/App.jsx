@@ -42,6 +42,10 @@ function App() {
   const [rejectedProfileIds, setRejectedProfileIds] = useState([]);
   const [profileFormMode, setProfileFormMode] = useState('create');
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+  const hasInitializedVisibleProfileIdsRef = useRef(false);
+  
+  
+  
   const profileOrderRef = useRef([]);
 
   const maxLikes = 3;
@@ -261,26 +265,25 @@ function App() {
 
 
   useEffect(() => {
-    if (!supabaseProfileId || !isProfileSaved) {
-      return;
-    }
-  
-    const refreshMyActivity = async () => {
-      await loadMyReceivedLikes(supabaseProfileId);
-      await loadMySentLikes(supabaseProfileId);
-      await loadMyMatches(supabaseProfileId);
-      await checkUnseenNotifications(supabaseProfileId);
-    };
-  
-    refreshMyActivity();
-  
-    const timer = setInterval(() => {
-      refreshMyActivity();
-    }, 8000);
-  
-    return () => clearInterval(timer);
-  }, [supabaseProfileId, isProfileSaved]);
+  if (!supabaseProfileId || !isProfileSaved) {
+    return;
+  }
 
+  const refreshMyActivity = async () => {
+    await loadSupabaseProfiles();
+    await loadMyReceivedLikes(supabaseProfileId);
+    await loadMySentLikes(supabaseProfileId);
+    await loadMyMatches(supabaseProfileId);
+  };
+
+  refreshMyActivity();
+
+  const timer = setInterval(() => {
+    refreshMyActivity();
+  }, 8000);
+
+  return () => clearInterval(timer);
+}, [supabaseProfileId, isProfileSaved]);
 
  
 
@@ -778,32 +781,54 @@ function App() {
       return;
     }
   
-    const formattedProfiles = data.map((item) => ({
+    const loadedProfiles = data || [];
+  
+    const formattedProfiles = loadedProfiles.map((item) => ({
       id: item.id,
       nickname: item.nickname,
       gender: item.gender,
       targetGender: item.target_gender,
       grade: item.grade || '',
       age: item.age ? String(item.age) : '',
-      department: item.department,
-      mbti: item.mbti,
+      department: item.department || '',
+      mbti: item.mbti || '',
       faceType: item.face_type || '',
-      interests: item.interests,
-      introduction: item.introduction,
-      idealType: item.ideal_type,
+      interests: item.interests || '',
+      introduction: item.introduction || '',
+      idealType: item.ideal_type || '',
       egenTetoScore:
         item.egen_teto_score !== null && item.egen_teto_score !== undefined
           ? String(item.egen_teto_score)
           : '',
-      
       isVisible: item.is_visible,
-      
     }));
   
-    const loadedProfiles = data || [];
-      const orderedProfiles = orderProfilesForBrowse(loadedProfiles);
-
-      setSupabaseProfiles(orderedProfiles);
+    const currentProfileIds = formattedProfiles
+      .map((profileItem) => String(profileItem.id))
+      .filter((profileId) => profileId !== String(supabaseProfileId));
+  
+    if (isProfileSaved && supabaseProfileId) {
+      if (!hasInitializedVisibleProfileIdsRef.current) {
+        previousVisibleProfileIdsRef.current = currentProfileIds;
+        hasInitializedVisibleProfileIdsRef.current = true;
+      } else {
+        const newProfileIds = currentProfileIds.filter(
+          (profileId) =>
+            profileId !== String(supabaseProfileId) &&
+            !previousVisibleProfileIdsRef.current.includes(profileId)
+        );
+  
+        if (newProfileIds.length > 0) {
+          setNewProfileNoticeCount((prevCount) => prevCount + newProfileIds.length);
+        }
+  
+        previousVisibleProfileIdsRef.current = currentProfileIds;
+      }
+    }
+  
+    const orderedProfiles = orderProfilesForBrowse(formattedProfiles);
+  
+    setSupabaseProfiles(orderedProfiles);
   };
 
   const loadMySentLikes = async (profileId) => {

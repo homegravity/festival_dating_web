@@ -756,10 +756,9 @@ function App() {
     const shuffledNewProfiles = shuffleProfiles(newProfiles);
   
     profileOrderRef.current = [
-      ...shuffledNewProfiles.map((profileItem) => profileItem.id),
       ...existingOrderedIds,
+      ...shuffledNewProfiles.map((profileItem) => profileItem.id),
     ];
-  
     return profileOrderRef.current
       .map((profileId) => profileMap.get(profileId))
       .filter(Boolean);
@@ -2262,7 +2261,12 @@ if (reverseLikes.length > 0) {
 
 
     const goToNewProfiles = () => {
-      setBrowseProfileIndex(0);
+      const firstNewProfileIndex = Math.max(
+        0,
+        visibleProfiles.length - newProfileNoticeCount
+      );
+    
+      setBrowseProfileIndex(firstNewProfileIndex);
       setNewProfileNoticeCount(0);
     
       window.scrollTo({
@@ -2270,7 +2274,6 @@ if (reverseLikes.length > 0) {
         behavior: 'smooth',
       });
     };
-
 
 
     const renderPageHeader = ({ title, description }) => (

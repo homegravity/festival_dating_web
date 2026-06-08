@@ -811,6 +811,7 @@ function App() {
       if (!hasInitializedVisibleProfileIdsRef.current) {
         previousVisibleProfileIdsRef.current = currentProfileIds;
         hasInitializedVisibleProfileIdsRef.current = true;
+        setNewProfileNoticeCount(0);
       } else {
         const newProfileIds = currentProfileIds.filter(
           (profileId) =>
@@ -1701,9 +1702,7 @@ function App() {
       (id) => !previousIds.includes(id)
     );
   
-    if (newlyAddedIds.length > 0 && browseProfileIndex > 0) {
-      setNewProfileNoticeCount((prevCount) => prevCount + newlyAddedIds.length);
-    }
+    
   
     previousVisibleProfileIdsRef.current = currentVisibleProfileIds;
   }, [visibleProfileIdKey, browseProfileIndex]);

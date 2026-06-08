@@ -123,6 +123,9 @@ function App() {
   const [receivedLikeIds, setReceivedLikeIds] = useState([]);
   const [matchedProfileIds, setMatchedProfileIds] = useState(savedData.matchedProfileIds || []);
   
+
+
+
   const [isProfileVisible, setIsProfileVisible] = useState(savedData.isProfileVisible ?? true);
   const [supabaseProfileId, setSupabaseProfileId] = useState(savedData.supabaseProfileId || null);
   const [participantCode, setParticipantCode] = useState(savedData.participantCode || '');
@@ -266,6 +269,7 @@ function App() {
       await loadMyReceivedLikes(supabaseProfileId);
       await loadMySentLikes(supabaseProfileId);
       await loadMyMatches(supabaseProfileId);
+      await checkUnseenNotifications(supabaseProfileId);
     };
   
     refreshMyActivity();
@@ -278,7 +282,8 @@ function App() {
   }, [supabaseProfileId, isProfileSaved]);
 
 
-  
+ 
+
 
 
   useEffect(() => {
@@ -357,23 +362,7 @@ function App() {
 
 
 
-          if (
-            payload.eventType === 'INSERT' &&
-            String(payload.new?.receiver_profile_id) === String(supabaseProfileId) &&
-            payload.new?.status === 'pending' &&
-            payload.new?.receiver_seen_like === false
-          ) {
-            if (document.visibilityState === 'visible' && document.hasFocus()) {
-              showToast('새 관심이 도착했어요.', 'info');
           
-              await supabase
-                .from('likes')
-                .update({
-                  receiver_seen_like: true,
-                })
-                .eq('id', payload.new.id);
-            }
-          }
 
 
           
@@ -910,21 +899,7 @@ function App() {
       return;
     }
   
-    const message =
-      data.length === 1
-        ? '새 관심이 도착했어요.'
-        : `새 관심이 ${data.length}개 도착했어요.`;
-  
-    showToast(message, 'info');
-  
-    const likeIds = data.map((item) => item.id);
-  
-    const { error: updateError } = await supabase
-      .from('likes')
-      .update({
-        receiver_seen_like: true,
-      })
-      .in('id', likeIds);
+    
   
     if (updateError) {
       console.error('받은 관심 알림 확인 처리 오류:', updateError);
@@ -1693,7 +1668,8 @@ function App() {
       previousVisibleProfileIdsRef.current = currentVisibleProfileIds;
       return;
     }
-  
+    
+
     const previousIds = previousVisibleProfileIdsRef.current;
   
     const newlyAddedIds = currentVisibleProfileIds.filter(

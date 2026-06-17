@@ -26,6 +26,7 @@ function ProfileCard({
   onToggleLike,
   onAcceptLike,
   onRejectLike,
+  handleCopyContactValue,
 }) {
   
   const interestEmojiMap = {
@@ -213,20 +214,32 @@ function ProfileCard({
           </div>
         )}
 
-        {mode === 'match' && (
-          <div className="contact-box">
-            {otherProfile.contactValue ? (
-              <>
-                <p>
-                  <strong>연락수단:</strong> {getContactTypeLabel(otherProfile.contactType)}
-                </p>
-                <p>{otherProfile.contactValue}</p>
-              </>
-            ) : (
-              <p>연락수단을 불러오는 중이에요.</p>
-            )}
-          </div>
-        )}
+{mode === 'match' && (
+  <div className="contact-box">
+    {otherProfile.contactValue ? (
+      <>
+        <p>
+          <strong>연락수단:</strong> {getContactTypeLabel(otherProfile.contactType)}
+        </p>
+
+        <p className="contact-copy-row">
+          <span>{otherProfile.contactValue}</span>
+
+          <button
+            type="button"
+            className="contact-copy-icon-button"
+            onClick={() => handleCopyContactValue(otherProfile.contactValue)}
+            aria-label="연락수단 복사"
+          >
+            📋 복사
+          </button>
+        </p>
+      </>
+    ) : (
+      <p>연락수단을 불러오는 중이에요.</p>
+    )}
+  </div>
+)}
       </div>
           </div>
   );

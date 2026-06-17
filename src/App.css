@@ -2547,3 +2547,42 @@ label {
   border-radius: 15px;
   font-size: 14px;
 }
+
+
+
+.contact-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+.contact-copy-row span {
+  min-width: 0;
+  word-break: break-all;
+}
+
+.contact-copy-icon-button {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  padding: 2px 4px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #777777;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.contact-copy-icon-button:active {
+  opacity: 0.55;
+  transform: none !important;
+}

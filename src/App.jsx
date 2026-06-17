@@ -593,7 +593,19 @@ useEffect(() => {
   };
 
 
-
+  const handleCopyContactValue = async (contactValue) => {
+    if (!contactValue) {
+      return;
+    }
+  
+    try {
+      await navigator.clipboard.writeText(contactValue);
+      showToast('연락수단이 복사됐어요.');
+    } catch (error) {
+      console.error('연락수단 복사 오류:', error);
+      alert('복사에 실패했어요. 직접 선택해서 복사해주세요.');
+    }
+  };
 
   const handleLoadProfileByCode = async () => {
     if (isLoadingProfile) {
@@ -671,6 +683,7 @@ useEffect(() => {
       setIsLoadingProfile(false);
       return;
     }
+    
   
     setProfile({
       nickname: foundProfile.nickname,
@@ -2608,9 +2621,7 @@ if (reverseLikes.length > 0) {
           
 
 
-          <p style={{ fontSize: '12px', color: 'red', textAlign: 'center' }}>
-            debug: 새프로필 {newProfileNoticeCount} / 전체 {supabaseProfiles.length}
-          </p>
+          
 
           {newProfileNoticeCount > 0 && (
             <button
@@ -2763,6 +2774,7 @@ if (reverseLikes.length > 0) {
             key={otherProfile.id}
             otherProfile={otherProfile}
             mode="match"
+            handleCopyContactValue={handleCopyContactValue}
           />
           ))}
         </div>

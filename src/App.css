@@ -4013,3 +4013,154 @@ label {
   background: linear-gradient(90deg, #ff8fab, #ffc078);
   opacity: 0.72;
 }
+
+
+.app.browse-page .like-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 202, 218, 0.76);
+  background: rgba(255, 247, 250, 0.9);
+  color: #c8758c;
+  font-size: 12.5px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  box-shadow: 0 6px 14px rgba(255, 130, 165, 0.08);
+}
+
+.app.browse-page .like-recovery-text {
+  color: #a98a96;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.app.browse-page .sent-likes-shortcut-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 36px;
+  margin: 0 auto 14px;
+  padding: 8px 13px;
+  border: 1px solid rgba(255, 185, 205, 0.75);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #d46f8a;
+  font-size: 12.5px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  box-shadow: 0 7px 16px rgba(255, 130, 165, 0.09);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.browse-page .sent-likes-shortcut-button:active {
+  transform: scale(0.97);
+  opacity: 0.84;
+}
+
+.app.browse-page .browse-control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(255, 214, 226, 0.76);
+  box-shadow:
+    0 14px 34px rgba(255, 115, 155, 0.1),
+    0 4px 12px rgba(120, 80, 100, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.app.browse-page .search-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.app.browse-page .search-box input {
+  width: 100%;
+  height: 42px;
+  padding: 0 13px;
+  border: 1px solid rgba(235, 210, 218, 0.95);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #342d31;
+  font-size: 13.2px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+  outline: none;
+  box-shadow: 0 5px 14px rgba(255, 130, 165, 0.05);
+}
+
+.app.browse-page .search-box input::placeholder {
+  color: #b7aeb2;
+  font-weight: 600;
+}
+
+.app.browse-page .search-box input:focus {
+  border-color: rgba(255, 118, 158, 0.85);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px rgba(255, 118, 158, 0.1),
+    0 8px 18px rgba(255, 130, 165, 0.08);
+}
+
+.app.browse-page .filter-toggle-button {
+  flex: 0 0 auto;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 185, 205, 0.75);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #c8758c;
+  font-size: 12.8px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  box-shadow: 0 6px 14px rgba(255, 130, 165, 0.08);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.browse-page .filter-toggle-button.active {
+  border-color: rgba(255, 118, 158, 0.78);
+  background: linear-gradient(135deg, rgba(255, 242, 247, 0.96), rgba(255, 255, 255, 0.84));
+  color: #df6488;
+  box-shadow:
+    0 8px 18px rgba(255, 120, 155, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.app.browse-page .filter-toggle-button:hover,
+.app.browse-page .filter-toggle-button:focus,
+.app.browse-page .filter-toggle-button:focus-visible {
+  outline: none;
+}
+
+.app.browse-page .filter-toggle-button:active {
+  transform: scale(0.97);
+}
+
+.bottom-nav {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.56),
+      rgba(255, 245, 249, 0.38)
+    ) !important;
+  border: 1px solid rgba(255, 230, 237, 0.78) !important;
+  backdrop-filter: blur(22px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.25) !important;
+  box-shadow:
+    0 18px 42px rgba(255, 115, 155, 0.18),
+    0 8px 18px rgba(120, 80, 100, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 205, 220, 0.22) !important;
+}

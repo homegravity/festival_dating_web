@@ -4402,8 +4402,359 @@ label {
 
 
 
+.app.browse-page .browse-profile-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto 18px;
+  border-radius: 28px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(255, 250, 252, 0.88) 100%
+    );
+  border: 1px solid rgba(255, 214, 226, 0.82);
+  box-shadow:
+    0 18px 42px rgba(255, 115, 155, 0.13),
+    0 5px 16px rgba(120, 80, 100, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  overflow: hidden;
+}
+
+.app.browse-page .browse-profile-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 4px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, #ff8fab, #ffc078, #a891ff);
+  opacity: 0.62;
+}
+
+
+.app.browse-page .browse-profile-card .profile-card-top {
+  padding: 22px 18px 15px;
+  border-bottom: 1px solid rgba(240, 220, 226, 0.72);
+}
+
+.app.browse-page .browse-profile-card .profile-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app.browse-page .browse-profile-card .profile-card-header h2 {
+  margin: 0 0 8px;
+  color: #302a2e;
+  font-family: 'SUIT', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-size: clamp(24px, 6.4vw, 31px);
+  font-weight: 950;
+  line-height: 1.15;
+  letter-spacing: -1.1px;
+}
+
+.app.browse-page .browse-profile-card .profile-meta {
+  margin: 0;
+  color: #9b7f8a;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.55;
+  letter-spacing: -0.35px;
+  word-break: keep-all;
+}
+
+.app.browse-page .browse-profile-card .profile-feature-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.app.browse-page .browse-profile-card .profile-feature-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 31px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(235, 213, 220, 0.92);
+  background: rgba(255, 255, 255, 0.86);
+  color: #8f7480;
+  font-size: 12.3px;
+  font-weight: 850;
+  letter-spacing: -0.35px;
+  box-shadow: 0 5px 12px rgba(255, 130, 165, 0.055);
+}
+
+.app.browse-page .browse-profile-card .egen-teto-chip {
+  gap: 3px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 248, 251, 0.96),
+      rgba(250, 248, 255, 0.94)
+    );
+}
+
+.app.browse-page .browse-profile-card .egen-teto-label {
+  color: #d17f9a;
+  font-weight: 900;
+}
+
+.app.browse-page .browse-profile-card .egen-teto-percent {
+  color: #8f7480;
+  font-weight: 900;
+}
+
+.app.browse-page .browse-profile-card .egen-teto-divider {
+  color: #d7b6c2;
+  margin: 0 1px;
+}
+
+
+.app.browse-page .browse-profile-card .profile-card-scroll {
+  padding: 15px 18px 8px;
+}
+
+.app.browse-page .browse-profile-card .profile-section {
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(245, 225, 232, 0.72);
+}
+
+.app.browse-page .browse-profile-card .profile-section:last-child {
+  border-bottom: 0;
+}
+
+.app.browse-page .browse-profile-card .profile-section-title {
+  margin: 0 0 9px;
+  color: #cf7f99;
+  font-size: 12.7px;
+  font-weight: 950;
+  letter-spacing: -0.4px;
+}
+
+.app.browse-page .browse-profile-card .profile-interest-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.app.browse-page .browse-profile-card .profile-interest-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(235, 213, 220, 0.92);
+  background: rgba(255, 255, 255, 0.88);
+  color: #8f7480;
+  font-size: 12.4px;
+  font-weight: 850;
+  letter-spacing: -0.35px;
+  box-shadow: 0 5px 12px rgba(255, 130, 165, 0.045);
+}
+
+.app.browse-page .browse-profile-card .profile-section-text {
+  margin: 0;
+  padding: 13px 14px;
+  border-radius: 18px;
+  background: rgba(255, 248, 251, 0.72);
+  border: 1px solid rgba(255, 224, 232, 0.72);
+  color: #7f6973;
+  font-size: 13.3px;
+  font-weight: 700;
+  line-height: 1.65;
+  letter-spacing: -0.35px;
+  word-break: keep-all;
+}
+
+.app.browse-page .browse-profile-card .profile-card-scroll {
+  padding: 16px 18px 6px;
+}
+
+.app.browse-page .browse-profile-card .profile-section {
+  padding: 14px 2px;
+  border-bottom: 1px solid rgba(245, 225, 232, 0.68);
+}
+
+.app.browse-page .browse-profile-card .profile-section:last-child {
+  border-bottom: 0;
+}
+
+.app.browse-page .browse-profile-card .profile-section-title {
+  margin: 0 0 9px;
+  padding-left: 1px;
+  color: #cf7f99;
+  font-size: 12.8px;
+  font-weight: 950;
+  letter-spacing: -0.4px;
+}
+
+.app.browse-page .browse-profile-card .profile-interest-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 1px;
+}
+
+.app.browse-page .browse-profile-card .profile-section-text {
+  margin: 0;
+  padding: 0 1px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #7f6973;
+  font-size: 13.4px;
+  font-weight: 700;
+  line-height: 1.65;
+  letter-spacing: -0.35px;
+  word-break: keep-all;
+}
+
+.app.browse-page .browse-profile-card .profile-card-scroll {
+  padding: 18px 20px 8px;
+}
+
+.app.browse-page .browse-profile-card .profile-section {
+  margin: 0 0 10px;
+  padding: 16px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 224, 232, 0.72);
+  background: rgba(255, 251, 253, 0.72);
+  box-shadow: 0 6px 16px rgba(255, 130, 165, 0.045);
+}
+
+.app.browse-page .browse-profile-card .profile-section:last-child {
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255, 224, 232, 0.72);
+}
+
+.app.browse-page .browse-profile-card .profile-section-title {
+  margin: 0 0 10px;
+  padding-left: 0;
+  color: #e07c9d;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: -0.4px;
+}
+
+.app.browse-page .browse-profile-card .profile-interest-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+}
+
+.app.browse-page .browse-profile-card .profile-interest-chip {
+  min-height: 33px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 204, 220, 0.78);
+  background: rgba(255, 255, 255, 0.94);
+  color: #b86b82;
+  font-size: 12.6px;
+  font-weight: 850;
+  box-shadow: 0 5px 12px rgba(255, 130, 165, 0.06);
+}
+
+.app.browse-page .browse-profile-card .profile-section-text {
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #8f5f70;
+  font-size: 13.7px;
+  font-weight: 750;
+  line-height: 1.68;
+  letter-spacing: -0.35px;
+  word-break: keep-all;
+}
+
+/* 둘러보기 카드 상단 여백 조정 */
+.app.browse-page .browse-profile-card .profile-card-top {
+  padding: 22px 18px 9px !important;
+  border-bottom: 1px solid rgba(235, 205, 216, 0.72);
+}
+
+.app.browse-page .browse-profile-card .profile-feature-row {
+  margin-top: 13px;
+  margin-bottom: 0;
+}
+
+.app.browse-page .browse-profile-card .profile-card-actions {
+  padding: 14px 18px 18px;
+}
+
+.app.browse-page .browse-profile-card .like-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 50px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9671 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: -0.45px;
+  box-shadow:
+    0 13px 26px rgba(255, 105, 145, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.browse-page .browse-profile-card .like-action-button:active {
+  transform: scale(0.975);
+  opacity: 0.88;
+}
+
+.app.browse-page .browse-profile-card .like-action-button.liked {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 245, 249, 0.96),
+      rgba(255, 255, 255, 0.88)
+    );
+  color: #d46f8a;
+  border: 1px solid rgba(255, 185, 205, 0.8);
+  box-shadow:
+    0 9px 20px rgba(255, 130, 165, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.app.browse-page .browse-profile-card .like-action-button:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.app.browse-page .browse-profile-card .like-action-icon {
+  font-size: 16px;
+  line-height: 1;
+}
 
 
 
-
-
+.app.browse-page .like-count-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 3px;
+  color: #e07c9d;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1;
+}

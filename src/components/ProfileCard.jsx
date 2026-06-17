@@ -177,7 +177,7 @@ function ProfileCard({
                 disabled={isProcessing}
               >
                 <span className="like-action-icon">
-                  {isLiked ? '↺' : '♥'}
+                  {isLiked ? '↺' : '♡'}
                 </span>
 
                 <span>

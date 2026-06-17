@@ -2392,6 +2392,7 @@ if (reverseLikes.length > 0) {
         })}
 
         <p className="like-count">
+          <span className="like-count-icon">♡</span>
           남은 관심 {remainingLikes}회
           <span className="like-recovery-text">
             · {getLikeRecoveryText()}

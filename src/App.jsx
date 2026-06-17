@@ -2382,11 +2382,11 @@ if (reverseLikes.length > 0) {
 
   if (isProfileSaved && currentPage === 'browse') {
     return (
-      <div className="app">
+      <div className="app browse-page">
         {toastElement}
         {renderPageHeader({
           title: '프로필 둘러보기',
-          description: '두사타에서 새로운 인연을 찾아보세요.',
+          description: '',
         })}
 
         <p className="like-count">
@@ -3091,7 +3091,7 @@ if (reverseLikes.length > 0) {
         {startMode === 'home' && (
           <div className="start-card">
             <div className="start-card-header">
-              <h2>시작하기</h2>
+              
               <p>
                  참여 코드를 저장해두면<br /> 
                  나중에 내 프로필을 다시 불러올 수 있어요.

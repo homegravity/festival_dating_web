@@ -3813,3 +3813,203 @@ label {
   backdrop-filter: blur(22px) saturate(1.25) !important;
   -webkit-backdrop-filter: blur(22px) saturate(1.25) !important;
 }
+
+.bottom-nav button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  position: relative;
+  width: auto;
+  margin-top: 0;
+  padding: 10px 6px;
+  border-radius: 16px;
+  background: transparent !important;
+  color: #8f7d86 !important;
+  font-size: 12.8px;
+  font-weight: 900;
+  letter-spacing: -0.45px;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav button:hover,
+.bottom-nav button:focus,
+.bottom-nav button:focus-visible {
+  background: transparent !important;
+  color: #8f7d86 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.bottom-nav button.active-nav {
+  background:
+    linear-gradient(135deg, rgba(255, 242, 247, 0.92), rgba(255, 255, 255, 0.78)) !important;
+  color: #df6488 !important;
+  box-shadow:
+    0 9px 20px rgba(255, 120, 155, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 200, 218, 0.3) !important;
+}
+
+.bottom-nav button.active-nav:hover,
+.bottom-nav button.active-nav:focus,
+.bottom-nav button.active-nav:focus-visible {
+  background:
+    linear-gradient(135deg, rgba(255, 242, 247, 0.92), rgba(255, 255, 255, 0.78)) !important;
+  color: #df6488 !important;
+}
+
+.bottom-nav .nav-count {
+  position: static !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  margin-left: 2px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9671 100%);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: 0 5px 12px rgba(255, 105, 145, 0.28);
+}
+
+.bottom-nav button {
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+}
+
+.bottom-nav .nav-count {
+  flex: 0 0 auto;
+}
+
+.bottom-nav button {
+  font-size: 12.3px !important;
+  gap: 3px !important;
+  padding: 10px 4px !important;
+}
+
+.bottom-nav button {
+  transition:
+    transform 0.16s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.16s ease !important;
+}
+
+.bottom-nav button:active {
+  transform: scale(0.9) translateY(2px) !important;
+  opacity: 0.82;
+}
+
+
+.bottom-nav button.active-nav {
+  transition:
+    transform 0.18s ease,
+    background 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease !important;
+}
+
+.bottom-nav button.active-nav {
+  animation: navSoftPop 0.32s ease-out;
+}
+
+@keyframes navSoftPop {
+  0% {
+    transform: scale(0.98) translateY(1px);
+  }
+
+  65% {
+    transform: scale(1.01) translateY(-0.5px);
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.app.browse-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(255, 198, 214, 0.42) 0, rgba(255, 198, 214, 0) 32%),
+    radial-gradient(circle at 88% 18%, rgba(210, 200, 255, 0.3) 0, rgba(210, 200, 255, 0) 30%),
+    radial-gradient(circle at 50% 96%, rgba(255, 228, 190, 0.46) 0, rgba(255, 228, 190, 0) 38%),
+    linear-gradient(180deg, #fff7fa 0%, #fffdf9 52%, #fff5f8 100%) !important;
+}
+
+.app.browse-page::before {
+  content: '';
+  position: fixed;
+  top: 96px;
+  right: -72px;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: rgba(255, 142, 178, 0.12);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app.browse-page::after {
+  content: '';
+  position: fixed;
+  left: -82px;
+  bottom: 90px;
+  width: 210px;
+  height: 210px;
+  border-radius: 999px;
+  background: rgba(255, 210, 150, 0.16);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app.browse-page > *:not(.bottom-nav) {
+  position: relative;
+  z-index: 1;
+}
+
+
+.app.browse-page .app-page-header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.app.browse-page .app-page-title {
+  margin: 0;
+  color: #302a2e;
+  font-family: 'SUIT', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-size: clamp(25px, 6.5vw, 32px);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -1.1px;
+}
+
+.app.browse-page .app-page-description {
+  max-width: 320px;
+  margin: 9px auto 0;
+  color: #8f7a84;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: -0.35px;
+}
+
+.app.browse-page .app-page-header::after {
+  content: '';
+  display: block;
+  width: 46px;
+  height: 4px;
+  margin: 13px auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff8fab, #ffc078);
+  opacity: 0.72;
+}

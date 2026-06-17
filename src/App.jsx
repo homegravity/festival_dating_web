@@ -3065,8 +3065,8 @@ if (reverseLikes.length > 0) {
   }
 
   return (
-          <div className="app">
-        {toastElement}
+    <div className="app start-page">
+      {toastElement}
 
         <div className="start-hero">
           <p className="start-brand" aria-label="두유는 사랑을 타고">
@@ -3087,13 +3087,12 @@ if (reverseLikes.length > 0) {
           </p>
 
           <h1 className="start-title">
-            온라인으로 즐기는<br />
-            이상형 매칭
+           가볍게 둘러보고<br />
+           마음이 가면 관심 보내기
           </h1>
 
           <p className="start-description">
-            프로필을 만들고, 마음이 가는 사람에게 관심을 보내보세요.
-            서로 관심이 통하면 연락수단을 확인할 수 있어요.
+            매칭이 된 경우에만 연락수단이 공개돼요.
           </p>
         </div>
 
@@ -3102,8 +3101,8 @@ if (reverseLikes.length > 0) {
             <div className="start-card-header">
               <h2>시작하기</h2>
               <p>
-                처음 참여한다면 프로필을 만들고, 이미 참여했다면 참여 코드로
-                내 프로필을 다시 불러올 수 있어요.
+                 참여 코드를 저장해두면<br /> 
+                 나중에 내 프로필을 다시 불러올 수 있어요.
               </p>
             </div>
 

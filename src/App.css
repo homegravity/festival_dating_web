@@ -2586,3 +2586,232 @@ label {
   opacity: 0.55;
   transform: none !important;
 }
+
+.start-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 205, 218, 0.55) 0, rgba(255, 205, 218, 0) 32%),
+    radial-gradient(circle at 86% 18%, rgba(216, 205, 255, 0.45) 0, rgba(216, 205, 255, 0) 30%),
+    radial-gradient(circle at 50% 92%, rgba(255, 232, 199, 0.65) 0, rgba(255, 232, 199, 0) 38%),
+    linear-gradient(180deg, #fff8fa 0%, #fffdf9 48%, #fff6f8 100%);
+}
+
+.start-page::before {
+  content: '';
+  position: fixed;
+  top: 82px;
+  right: -58px;
+  width: 170px;
+  height: 170px;
+  border-radius: 999px;
+  background: rgba(255, 174, 199, 0.18);
+  filter: blur(2px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.start-page::after {
+  content: '';
+  position: fixed;
+  left: -72px;
+  bottom: 84px;
+  width: 190px;
+  height: 190px;
+  border-radius: 999px;
+  background: rgba(255, 218, 170, 0.24);
+  filter: blur(2px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.start-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+.start-page .start-title {
+  margin-top: 16px;
+  margin-bottom: 12px;
+  color: #332d30;
+  font-size: clamp(22px, 5.6vw, 29px);
+  font-weight: 900;
+  line-height: 1.22;
+  letter-spacing: -1.1px;
+  font-family: 'SUIT', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+
+.start-page .start-description {
+  max-width: 320px;
+  margin: 0 auto;
+  color: #6f666a;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.65;
+  letter-spacing: -0.35px;
+}
+
+
+.start-page .start-brand {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 9px;
+  margin: 10px 0 6px;
+}
+
+.start-page .brand-word {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.start-page .brand-main {
+  font-size: clamp(34px, 9.5vw, 48px);
+  font-weight: 950;
+  line-height: 0.95;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9a76 48%, #8d72ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 7px 14px rgba(255, 105, 145, 0.16));
+}
+
+.start-page .brand-sub {
+  margin-bottom: 5px;
+  color: #7a6f75;
+  font-size: clamp(14px, 3.8vw, 18px);
+  font-weight: 900;
+  letter-spacing: -0.6px;
+}
+
+
+.start-page {
+  font-family: 'Pretendard', 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.start-page .start-title {
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+  margin-bottom: 14px;
+  color: #332d30;
+  font-size: clamp(22px, 5.6vw, 29px);
+  font-weight: 900;
+  line-height: 1.28;
+  letter-spacing: -1px;
+  font-family: 'SUIT', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+
+.start-page .start-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 54px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff8fab, #ffc07a);
+  transform: translateX(-50%);
+  opacity: 0.75;
+}
+
+.start-page .start-description {
+  max-width: 310px;
+  margin: 8px auto 0;
+  color: #746a6f;
+  font-size: 12.8px;
+  font-weight: 700;
+  line-height: 1.65;
+  letter-spacing: -0.35px;
+}
+
+
+
+.start-page .start-card {
+  position: relative;
+  margin-top: 28px;
+  padding: 22px 20px 20px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 210, 222, 0.72);
+  box-shadow:
+    0 18px 42px rgba(255, 115, 155, 0.14),
+    0 4px 14px rgba(120, 80, 100, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.start-page .start-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 4px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, #ff8fab, #ffc078, #a891ff);
+  opacity: 0.75;
+}
+
+.start-page .start-card-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.start-page .start-card-header h2 {
+  margin: 0 0 8px;
+  color: #342d31;
+  font-size: 20px;
+  font-weight: 950;
+  letter-spacing: -0.8px;
+}
+
+.start-page .start-card-header p {
+  margin: 0 auto;
+  max-width: 310px;
+  color: #7c7176;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.58;
+  letter-spacing: -0.35px;
+}
+
+.start-page .start-action-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.start-page .start-primary-button {
+  height: 50px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9671 100%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.4px;
+  box-shadow: 0 12px 24px rgba(255, 105, 145, 0.28);
+}
+
+.start-page .start-secondary-button {
+  height: 48px;
+  border: 1px solid rgba(255, 185, 205, 0.75);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #e45f86;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  box-shadow: 0 8px 18px rgba(255, 145, 175, 0.1);
+}
+
+.start-page .start-primary-button:active,
+.start-page .start-secondary-button:active {
+  transform: scale(0.985);
+}

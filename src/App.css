@@ -4164,3 +4164,14 @@ label {
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 -1px 0 rgba(255, 205, 220, 0.22) !important;
 }
+
+@supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+  .bottom-nav {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.86),
+        rgba(255, 244, 249, 0.78)
+      ) !important;
+  }
+}

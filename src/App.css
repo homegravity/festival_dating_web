@@ -4962,3 +4962,59 @@ label {
   padding: 6px 10px !important;
   font-size: 12.2px !important;
 }
+
+
+/* 둘러보기 카드 정보 밀도 정리 */
+.app.browse-page .browse-profile-card .profile-card-header h2 {
+  font-size: clamp(22px, 5.8vw, 28px) !important;
+  margin-bottom: 6px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-meta {
+  font-size: 12.3px !important;
+  line-height: 1.45 !important;
+  color: #9f7686 !important;
+}
+
+.app.browse-page .browse-profile-card .profile-card-top {
+  padding: 20px 18px 8px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-feature-row {
+  gap: 6px !important;
+  margin-top: 11px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-feature-chip {
+  min-height: 29px !important;
+  padding: 5px 9px !important;
+  font-size: 12px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-card-scroll {
+  padding: 14px 13px 7px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-section {
+  margin-bottom: 8px !important;
+  padding: 13px 11px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-section-title {
+  font-size: 12px !important;
+  margin-bottom: 7px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-section-text {
+  font-size: 12.8px !important;
+  line-height: 1.55 !important;
+  font-weight: 720 !important;
+}
+
+.app.browse-page .browse-profile-card .profile-interest-chip {
+  min-height: 30px !important;
+  padding: 5px 9px !important;
+  font-size: 12px !important;
+}
+
+

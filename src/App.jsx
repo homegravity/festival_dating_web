@@ -2804,7 +2804,7 @@ if (reverseLikes.length > 0) {
     profile.gender,
     profile.grade,
     profile.age ? `${profile.age}세` : '',
-    profile.department,
+    profile.department ? `🎓 ${profile.department}` : '',
     profile.mbti,
   ].filter(Boolean);
   

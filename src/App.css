@@ -3520,3 +3520,296 @@ label {
   background: linear-gradient(90deg, #ff8fab, #ffc078);
   opacity: 0.75;
 }
+
+.app.my-profile-page .my-profile-card {
+  padding: 20px 18px;
+}
+
+.app.my-profile-page .my-profile-header {
+  padding: 4px 2px 16px;
+  border-bottom: 1px solid rgba(240, 220, 226, 0.75);
+  margin-bottom: 14px;
+}
+
+.app.my-profile-page .my-profile-label {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0 0 9px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(255, 241, 246, 0.95);
+  color: #e45f86;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+}
+
+.app.my-profile-page .my-profile-header h2 {
+  margin: 0 0 8px;
+  color: #2f2a2c;
+  font-size: 25px;
+  font-weight: 950;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.app.my-profile-page .my-profile-card .profile-meta {
+  margin: 0;
+  color: #746a6f;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.55;
+  letter-spacing: -0.35px;
+}
+
+.app.my-profile-page .my-profile-label {
+  background: rgba(255, 244, 247, 0.95);
+  color: #b86a7d;
+  border: 1px solid rgba(255, 205, 218, 0.8);
+}
+
+.app.my-profile-page .my-profile-header h2 {
+  color: #322d30;
+}
+
+.app.my-profile-page .my-profile-card .profile-meta {
+  color: #746b70;
+}
+
+.app.my-profile-page .profile-feature-row {
+  gap: 7px;
+  margin: 12px 0 16px;
+}
+
+.app.my-profile-page .profile-feature-chip {
+  border: 1px solid rgba(235, 213, 220, 0.9);
+  background: rgba(255, 250, 252, 0.92);
+  color: #5f565b;
+  font-size: 12.5px;
+  font-weight: 800;
+  box-shadow: 0 5px 12px rgba(255, 130, 165, 0.05);
+}
+
+.app.my-profile-page .egen-teto-chip {
+  background: linear-gradient(135deg, rgba(255, 248, 251, 0.95), rgba(250, 248, 255, 0.95));
+  color: #5f565b;
+}
+
+.app.my-profile-page .egen-teto-label {
+  color: #9b7f8a;
+}
+
+.app.my-profile-page .egen-teto-percent {
+  color: #6c6066;
+}
+
+.app.my-profile-page .profile-section,
+.app.my-profile-page .my-profile-section {
+  padding: 13px 0;
+  border-top: 1px solid rgba(240, 224, 230, 0.75);
+}
+
+.app.my-profile-page .profile-section:first-of-type,
+.app.my-profile-page .my-profile-section:first-of-type {
+  border-top: 0;
+}
+
+.app.my-profile-page .profile-section-title {
+  margin: 0 0 7px;
+  color: #8a7d83;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+}
+
+.app.my-profile-page .profile-section-text {
+  margin: 0;
+  color: #3f383c;
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.65;
+  letter-spacing: -0.35px;
+}
+
+.app.my-profile-page .profile-interest-chip {
+  border: 1px solid rgba(235, 213, 220, 0.9);
+  background: rgba(255, 250, 252, 0.92);
+  color: #5f565b;
+  font-size: 12.5px;
+  font-weight: 800;
+  box-shadow: 0 5px 12px rgba(255, 130, 165, 0.05);
+}
+.app.my-profile-page .profile-feature-chip,
+.app.my-profile-page .profile-interest-chip {
+  color: #6f6268;
+}
+
+.app.my-profile-page .egen-teto-chip {
+  color: #6f6268;
+}
+
+.app.my-profile-page .egen-teto-label {
+  color: #b1788b;
+}
+
+.app.my-profile-page .egen-teto-percent {
+  color: #7c6a72;
+}
+
+.app.my-profile-page .profile-section-title {
+  color: #a06f80;
+}
+
+.app.my-profile-page .profile-section-text {
+  color: #5a5055;
+}
+
+.app.my-profile-page .my-profile-section .profile-section-title {
+  color: #a06f80;
+}
+
+.app.my-profile-page .my-profile-section .profile-section-text {
+  color: #5a5055;
+}
+
+.app.my-profile-page .profile-section,
+.app.my-profile-page .my-profile-section {
+  padding: 14px 10px;
+}
+
+.app.my-profile-page .profile-section-title,
+.app.my-profile-page .profile-section-text {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.app.my-profile-page .my-profile-card .profile-meta {
+  color: #9b7f8a;
+}
+
+.app.my-profile-page .profile-feature-chip,
+.app.my-profile-page .profile-interest-chip {
+  color: #8f7480;
+}
+
+.app.my-profile-page .egen-teto-label {
+  color: #d17f9a;
+}
+
+.app.my-profile-page .egen-teto-percent {
+  color: #9b7d89;
+}
+
+.app.my-profile-page .profile-section-title,
+.app.my-profile-page .my-profile-section .profile-section-title {
+  color: #cf7f99;
+}
+
+.app.my-profile-page .profile-section-text,
+.app.my-profile-page .my-profile-section .profile-section-text {
+  color: #7f6973;
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
+  max-width: 430px;
+  min-height: 66px;
+  padding: 9px 10px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 214, 226, 0.78);
+  box-shadow:
+    0 14px 34px rgba(255, 115, 155, 0.16),
+    0 4px 14px rgba(120, 80, 100, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 6px;
+  z-index: 50;
+}
+
+.bottom-nav button {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: #9a8790;
+  font-size: 11.5px;
+  font-weight: 850;
+  letter-spacing: -0.45px;
+  cursor: pointer;
+  transition:
+    transform 0.14s ease,
+    background 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav button.active,
+.bottom-nav button.selected,
+.bottom-nav button.current {
+  background: linear-gradient(135deg, #fff0f5 0%, #fff8fb 100%);
+  color: #e45f86;
+  box-shadow:
+    0 8px 18px rgba(255, 120, 155, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.78);
+}
+
+.bottom-nav button:active {
+  transform: scale(0.94);
+}
+
+.bottom-nav .nav-badge,
+.bottom-nav .bottom-nav-badge,
+.bottom-nav .nav-count,
+.bottom-nav .badge,
+.bottom-nav .count-badge {
+  position: absolute;
+  top: 4px;
+  right: 12px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9671 100%);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 17px;
+  text-align: center;
+  box-shadow: 0 5px 12px rgba(255, 105, 145, 0.32);
+}
+
+.bottom-nav button {
+  font-size: 12.5px;
+  font-weight: 900;
+  letter-spacing: -0.45px;
+}
+
+.bottom-nav {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.62),
+      rgba(255, 245, 249, 0.46)
+    ) !important;
+  border: 1px solid rgba(255, 230, 237, 0.82) !important;
+  box-shadow:
+    0 18px 42px rgba(255, 115, 155, 0.18),
+    0 8px 18px rgba(120, 80, 100, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 205, 220, 0.22) !important;
+  backdrop-filter: blur(22px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.25) !important;
+}

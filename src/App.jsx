@@ -2259,7 +2259,7 @@ if (reverseLikes.length > 0) {
     
       profileSwipeModeRef.current = null;
     
-      setIsProfileDragging(true);
+      // 여기서 dragging을 켜지 않음
       setIsProfileExiting(false);
       setProfileSwipeOffsetX(0);
     };
@@ -2281,13 +2281,21 @@ if (reverseLikes.length > 0) {
       const absX = Math.abs(diffX);
       const absY = Math.abs(diffY);
     
-      if (!profileSwipeModeRef.current && (absX > 10 || absY > 10)) {
+      if (!profileSwipeModeRef.current && (absX > 12 || absY > 12)) {
         profileSwipeModeRef.current =
-          absX > absY * 1.15 ? 'horizontal' : 'vertical';
+          absX > absY * 1.35 ? 'horizontal' : 'vertical';
+      }
+    
+      if (profileSwipeModeRef.current === 'vertical') {
+        setIsProfileDragging(false);
+        setProfileSwipeOffsetX(0);
+        return;
       }
     
       if (profileSwipeModeRef.current === 'horizontal') {
         event.preventDefault();
+    
+        setIsProfileDragging(true);
     
         const limitedDiffX = Math.max(-120, Math.min(120, diffX));
         setProfileSwipeOffsetX(limitedDiffX);
@@ -2299,6 +2307,7 @@ if (reverseLikes.length > 0) {
     
       if (profileSwipeModeRef.current !== 'horizontal') {
         setProfileSwipeOffsetX(0);
+        profileSwipeModeRef.current = null;
         return;
       }
     
@@ -2310,6 +2319,7 @@ if (reverseLikes.length > 0) {
     
       if (absX < minSwipeDistance) {
         setProfileSwipeOffsetX(0);
+        profileSwipeModeRef.current = null;
         return;
       }
     
@@ -2327,9 +2337,9 @@ if (reverseLikes.length > 0) {
     
         setIsProfileExiting(false);
         setProfileSwipeOffsetX(0);
+        profileSwipeModeRef.current = null;
       }, 230);
     };
-
 
 
     const goToNewProfiles = () => {

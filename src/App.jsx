@@ -1717,8 +1717,10 @@ useEffect(() => {
 
 
   const toastElement = toastMessage && (
-    <div className={`toast-message ${toastType}`}>
-      {toastMessage}
+    <div className="toast-layer">
+      <div className={`toast-message ${toastType}`}>
+        {toastMessage}
+      </div>
     </div>
   );
 

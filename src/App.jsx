@@ -46,6 +46,12 @@ function App() {
   const skipNextNewProfileNoticeRef = useRef(false);
   
   
+
+const [profileSwipeOffsetX, setProfileSwipeOffsetX] = useState(0);
+const [isProfileDragging, setIsProfileDragging] = useState(false);
+const [isProfileExiting, setIsProfileExiting] = useState(false);
+
+
   const profileOrderRef = useRef([]);
 
   const maxLikes = 3;
@@ -2252,6 +2258,10 @@ if (reverseLikes.length > 0) {
       };
     
       profileSwipeModeRef.current = null;
+    
+      setIsProfileDragging(true);
+      setIsProfileExiting(false);
+      setProfileSwipeOffsetX(0);
     };
     
     const handleProfileTouchMove = (event) => {
@@ -2278,11 +2288,17 @@ if (reverseLikes.length > 0) {
     
       if (profileSwipeModeRef.current === 'horizontal') {
         event.preventDefault();
+    
+        const limitedDiffX = Math.max(-120, Math.min(120, diffX));
+        setProfileSwipeOffsetX(limitedDiffX);
       }
     };
     
     const handleProfileTouchEnd = () => {
+      setIsProfileDragging(false);
+    
       if (profileSwipeModeRef.current !== 'horizontal') {
+        setProfileSwipeOffsetX(0);
         return;
       }
     
@@ -2293,15 +2309,25 @@ if (reverseLikes.length > 0) {
       const minSwipeDistance = 55;
     
       if (absX < minSwipeDistance) {
+        setProfileSwipeOffsetX(0);
         return;
       }
     
-      if (diffX < 0) {
-        goToNextProfile();
-        return;
-      }
+      const exitOffset = diffX < 0 ? -420 : 420;
     
-      goToPreviousProfile();
+      setIsProfileExiting(true);
+      setProfileSwipeOffsetX(exitOffset);
+    
+      setTimeout(() => {
+        if (diffX < 0) {
+          goToNextProfile();
+        } else {
+          goToPreviousProfile();
+        }
+    
+        setIsProfileExiting(false);
+        setProfileSwipeOffsetX(0);
+      }, 230);
     };
 
 
@@ -2651,21 +2677,32 @@ if (reverseLikes.length > 0) {
               aria-label="이전 프로필"
             />
 
-            <div
-              className="browse-card-center"
-              onTouchStart={handleProfileTouchStart}
-              onTouchMove={handleProfileTouchMove}
-              onTouchEnd={handleProfileTouchEnd}
-            >
-              <ProfileCard
-                key={currentBrowseProfile.id}
-                otherProfile={currentBrowseProfile}
-                mode="browse"
-                isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
-                isProcessing={processingProfileId === currentBrowseProfile.id}
-                onToggleLike={handleToggleLike}
-              />
-            </div>
+                <div
+                  className={`browse-card-center ${
+                    isProfileDragging ? 'dragging' : ''
+                  } ${isProfileExiting ? 'exiting' : ''}`}
+                  onTouchStart={handleProfileTouchStart}
+                  onTouchMove={handleProfileTouchMove}
+                  onTouchEnd={handleProfileTouchEnd}
+                >
+                  <div
+                    key={currentBrowseProfile.id}
+                    className="swipe-card-front"
+                    style={{
+                      transform: `translateX(${profileSwipeOffsetX}px) rotate(${profileSwipeOffsetX / 24}deg)`,
+                      opacity: Math.max(0.72, 1 - Math.abs(profileSwipeOffsetX) / 420),
+                    }}
+                  >
+                    <ProfileCard
+                      key={currentBrowseProfile.id}
+                      otherProfile={currentBrowseProfile}
+                      mode="browse"
+                      isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
+                      isProcessing={processingProfileId === currentBrowseProfile.id}
+                      onToggleLike={handleToggleLike}
+                    />
+                  </div>
+                </div>
 
               <button
                 type="button"

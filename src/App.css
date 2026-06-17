@@ -4758,3 +4758,207 @@ label {
   font-weight: 950;
   line-height: 1;
 }
+
+
+.app.browse-page .browse-card-center {
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+  will-change: transform, opacity;
+}
+
+.app.browse-page .browse-card-center.dragging {
+  transition: none !important;
+}
+
+.app.browse-page .browse-card-center.exiting {
+  transition:
+    transform 0.18s ease-in,
+    opacity 0.16s ease !important;
+}
+
+
+.app.browse-page .browse-card-center {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  touch-action: pan-y;
+  user-select: none;
+  perspective: 900px;
+}
+
+.app.browse-page .browse-card-center::before,
+.app.browse-page .browse-card-center::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 12px;
+  bottom: 22px;
+  border-radius: 28px;
+  pointer-events: none;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+}
+
+.app.browse-page .browse-card-center::before {
+  z-index: 0;
+  background: rgba(255, 244, 249, 0.84);
+  border: 1px solid rgba(255, 218, 228, 0.72);
+  box-shadow: 0 14px 30px rgba(255, 115, 155, 0.08);
+  transform: translateY(10px) scale(0.965) rotate(-1.2deg);
+  opacity: 0.72;
+}
+
+.app.browse-page .browse-card-center::after {
+  z-index: 1;
+  background: rgba(255, 250, 252, 0.9);
+  border: 1px solid rgba(255, 224, 232, 0.82);
+  box-shadow: 0 12px 26px rgba(255, 115, 155, 0.08);
+  transform: translateY(5px) scale(0.982) rotate(0.8deg);
+  opacity: 0.88;
+}
+
+.app.browse-page .swipe-card-front {
+  position: relative;
+  z-index: 2;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+  will-change: transform, opacity;
+}
+
+.app.browse-page .browse-card-center.dragging .swipe-card-front {
+  transition: none !important;
+}
+
+.app.browse-page .browse-card-center.exiting .swipe-card-front {
+  transition:
+    transform 0.18s ease-in,
+    opacity 0.16s ease !important;
+}
+
+
+.app.browse-page .browse-card-center.dragging::before {
+  transform: translateY(13px) scale(0.975) rotate(-0.6deg);
+  opacity: 0.86;
+}
+
+.app.browse-page .browse-card-center.dragging::after {
+  transform: translateY(7px) scale(0.992) rotate(0.35deg);
+  opacity: 0.96;
+}
+
+.app.browse-page .browse-card-center.exiting::before {
+  transform: translateY(8px) scale(0.982) rotate(-0.3deg);
+  opacity: 0.9;
+}
+
+.app.browse-page .browse-card-center.exiting::after {
+  transform: translateY(2px) scale(0.997) rotate(0deg);
+  opacity: 1;
+}
+
+
+
+
+
+
+.app.browse-page .swipe-card-front {
+  position: relative;
+  z-index: 3;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+  will-change: transform, opacity;
+  animation: swipeCardEnter 0.26s ease-out;
+}
+
+.app.browse-page .browse-card-center.dragging .swipe-card-front {
+  transition: none !important;
+  animation: none !important;
+}
+
+.app.browse-page .browse-card-center.exiting .swipe-card-front {
+  transition:
+    transform 0.23s ease-in,
+    opacity 0.2s ease !important;
+  animation: none !important;
+}
+
+@keyframes swipeCardEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.965);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.015);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+.app.browse-page .browse-card-center::before {
+  transform: translateY(18px) scale(0.94) rotate(-1.8deg);
+  opacity: 0.55;
+}
+
+.app.browse-page .browse-card-center::after {
+  transform: translateY(9px) scale(0.97) rotate(1.1deg);
+  opacity: 0.78;
+}
+
+.app.browse-page .browse-card-center.dragging::before {
+  transform: translateY(14px) scale(0.955) rotate(-1deg);
+  opacity: 0.72;
+}
+
+.app.browse-page .browse-card-center.dragging::after {
+  transform: translateY(5px) scale(0.99) rotate(0.35deg);
+  opacity: 0.94;
+}
+
+.app.browse-page .browse-card-center.exiting::before {
+  transform: translateY(10px) scale(0.965) rotate(-0.5deg);
+  opacity: 0.78;
+}
+
+.app.browse-page .browse-card-center.exiting::after {
+  transform: translateY(0) scale(1) rotate(0deg);
+  opacity: 1;
+}
+
+/* 둘러보기 카드 내부 정보 박스 폭 조정 */
+.app.browse-page .browse-profile-card .profile-card-scroll {
+  padding: 16px 14px 8px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-section {
+  padding: 14px 12px !important;
+  border-radius: 18px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-section-title {
+  font-size: 12.4px !important;
+  margin-bottom: 8px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-section-text {
+  font-size: 13.1px !important;
+  line-height: 1.62 !important;
+  font-weight: 740 !important;
+}
+
+.app.browse-page .browse-profile-card .profile-interest-chip {
+  min-height: 31px !important;
+  padding: 6px 10px !important;
+  font-size: 12.2px !important;
+}

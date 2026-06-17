@@ -2316,23 +2316,6 @@ if (reverseLikes.length > 0) {
 
     const renderPageHeader = ({ title, description }) => (
       <div className="app-page-header">
-        <p className="app-brand-name" aria-label="두유는 사랑을 타고">
-            <span className="brand-word">
-              <span className="brand-main">두</span>
-              <span className="brand-sub">유는</span>
-            </span>
-
-            <span className="brand-word">
-              <span className="brand-main">사</span>
-              <span className="brand-sub">랑을</span>
-            </span>
-
-            <span className="brand-word">
-              <span className="brand-main">타</span>
-              <span className="brand-sub">고</span>
-            </span>
-          </p>
-    
         <h1 className="app-page-title">{title}</h1>
     
         {description && (
@@ -2838,7 +2821,7 @@ if (reverseLikes.length > 0) {
 
     if (isProfileSaved) {
       return (
-        <div className="app">
+        <div className="app my-profile-page">
           {toastElement}
     
           {renderPageHeader({
@@ -2997,14 +2980,7 @@ if (reverseLikes.length > 0) {
                 </button>
              
 
-              <button
-                type="button"
-                className="my-action-button"
-                onClick={() => setCurrentPage('browse')}
-              >
-                프로필 둘러보기
-              </button>
-
+             
               <button
                 type="button"
                 className="my-action-button danger"
@@ -3026,16 +3002,32 @@ if (reverseLikes.length > 0) {
       );
     }
 
-  if (isEntered) {
-    return (
-      <div className="app">
-        {toastElement}
+    if (isEntered) {
+      return (
+        <div className="app form-page">
+                  {toastElement}
+
+        <div className="form-brand-mini" aria-label="두유는 사랑을 타고">
+          <span>
+            <strong>두</strong>
+            <em>유는</em>
+          </span>
+          <span>
+            <strong>사</strong>
+            <em>랑을</em>
+          </span>
+          <span>
+            <strong>타</strong>
+            <em>고</em>
+          </span>
+        </div>
+
         {renderPageHeader({
           title: profileFormMode === 'edit' ? '프로필 수정' : '프로필 작성',
           description:
             profileFormMode === 'edit'
               ? '수정한 내용을 저장하면 내 프로필에 반영돼요.'
-              : '프로필을 작성하고 두사타를 시작해보세요.',
+              : '✨ 자세히 작성할수록 매칭에 도움이 돼요.',
         })}
 
 

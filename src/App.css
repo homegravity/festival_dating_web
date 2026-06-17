@@ -2815,3 +2815,708 @@ label {
 .start-page .start-secondary-button:active {
   transform: scale(0.985);
 }
+
+
+
+.app.form-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 14% 8%, rgba(255, 198, 214, 0.46) 0, rgba(255, 198, 214, 0) 32%),
+    radial-gradient(circle at 88% 18%, rgba(210, 200, 255, 0.34) 0, rgba(210, 200, 255, 0) 30%),
+    radial-gradient(circle at 50% 96%, rgba(255, 228, 190, 0.5) 0, rgba(255, 228, 190, 0) 38%),
+    linear-gradient(180deg, #fff7fa 0%, #fffdf9 52%, #fff5f8 100%) !important;
+}
+
+.app.form-page::before {
+  content: '';
+  position: fixed;
+  top: 92px;
+  right: -70px;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: rgba(255, 142, 178, 0.13);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app.form-page::after {
+  content: '';
+  position: fixed;
+  left: -82px;
+  bottom: 90px;
+  width: 210px;
+  height: 210px;
+  border-radius: 999px;
+  background: rgba(255, 210, 150, 0.18);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app.form-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+.app.form-page .profile-form-shell {
+  margin-top: 18px;
+  padding: 18px 16px 22px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(255, 212, 224, 0.72);
+  box-shadow:
+    0 18px 42px rgba(255, 115, 155, 0.12),
+    0 4px 14px rgba(120, 80, 100, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.app.form-page .form-top-action {
+  margin: 8px 0 14px;
+}
+
+.app.form-page .form-cancel-button {
+  width: auto;
+  min-width: 0;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 190, 210, 0.72);
+  background: rgba(255, 255, 255, 0.78);
+  color: #e45f86;
+  font-size: 12.5px;
+  font-weight: 850;
+  letter-spacing: -0.35px;
+  box-shadow: 0 8px 18px rgba(255, 145, 175, 0.08);
+}
+
+.app.form-page .form-cancel-button:active {
+  transform: scale(0.98);
+}
+
+
+.app.form-page .form-brand-mini {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 6px;
+  margin: 4px 0 14px;
+}
+
+.app.form-page .form-brand-mini span {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.app.form-page .form-brand-mini strong {
+  font-size: 25px;
+  font-weight: 950;
+  line-height: 0.95;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9a76 50%, #8d72ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 5px 10px rgba(255, 105, 145, 0.12));
+}
+
+.app.form-page .form-brand-mini em {
+  margin-bottom: 2px;
+  color: #80747a;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: -0.45px;
+}
+
+
+
+
+.app.form-page .add-interest-button {
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 177, 202, 0.78);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff7fa 0%, #ffffff 100%);
+  color: #e45f86;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  box-shadow: 0 8px 18px rgba(255, 130, 165, 0.1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.form-page .add-interest-button:active {
+  transform: scale(0.96);
+  opacity: 0.75;
+}
+.app.form-page .submit-button,
+.app.form-page .profile-submit-button {
+  height: 52px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9671 100%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.4px;
+  box-shadow: 0 13px 26px rgba(255, 105, 145, 0.28);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.form-page .submit-button:active,
+.app.form-page .profile-submit-button:active {
+  transform: scale(0.985);
+}
+
+.app.form-page .submit-button:disabled,
+.app.form-page .profile-submit-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.app.form-page input,
+.app.form-page select,
+.app.form-page textarea {
+  width: 100%;
+  border: 1px solid rgba(235, 210, 218, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #342d31;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.35px;
+  box-shadow: 0 6px 16px rgba(255, 130, 165, 0.06);
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.app.form-page input,
+.app.form-page select {
+  height: 46px;
+  padding: 0 14px;
+}
+
+.app.form-page textarea {
+  min-height: 104px;
+  padding: 13px 14px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.app.form-page input::placeholder,
+.app.form-page textarea::placeholder {
+  color: #b7aeb2;
+  font-weight: 600;
+}
+
+.app.form-page input:focus,
+.app.form-page select:focus,
+.app.form-page textarea:focus {
+  border-color: rgba(255, 118, 158, 0.9);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px rgba(255, 118, 158, 0.12),
+    0 8px 20px rgba(255, 130, 165, 0.1);
+}
+
+
+.app.form-page .option-button,
+.app.form-page .select-button,
+.app.form-page .choice-button,
+.app.form-page .mbti-button,
+.app.form-page .face-type-button,
+.app.form-page .interest-option-button,
+.app.form-page .egen-teto-button {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid rgba(235, 210, 218, 0.95);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #5f565b;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.35px;
+  box-shadow: 0 5px 14px rgba(255, 130, 165, 0.06);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.12s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    color 0.16s ease;
+}
+
+.app.form-page .option-button.selected,
+.app.form-page .select-button.selected,
+.app.form-page .choice-button.selected,
+.app.form-page .mbti-button.selected,
+.app.form-page .face-type-button.selected,
+.app.form-page .interest-option-button.selected,
+.app.form-page .egen-teto-button.selected,
+.app.form-page .option-button.active,
+.app.form-page .select-button.active,
+.app.form-page .choice-button.active,
+.app.form-page .mbti-button.active,
+.app.form-page .face-type-button.active,
+.app.form-page .interest-option-button.active,
+.app.form-page .egen-teto-button.active {
+  border-color: rgba(255, 111, 154, 0.85);
+  background: linear-gradient(135deg, #fff0f5 0%, #fff8fb 100%);
+  color: #e45f86;
+  box-shadow:
+    0 8px 20px rgba(255, 120, 155, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.app.form-page .option-button:active,
+.app.form-page .select-button:active,
+.app.form-page .choice-button:active,
+.app.form-page .mbti-button:active,
+.app.form-page .face-type-button:active,
+.app.form-page .interest-option-button:active,
+.app.form-page .egen-teto-button:active {
+  transform: scale(0.97);
+}
+
+.app.form-page input[type='range'] {
+  width: 100%;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9f8cff 0%, #ffd1dc 50%, #ff8fab 100%);
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.app.form-page input[type='range']:focus {
+  box-shadow: 0 0 0 4px rgba(255, 118, 158, 0.12);
+}
+
+.app.form-page input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #8d72ff 100%);
+  box-shadow: 0 6px 14px rgba(255, 105, 145, 0.28);
+}
+
+.app.form-page input[type='range']::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #8d72ff 100%);
+  box-shadow: 0 6px 14px rgba(255, 105, 145, 0.28);
+  cursor: pointer;
+}
+
+
+.app.form-page .interest-tag-button {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid rgba(235, 210, 218, 0.95);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #5f565b;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.35px;
+  box-shadow: 0 5px 14px rgba(255, 130, 165, 0.06);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.12s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    color 0.16s ease;
+}
+
+.app.form-page .interest-tag-button.selected {
+  border-color: rgba(255, 111, 154, 0.85);
+  background: linear-gradient(135deg, #fff0f5 0%, #fff8fb 100%);
+  color: #e45f86;
+  box-shadow:
+    0 8px 20px rgba(255, 120, 155, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.app.form-page .interest-tag-button:active {
+  transform: scale(0.97);
+}
+
+.app.form-page .interest-emoji {
+  margin-right: 3px;
+}
+
+
+
+.app.form-page .selected-interest-box {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 248, 251, 0.78);
+  border: 1px solid rgba(255, 219, 229, 0.75);
+}
+
+.app.form-page .selected-interest-box p {
+  margin: 0 0 10px;
+  color: #7a6d73;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.35px;
+}
+
+.app.form-page .selected-interest-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app.form-page .selected-interest-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 183, 205, 0.78);
+  background: rgba(255, 255, 255, 0.92);
+  color: #5f565b;
+  font-size: 12.8px;
+  font-weight: 850;
+  letter-spacing: -0.35px;
+  box-shadow: 0 5px 12px rgba(255, 130, 165, 0.08);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.form-page .selected-interest-chip:active {
+  transform: scale(0.97);
+  opacity: 0.8;
+}
+
+
+.app.my-profile-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(255, 198, 214, 0.42) 0, rgba(255, 198, 214, 0) 32%),
+    radial-gradient(circle at 88% 18%, rgba(210, 200, 255, 0.3) 0, rgba(210, 200, 255, 0) 30%),
+    radial-gradient(circle at 50% 96%, rgba(255, 228, 190, 0.46) 0, rgba(255, 228, 190, 0) 38%),
+    linear-gradient(180deg, #fff7fa 0%, #fffdf9 52%, #fff5f8 100%) !important;
+}
+
+.app.my-profile-page::before {
+  content: '';
+  position: fixed;
+  top: 96px;
+  right: -72px;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: rgba(255, 142, 178, 0.12);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app.my-profile-page::after {
+  content: '';
+  position: fixed;
+  left: -82px;
+  bottom: 90px;
+  width: 210px;
+  height: 210px;
+  border-radius: 999px;
+  background: rgba(255, 210, 150, 0.16);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app.my-profile-page > *:not(.bottom-nav) {
+  position: relative;
+  z-index: 1;
+}
+
+
+.app.my-profile-page .my-info-card {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 18px 17px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 214, 226, 0.76);
+  box-shadow:
+    0 14px 34px rgba(255, 115, 155, 0.11),
+    0 4px 12px rgba(120, 80, 100, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.app.my-profile-page .my-info-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, #ff8fab, #ffc078, #a891ff);
+  opacity: 0.58;
+}
+
+.app.my-profile-page .my-card-title {
+  margin: 0 0 12px;
+  color: #332d30;
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.55px;
+}
+
+.app.my-profile-page .my-info-card p {
+  letter-spacing: -0.35px;
+}
+
+.app.my-profile-page .my-profile-card,
+.app.my-profile-page .my-profile-actions {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 18px 17px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 214, 226, 0.76);
+  box-shadow:
+    0 14px 34px rgba(255, 115, 155, 0.11),
+    0 4px 12px rgba(120, 80, 100, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.app.my-profile-page .my-profile-card::before,
+.app.my-profile-page .my-profile-actions::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, #ff8fab, #ffc078, #a891ff);
+  opacity: 0.58;
+}
+
+.app.my-profile-page .my-profile-label {
+  margin: 0 0 6px;
+  color: #e45f86;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+}
+
+.app.my-profile-page .my-profile-header h2 {
+  margin: 0 0 8px;
+  color: #2f2a2c;
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: -0.9px;
+}
+
+.app.my-profile-page .my-profile-card .profile-meta {
+  margin: 0;
+  color: #746a6f;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.app.my-profile-page .my-action-button {
+  height: 46px;
+  border: 0;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #ff6f9a 0%, #ff9671 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: -0.4px;
+  box-shadow: 0 11px 22px rgba(255, 105, 145, 0.24);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.my-profile-page .my-action-button:active {
+  transform: scale(0.985);
+}
+
+
+.app.my-profile-page .participant-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin: 8px 0 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 185, 205, 0.78);
+  background:
+    linear-gradient(135deg, rgba(255, 247, 250, 0.96), rgba(255, 255, 255, 0.94));
+  color: #e45f86;
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: 1.2px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+}
+
+.app.my-profile-page .copy-button {
+  height: 42px;
+  border: 1px solid rgba(255, 177, 202, 0.78);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #e45f86;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  box-shadow: 0 8px 18px rgba(255, 130, 165, 0.1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.my-profile-page .copy-button:active {
+  transform: scale(0.97);
+  opacity: 0.8;
+}
+
+.app.my-profile-page .participant-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  margin: 8px 0 12px;
+  padding: 13px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 170, 198, 0.8);
+  background:
+    linear-gradient(135deg, rgba(255, 239, 245, 0.98), rgba(255, 250, 252, 0.96));
+  color: #d94f78;
+  font-size: 23px;
+  font-weight: 950;
+  letter-spacing: 1.8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.82),
+    0 8px 18px rgba(255, 120, 155, 0.1);
+}
+
+.app.my-profile-page .copy-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff7fa4 0%, #ff9c78 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  line-height: 1;
+  box-shadow: 0 9px 18px rgba(255, 105, 145, 0.2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.my-profile-page .copy-button:active {
+  transform: scale(0.98);
+  opacity: 0.88;
+}
+
+.app.my-profile-page .my-action-button.danger {
+  margin-top: 10px;
+  border: 1px solid rgba(220, 80, 100, 0.42);
+  background: rgba(255, 255, 255, 0.9);
+  color: #d94f68;
+  box-shadow: 0 8px 18px rgba(220, 80, 100, 0.08);
+}
+
+.app.my-profile-page .my-action-button.danger:active {
+  transform: scale(0.985);
+  opacity: 0.82;
+}
+
+.app.my-profile-page .my-action-button.danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.app.my-profile-page .my-action-button.danger {
+  position: relative;
+  margin-top: 18px;
+}
+
+.app.my-profile-page .my-action-button.danger::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 4px;
+  right: 4px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(220, 100, 125, 0.55),
+    transparent
+  );
+}
+
+.app.form-page .app-page-title,
+.app.my-profile-page .app-page-title {
+  margin: 0;
+  color: #302a2e;
+  font-family: 'SUIT', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-size: clamp(25px, 6.5vw, 32px);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -1.1px;
+}
+
+.app.form-page .app-page-header,
+.app.my-profile-page .app-page-header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.app.form-page .app-page-header::after,
+.app.my-profile-page .app-page-header::after {
+  content: '';
+  display: block;
+  width: 46px;
+  height: 4px;
+  margin: 13px auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff8fab, #ffc078);
+  opacity: 0.75;
+}

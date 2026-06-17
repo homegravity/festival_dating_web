@@ -75,6 +75,9 @@ function ProfileForm({
     { label: '춤', emoji: '💃' },
     { label: '노래', emoji: '🎤' },
     { label: '패션', emoji: '👗' },
+    { label: '자기계발', emoji: '📚' },
+    { label: '연극/뮤지컬', emoji: '🎭' },
+    { label: 'OTT', emoji: '📺' },
   ];
   
   const [customInterest, setCustomInterest] = useState('');
@@ -307,12 +310,7 @@ function ProfileForm({
   </section>
 
   <section className="form-section">
-    <div className="form-section-header">
-      <p className="form-section-title">취향 정보</p>
-      <p className="form-section-description">
-        나를 조금 더 잘 보여줄 수 있는 취향을 선택해주세요.
-      </p>
-    </div>
+    
 
     <div className="form-field">
       <label className="field-label">
@@ -503,12 +501,7 @@ function ProfileForm({
   </section>
 
   <section className="form-section">
-    <div className="form-section-header">
-      <p className="form-section-title">소개</p>
-      <p className="form-section-description">
-        상대가 나를 조금 더 편하게 이해할 수 있도록 적어주세요.
-      </p>
-    </div>
+    
 
     <div className="form-field">
       <label className="field-label">

@@ -4165,3 +4165,125 @@ label {
     inset 0 -1px 0 rgba(255, 205, 220, 0.22) !important;
 }
 
+
+.app.browse-page .filter-section {
+  margin: 0 0 16px;
+  padding: 17px 15px 18px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 214, 226, 0.76);
+  box-shadow:
+    0 14px 34px rgba(255, 115, 155, 0.1),
+    0 4px 12px rgba(120, 80, 100, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.app.browse-page .filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(240, 220, 226, 0.75);
+}
+
+.app.browse-page .filter-header h3 {
+  margin: 0;
+  color: #332d30;
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: -0.55px;
+}
+
+.app.browse-page .filter-reset-button {
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 190, 208, 0.75);
+  border-radius: 999px;
+  background: rgba(255, 248, 251, 0.9);
+  color: #d46f8a;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.35px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.browse-page .filter-reset-button:active {
+  transform: scale(0.96);
+  opacity: 0.82;
+}
+
+.app.browse-page .filter-group {
+  margin-top: 16px;
+}
+
+.app.browse-page .filter-group:first-of-type {
+  margin-top: 0;
+}
+
+.app.browse-page .filter-title {
+  margin: 0 0 10px;
+  color: #c8758c;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: -0.4px;
+}
+
+.app.browse-page .filter-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app.browse-page .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid rgba(235, 213, 220, 0.95);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #796b72;
+  font-size: 12.7px;
+  font-weight: 850;
+  letter-spacing: -0.35px;
+  box-shadow: 0 5px 12px rgba(255, 130, 165, 0.05);
+  cursor: pointer;
+  transition:
+    transform 0.14s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.browse-page .filter-chip.selected {
+  border-color: rgba(255, 118, 158, 0.78);
+  background: linear-gradient(135deg, #fff0f5 0%, #fff9fb 100%);
+  color: #df6488;
+  box-shadow:
+    0 8px 18px rgba(255, 120, 155, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.app.browse-page .filter-chip:hover,
+.app.browse-page .filter-chip:focus,
+.app.browse-page .filter-chip:focus-visible {
+  outline: none;
+}
+
+.app.browse-page .filter-chip:active {
+  transform: scale(0.95);
+  opacity: 0.86;
+}
+
+.app.browse-page .filter-chip .interest-emoji {
+  margin-right: 1px;
+}

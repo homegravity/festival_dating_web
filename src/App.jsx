@@ -46,6 +46,11 @@ function App() {
   const skipNextNewProfileNoticeRef = useRef(false);
   
   
+  const isProfileSavedRef = useRef(isProfileSaved);
+  const profileFormModeRef = useRef(profileFormMode);
+  const currentPageRef = useRef(currentPage);
+
+  
 
 const [profileSwipeOffsetX, setProfileSwipeOffsetX] = useState(0);
 const [isProfileDragging, setIsProfileDragging] = useState(false);
@@ -176,6 +181,9 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const profileTouchEndRef = useRef({ x: 0, y: 0 });
   const profileSwipeModeRef = useRef(null);
 
+
+  
+
   
   const previousVisibleProfileIdsRef = useRef([]);
   const [newProfileNoticeCount, setNewProfileNoticeCount] = useState(0);
@@ -251,7 +259,7 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
     }
   }, [supabaseProfileId]);
 
-
+  
 
   useEffect(() => {
     recoverLikeCredits();
@@ -324,6 +332,39 @@ useEffect(() => {
 
 
   useEffect(() => {
+    isProfileSavedRef.current = isProfileSaved;
+    profileFormModeRef.current = profileFormMode;
+    currentPageRef.current = currentPage;
+  }, [isProfileSaved, profileFormMode, currentPage]);
+
+
+  useEffect(() => {
+    const handleBrowserBack = () => {
+      if (
+        isProfileSavedRef.current === false &&
+        profileFormModeRef.current === 'edit'
+      ) {
+        setIsProfileSaved(true);
+        setCurrentPage('profileComplete');
+        return;
+      }
+  
+      if (currentPageRef.current === 'sentLikes') {
+        setCurrentPage('browse');
+        return;
+      }
+    };
+  
+    window.addEventListener('popstate', handleBrowserBack);
+  
+    return () => {
+      window.removeEventListener('popstate', handleBrowserBack);
+    };
+  }, []);
+
+
+
+  useEffect(() => {
     if (!toastMessage) {
       return;
     }
@@ -334,6 +375,9 @@ useEffect(() => {
   
     return () => clearTimeout(timer);
   }, [toastMessage]);
+
+
+  
 
 
 
@@ -547,7 +591,6 @@ useEffect(() => {
     }, 8000);
   };
 
-  
 
 
 
@@ -1987,6 +2030,12 @@ if (reverseLikes.length > 0) {
 
   
   const handleEditProfile = () => {
+    window.history.pushState(
+      { appView: 'profileEdit' },
+      '',
+      window.location.href
+    );
+  
     setProfileFormMode('edit');
     setIsProfileSaved(false);
   };
@@ -2440,6 +2489,13 @@ if (reverseLikes.length > 0) {
           className="sent-likes-shortcut-button"
           onClick={(event) => {
             event.currentTarget.blur();
+        
+            window.history.pushState(
+              { appView: 'sentLikes' },
+              '',
+              window.location.href
+            );
+        
             setCurrentPage('sentLikes');
           }}
         >

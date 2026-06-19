@@ -2418,7 +2418,7 @@ if (reverseLikes.length > 0) {
 
     if (isProfileSaved && currentPage === 'sentLikes') {
       return (
-        <div className="app">
+        <div className="app sent-likes-page">
           {toastElement}
     
           {renderPageHeader({
@@ -2430,7 +2430,10 @@ if (reverseLikes.length > 0) {
           <button
             type="button"
             className="sent-likes-back-button"
-            onClick={() => setCurrentPage('browse')}
+            onClick={(event) => {
+              event.currentTarget.blur();
+              setCurrentPage('browse');
+            }}
           >
             ← 둘러보기
           </button>
@@ -2804,11 +2807,11 @@ if (reverseLikes.length > 0) {
 
   if (isProfileSaved && currentPage === 'received') {
     return (
-      <div className="app">
+      <div className="app received-page">
         {toastElement}
         {renderPageHeader({
             title: '받은 관심',
-            description: '나에게 관심을 보낸 사람을 확인해보세요.',
+            description: '관심을 보낸 사람을 확인하고 수락하면 매칭돼요.',
           })}
   
         <div className="profile-list">

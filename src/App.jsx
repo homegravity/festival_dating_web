@@ -2847,7 +2847,7 @@ if (reverseLikes.length > 0) {
 
   if (isProfileSaved && currentPage === 'matches') {
     return (
-      <div className="app">
+      <div className="app match-page">
         {toastElement}
         {renderPageHeader({
           title: '매칭',

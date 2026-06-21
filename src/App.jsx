@@ -182,7 +182,13 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const profileSwipeModeRef = useRef(null);
 
 
+  const [hiddenMatchedProfileIds, setHiddenMatchedProfileIds] = useState(() => {
+    const savedHiddenMatches = localStorage.getItem('hiddenMatchedProfileIds');
   
+    return savedHiddenMatches ? JSON.parse(savedHiddenMatches) : [];
+  });
+
+
 
   
   const previousVisibleProfileIdsRef = useRef([]);
@@ -278,6 +284,16 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   
     return () => clearInterval(timer);
   }, []);
+
+
+
+  useEffect(() => {
+    localStorage.setItem(
+      'hiddenMatchedProfileIds',
+      JSON.stringify(hiddenMatchedProfileIds)
+    );
+  }, [hiddenMatchedProfileIds]);
+
 
 
 
@@ -592,7 +608,17 @@ useEffect(() => {
   };
 
 
-
+  const handleHideMatchedProfile = (profileId) => {
+    setHiddenMatchedProfileIds((prevIds) => {
+      if (prevIds.includes(profileId)) {
+        return prevIds;
+      }
+  
+      return [...prevIds, profileId];
+    });
+  
+    showToast('매칭 프로필을 숨겼어요.');
+  };
 
 
 
@@ -1762,7 +1788,11 @@ useEffect(() => {
     contactType: contactMap[otherProfile.id]?.contactType,
     contactValue: contactMap[otherProfile.id]?.contactValue,
   }));
+
   
+  const visibleMatchedProfiles = matchedProfiles.filter(
+    (otherProfile) => !hiddenMatchedProfileIds.includes(otherProfile.id)
+  );
 
 
   const toastElement = toastMessage && (
@@ -2799,7 +2829,7 @@ if (reverseLikes.length > 0) {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           receivedCount={receivedProfiles.length}
-          matchCount={matchedProfiles.length}
+          matchCount={visibleMatchedProfiles.length}
         />
       </div>
     );
@@ -2839,11 +2869,23 @@ if (reverseLikes.length > 0) {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           receivedCount={receivedProfiles.length}
-          matchCount={matchedProfiles.length}
+          matchCount={visibleMatchedProfiles.length}
         />
       </div>
     );
   }
+
+
+
+
+
+
+
+
+
+
+
+
 
   if (isProfileSaved && currentPage === 'matches') {
     return (
@@ -2855,19 +2897,20 @@ if (reverseLikes.length > 0) {
         })}
   
         <div className="profile-list">
-          {matchedProfiles.length === 0 && (
+        {visibleMatchedProfiles.length === 0 && (
             <div className="empty-message">
               아직 매칭된 사람이 없어요.
             </div>
           )}
-  
-          {matchedProfiles.map((otherProfile) => (
-          <ProfileCard
-            key={otherProfile.id}
-            otherProfile={otherProfile}
-            mode="match"
-            handleCopyContactValue={handleCopyContactValue}
-          />
+
+          {visibleMatchedProfiles.map((otherProfile) => (
+            <ProfileCard
+              key={otherProfile.id}
+              otherProfile={otherProfile}
+              mode="match"
+              handleCopyContactValue={handleCopyContactValue}
+              onHideMatch={handleHideMatchedProfile}
+            />
           ))}
         </div>
   
@@ -2875,7 +2918,7 @@ if (reverseLikes.length > 0) {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           receivedCount={receivedProfiles.length}
-          matchCount={matchedProfiles.length}
+          matchCount={visibleMatchedProfiles.length}
         />
       </div>
     );
@@ -3105,7 +3148,7 @@ if (reverseLikes.length > 0) {
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             receivedCount={receivedProfiles.length}
-            matchCount={matchedProfiles.length}
+            matchCount={visibleMatchedProfiles.length}
           />
         </div>
       );

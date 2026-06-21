@@ -6002,3 +6002,38 @@ label {
   transform: scale(0.96);
   opacity: 0.82;
 }
+
+.app.match-page .match-hide-button {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 5;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 198, 215, 0.82);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.9);
+  color: #c98598;
+
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+
+  box-shadow:
+    0 7px 16px rgba(255, 130, 165, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.match-page .match-hide-button:active {
+  transform: scale(0.92);
+  opacity: 0.8;
+}

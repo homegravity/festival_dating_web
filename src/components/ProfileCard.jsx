@@ -27,6 +27,7 @@ function ProfileCard({
   onAcceptLike,
   onRejectLike,
   handleCopyContactValue,
+  onHideMatch,
 }) {
   
   const interestEmojiMap = {
@@ -92,8 +93,27 @@ function ProfileCard({
   return (
     
       <div className={`profile-card ${mode === 'browse' ? 'browse-profile-card' : ''}`}>
-            
-            
+        {mode === 'match' && onHideMatch && (
+          <button
+            type="button"
+            className="match-hide-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              event.currentTarget.blur();
+              onHideMatch(otherProfile.id);
+            }}
+            aria-label="매칭 프로필 숨기기"
+          >
+            ×
+          </button>
+        )}
+                
+
+
+
+
+
+
         <div className="profile-card-top">
             <div className="profile-card-header">
         <div>

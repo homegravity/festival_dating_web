@@ -1,3 +1,6 @@
+import { useState } from 'react';
+
+
 const getContactTypeLabel = (contactType) => {
   if (contactType === 'instagram') {
     return '인스타 ID';
@@ -30,6 +33,10 @@ function ProfileCard({
   onHideMatch,
 }) {
   
+  const [isMatchDetailOpen, setIsMatchDetailOpen] = useState(false);
+
+
+
   const interestEmojiMap = {
     영화: '🍿',
     음악: '🎧',
@@ -155,37 +162,54 @@ function ProfileCard({
       </div>
       
       
-      <div className="profile-card-scroll">
-  <div className="profile-section">
-    <p className="profile-section-title">관심사</p>
+            <div
+        className={`match-detail-panel ${
+          mode === 'match' && !isMatchDetailOpen ? 'closed' : 'open'
+        }`}
+      >
+        <div className={`profile-card-scroll ${mode === 'match' ? 'match-detail-content' : ''}`}>
+          <div className="profile-section">
+            <p className="profile-section-title">관심사</p>
 
-    <div className="profile-interest-list">
-      {profileInterestList.map((interest) => (
-        <span key={interest} className="profile-interest-chip">
-          {interestEmojiMap[interest] && (
-            <span className="interest-emoji">{interestEmojiMap[interest]}</span>
+            <div className="profile-interest-list">
+              {profileInterestList.map((interest) => (
+                <span key={interest} className="profile-interest-chip">
+                  {interestEmojiMap[interest] && (
+                    <span className="interest-emoji">{interestEmojiMap[interest]}</span>
+                  )}
+                  <span>{interest}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="profile-section">
+            <p className="profile-section-title">한줄 소개</p>
+            <p className="profile-section-text">{otherProfile.introduction}</p>
+          </div>
+
+          {otherProfile.idealType && (
+            <div className="profile-section">
+              <p className="profile-section-title">이상형</p>
+              <p className="profile-section-text">{otherProfile.idealType}</p>
+            </div>
           )}
-          <span>{interest}</span>
-        </span>
-      ))}
-    </div>
-  </div>
+        </div>
+      </div>
 
-  <div className="profile-section">
-    <p className="profile-section-title">한줄 소개</p>
-    <p className="profile-section-text">{otherProfile.introduction}</p>
-  </div>
-
-  {otherProfile.idealType && (
-    <div className="profile-section">
-      <p className="profile-section-title">이상형</p>
-      <p className="profile-section-text">{otherProfile.idealType}</p>
-    </div>
-  )}
-</div>
-
-
-
+      {mode === 'match' && (
+        <button
+          type="button"
+          className={`match-detail-toggle ${isMatchDetailOpen ? 'open' : ''}`}
+          onClick={(event) => {
+            event.currentTarget.blur();
+            setIsMatchDetailOpen((prev) => !prev);
+          }}
+          aria-label={isMatchDetailOpen ? '프로필 상세정보 접기' : '프로필 상세정보 펼치기'}
+        >
+          <span className="match-detail-toggle-icon" />
+        </button>
+      )}
 
 
       <div className="profile-card-actions">

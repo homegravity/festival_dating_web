@@ -1278,56 +1278,38 @@ useEffect(() => {
 
 
   const loadMyMatches = async (profileId) => {
-    if (!profileId) {
-      setMatchedProfileIds([]);
-      return;
-    }
-    
-
-
-
-    
-
-
-
-
-
-
-    const { data: sentAcceptedLikes, error: sentError } = await supabase
+    if (!profileId) return;
+  
+    const { data, error } = await supabase
       .from('likes')
-      .select('receiver_profile_id')
-      .eq('sender_profile_id', profileId)
-      .eq('status', 'accepted');
+      .select('id, sender_profile_id, receiver_profile_id, status')
+      .eq('status', 'accepted')
+      .or(`sender_profile_id.eq.${profileId},receiver_profile_id.eq.${profileId}`);
   
-    if (sentError) {
-      console.error('내가 보낸 매칭 불러오기 오류:', sentError);
-      alert(`내가 보낸 매칭 불러오기 오류: ${sentError.message}`);
+    if (error) {
+      console.error('매칭 목록 불러오기 오류:', error);
       return;
     }
   
-
-
-
-
-
-
-
-    const { data: receivedAcceptedLikes, error: receivedError } = await supabase
-      .from('likes')
-      .select('sender_profile_id')
-      .eq('receiver_profile_id', profileId)
-      .eq('status', 'accepted');
+    const nextMatchedProfileIds = Array.from(
+      new Set(
+        (data || [])
+          .map((like) => {
+            if (String(like.sender_profile_id) === String(profileId)) {
+              return like.receiver_profile_id;
+            }
   
-    if (receivedError) {
-      console.error('내가 받은 매칭 불러오기 오류:', receivedError);
-      alert(`내가 받은 매칭 불러오기 오류: ${receivedError.message}`);
-      return;
-    }
+            if (String(like.receiver_profile_id) === String(profileId)) {
+              return like.sender_profile_id;
+            }
   
-    const sentMatchIds = sentAcceptedLikes.map((item) => item.receiver_profile_id);
-    const receivedMatchIds = receivedAcceptedLikes.map((item) => item.sender_profile_id);
+            return null;
+          })
+          .filter(Boolean)
+      )
+    );
   
-    setMatchedProfileIds([...sentMatchIds, ...receivedMatchIds]);
+    setMatchedProfileIds(nextMatchedProfileIds);
   };
 
 
@@ -1781,13 +1763,21 @@ useEffect(() => {
     receivedLikeIds.includes(otherProfile.id)
   );
   
-  const matchedProfiles = supabaseProfiles
-  .filter((otherProfile) => matchedProfileIds.includes(otherProfile.id))
-  .map((otherProfile) => ({
-    ...otherProfile,
-    contactType: contactMap[otherProfile.id]?.contactType,
-    contactValue: contactMap[otherProfile.id]?.contactValue,
-  }));
+  const matchedProfiles = matchedProfileIds
+  .map((profileId) => {
+    const profile = supabaseProfiles.find(
+      (item) => String(item.id) === String(profileId)
+    );
+
+    if (!profile) return null;
+
+    return {
+      ...profile,
+      contactType: contactMap[profile.id]?.contactType,
+      contactValue: contactMap[profile.id]?.contactValue,
+    };
+  })
+  .filter(Boolean);
 
   
   const visibleMatchedProfiles = matchedProfiles.filter(

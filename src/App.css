@@ -6037,3 +6037,202 @@ label {
   transform: scale(0.92);
   opacity: 0.8;
 }
+
+
+/* 매칭 카드 상세정보 접기/펼치기 */
+/* 매칭 카드 상세 펼치기 버튼 - 경계선 위 버튼형 */
+.app.match-page .match-detail-toggle {
+  position: relative;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: calc(100% - 36px) !important;
+  height: 26px !important;
+  margin: 4px auto 2px !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app.match-page .match-detail-toggle::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 205, 222, 0.9),
+    transparent
+  );
+  transform: translateY(-50%);
+}
+
+.app.match-page .match-detail-toggle-icon {
+  position: relative !important;
+  z-index: 1;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 42px !important;
+  height: 22px !important;
+  margin: 0 !important;
+
+  border: 1px solid rgba(255, 205, 222, 0.85);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 5px 12px rgba(255, 130, 165, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+  transform: none !important;
+}
+
+.app.match-page .match-detail-toggle-icon::before,
+.app.match-page .match-detail-toggle-icon::after {
+  content: '';
+  position: absolute;
+
+  width: 8px;
+  height: 2px;
+  border-radius: 999px;
+  background: #d46f8a;
+
+  transition: transform 0.22s ease;
+}
+
+.app.match-page .match-detail-toggle-icon::before {
+  transform: translateX(-3px) rotate(35deg);
+}
+
+.app.match-page .match-detail-toggle-icon::after {
+  transform: translateX(3px) rotate(-35deg);
+}
+
+.app.match-page .match-detail-toggle.open .match-detail-toggle-icon::before {
+  transform: translateX(-3px) rotate(-35deg);
+}
+
+.app.match-page .match-detail-toggle.open .match-detail-toggle-icon::after {
+  transform: translateX(3px) rotate(35deg);
+}
+
+.app.match-page .match-detail-toggle:active .match-detail-toggle-icon {
+  transform: scale(0.94) !important;
+  opacity: 0.82;
+}
+
+
+
+.app.match-page .profile-card .profile-card-actions {
+  padding-top: 8px !important;
+}
+
+
+
+
+
+
+
+.app.match-page .profile-card-scroll.match-detail-open {
+  animation: matchDetailOpen 0.26s ease-out;
+}
+
+@keyframes matchDetailOpen {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.app.match-page .match-detail-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+  overflow: hidden;
+  transition:
+    grid-template-rows 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app.match-page .match-detail-panel.closed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.app.match-page .match-detail-panel > .profile-card-scroll {
+  min-height: 0;
+  overflow: hidden;
+}
+
+
+
+/* 매칭 카드: 펼치기 버튼 주변 기존 경계선 제거 */
+.app.match-page .profile-card .profile-card-top {
+  border-bottom: 0 !important;
+}
+
+.app.match-page .profile-card .profile-card-actions {
+  border-top: 0 !important;
+  padding-top: 6px !important;
+}
+
+.app.match-page .match-detail-panel {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+/* 매칭 카드: 경계선 위 버튼 위치 조정 */
+.app.match-page .match-detail-toggle {
+  margin: 2px auto 0 !important;
+}
+
+.app.match-page .match-detail-toggle::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 205, 222, 0.85),
+    transparent
+  ) !important;
+}
+
+
+/* 매칭 카드: 펼치기 버튼 위아래 여백 줄이기 */
+.app.match-page .match-detail-toggle {
+  margin: -2px auto -2px !important;
+  height: 22px !important;
+}
+
+.app.match-page .profile-card .profile-card-actions {
+  padding-top: 4px !important;
+}
+
+.app.match-page .match-detail-panel.closed + .match-detail-toggle {
+  margin-top: -1px !important;
+  margin-bottom: -3px !important;
+}
+
+.app.match-page .match-detail-panel.open + .match-detail-toggle {
+  margin-top: -2px !important;
+  margin-bottom: -2px !important;
+}

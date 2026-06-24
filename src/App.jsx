@@ -7,7 +7,17 @@ import ProfileForm from './components/ProfileForm';
 import { supabase } from './lib/supabaseClient';
 
 
+function getAutoTargetGender(gender) {
+  if (gender === '남성') {
+    return '여성';
+  }
 
+  if (gender === '여성') {
+    return '남성';
+  }
+
+  return '';
+}
 function App() {
   const savedData = JSON.parse(localStorage.getItem('festivalDatingData')) || {};
   
@@ -1461,7 +1471,7 @@ useEffect(() => {
     if (
       !profile.nickname ||
       !profile.gender ||
-      !profile.targetGender ||
+      
       !profile.interests ||
       !profile.introduction ||
       !profile.contactValue
@@ -1498,7 +1508,7 @@ useEffect(() => {
           owner_id: user.id,
           nickname: profile.nickname,
           gender: profile.gender,
-          target_gender: profile.targetGender,
+          target_gender: getAutoTargetGender(profile.gender),
           grade: profile.grade || null,
           age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
@@ -1531,6 +1541,11 @@ useEffect(() => {
       skipNextNewProfileNoticeRef.current = true;
 
 
+
+      
+      
+      
+      
       const contactSaved = await saveOrUpdateContactToSupabase(data.id);
 
       if (!contactSaved) {
@@ -1549,7 +1564,7 @@ useEffect(() => {
         .update({
           nickname: profile.nickname,
           gender: profile.gender,
-          target_gender: profile.targetGender,
+          target_gender: getAutoTargetGender(profile.gender),
           grade: profile.grade || null,
           age: profile.age ? Number(profile.age) : null,
           department: profile.department || null,
@@ -1647,23 +1662,25 @@ useEffect(() => {
 
 
 
-
-
+  const browseTargetGender = getAutoTargetGender(profile.gender);
 
   const visibleProfiles = supabaseProfiles.filter((otherProfile) => {
+   
+   
+   
+   
+   
+   
     const isNotMyProfile = String(otherProfile.id) !== String(supabaseProfileId);
     const isVisible = otherProfile.isVisible !== false;
     const isNotMatched = !matchedProfileIds.includes(otherProfile.id);
     const isNotRejected = !rejectedProfileIds.includes(otherProfile.id);
   
-
-    
-
-    const matchesGender =
-      profile.targetGender === '상관없음' ||
-      otherProfile.gender === profile.targetGender;
+    const isTargetGender =
+      browseTargetGender !== '' &&
+      otherProfile.gender === browseTargetGender;
   
-      const matchesMbti =
+    const matchesMbti =
       selectedMbtiFilters.length === 0 ||
       selectedMbtiFilters.includes(otherProfile.mbti);
   
@@ -1717,12 +1734,11 @@ useEffect(() => {
       isVisible &&
       isNotMatched &&
       isNotRejected &&
-      matchesGender &&
+      isTargetGender &&
       matchesMbti &&
       matchesInterests &&
       matchesEgenTeto &&
       matchesKeyword
-      
     );
   });
   
@@ -2956,6 +2972,11 @@ if (reverseLikes.length > 0) {
     profile.egenTetoScore !== undefined &&
     !Number.isNaN(Number(profile.egenTetoScore));
   
+    
+
+
+
+
   const myEgenTetoText = hasMyEgenTetoScore
     ? `에겐 ${100 - Number(profile.egenTetoScore)}% · 테토 ${Number(profile.egenTetoScore)}%`
     : '';

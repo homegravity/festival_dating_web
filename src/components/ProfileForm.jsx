@@ -238,23 +238,7 @@ function ProfileForm({
       </select>
     </div>
 
-    <div className="form-field">
-      <label className="field-label">
-        <span>매칭 희망 성별</span>
-        <span className="field-badge required">필수</span>
-      </label>
-
-      <select
-        name="targetGender"
-        value={profile.targetGender}
-        onChange={onProfileChange}
-      >
-        <option value="">선택해주세요</option>
-        <option value="남성">남성</option>
-        <option value="여성">여성</option>
-        <option value="상관없음">상관없음</option>
-      </select>
-    </div>
+    
 
     <div className="form-field">
       <label className="field-label">

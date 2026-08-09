@@ -366,6 +366,24 @@ useEffect(() => {
 
   useEffect(() => {
     const handleBrowserBack = () => {
+      
+  
+      if (currentPageRef.current === 'privacyPolicy') {
+       
+  
+        setCurrentPage('profileForm');
+  
+        requestAnimationFrame(() => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            left: 0,
+            behavior: 'auto',
+          });
+        });
+  
+        return;
+      }
+  
       if (
         isProfileSavedRef.current === false &&
         profileFormModeRef.current === 'edit'
@@ -387,7 +405,6 @@ useEffect(() => {
       window.removeEventListener('popstate', handleBrowserBack);
     };
   }, []);
-
 
 
   useEffect(() => {
@@ -568,6 +585,27 @@ useEffect(() => {
   
   
   };
+
+
+  const handleOpenPrivacyPolicy = () => {
+    window.history.pushState(
+      { appView: 'privacyPolicy' },
+      '',
+      window.location.href
+    );
+  
+    setCurrentPage('privacyPolicy');
+  
+    requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'auto',
+      });
+    });
+  };
+
+
 
 
   const handleCancelProfileForm = () => {
@@ -2982,6 +3020,141 @@ if (reverseLikes.length > 0) {
     : '';
 
 
+
+
+if (currentPage === 'privacyPolicy') {
+  return (
+    <div className="app privacy-page">
+      {toastElement}
+
+      {renderPageHeader({
+        title: '개인정보 처리방침',
+        description: '두유는 사랑을 타고 서비스의 개인정보 처리 기준을 안내합니다.',
+      })}
+
+      <div className="privacy-page-top-action">
+        <button
+          type="button"
+          className="privacy-back-button"
+          onClick={() => {
+            setCurrentPage('profileForm');
+          
+            requestAnimationFrame(() => {
+              window.scrollTo({
+                top: document.body.scrollHeight,
+                left: 0,
+                behavior: 'auto',
+              });
+            });
+          }}
+        >
+          이전 화면으로 돌아가기
+        </button>
+      </div>
+
+      <section className="privacy-policy-card">
+        <p className="privacy-policy-updated">
+          시행일: 2026년 8월 10일
+        </p>
+
+        <div className="privacy-policy-section">
+          <h2>1. 개인정보 처리 목적</h2>
+          <p>
+            두유는 사랑을 타고는 프로필 생성, 프로필 둘러보기, 관심 보내기,
+            관심 수락, 매칭 성립 및 매칭 후 연락수단 공개 등 서비스 제공을 위해
+            개인정보를 처리합니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>2. 수집하는 개인정보 항목</h2>
+          <p>
+            서비스는 닉네임, 성별, 학년, 나이, 학과, MBTI, 얼굴상, 관심사,
+            자기소개, 이상형, 연락수단 종류 및 연락수단 값을 수집할 수 있습니다.
+            이용자가 입력하지 않은 선택 항목은 수집되지 않습니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>3. 연락수단 공개 안내</h2>
+          <p>
+            이용자 간 상호 매칭이 성립된 경우, 이용자가 등록한 인스타그램 ID,
+            카카오톡 ID, 전화번호 또는 기타 연락수단이 매칭된 상대방에게 공개될 수
+            있습니다. 연락수단은 매칭된 상대방이 연락을 시작할 수 있도록 제공됩니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>4. 개인정보의 제3자 제공</h2>
+          <p>
+            서비스는 상호 매칭이 성립된 상대방에게 이용자가 등록한 연락수단을
+            제공합니다. 제공받는 자는 매칭된 상대방이며, 제공 목적은 매칭 이후
+            이용자 간 연락을 가능하게 하기 위함입니다. 제공 항목은 이용자가 직접
+            입력한 연락수단 종류 및 연락수단 값입니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>5. 보유 및 이용 기간</h2>
+          <p>
+            개인정보는 서비스 이용 기간 동안 보관됩니다. 이용자가 삭제를 요청하거나
+            서비스 운영이 종료되는 경우, 운영자는 서비스 제공에 필요한 범위를 넘어
+            개인정보를 계속 보관하지 않으며 지체 없이 삭제하는 것을 원칙으로 합니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>6. 개인정보의 파기</h2>
+          <p>
+            보유 기간이 종료되었거나 처리 목적이 달성된 개인정보는 복구가 어렵도록
+            삭제합니다. 전자적 파일 형태의 개인정보는 데이터베이스 또는 저장 공간에서
+            삭제하는 방식으로 파기합니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>7. 외부 서비스 이용</h2>
+          <p>
+            서비스 운영 과정에서 데이터 저장 및 관리를 위해 Supabase 등 외부
+            서비스를 사용할 수 있습니다. 운영자는 개인정보가 불필요하게 공개되지
+            않도록 접근 권한과 보안 설정을 관리합니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>8. 이용자의 권리</h2>
+          <p>
+            이용자는 본인의 개인정보에 대해 열람, 수정, 삭제, 처리 정지를 요청할 수
+            있습니다. 프로필 내용은 서비스 내 수정 기능을 통해 직접 변경할 수 있으며,
+            삭제나 기타 개인정보 관련 요청은 운영자에게 문의할 수 있습니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>9. 개인정보 보호를 위한 조치</h2>
+          <p>
+            운영자는 개인정보가 분실, 도난, 유출, 변조 또는 훼손되지 않도록 접근
+            권한 관리, 데이터베이스 보안 설정, 불필요한 개인정보 노출 방지 등 필요한
+            보호 조치를 위해 노력합니다.
+          </p>
+        </div>
+
+        <div className="privacy-policy-section">
+          <h2>10. 문의</h2>
+          <p>
+            개인정보 처리와 관련한 문의, 삭제 요청 또는 불편 사항은 서비스 운영자가
+            별도로 안내하는 문의 수단을 통해 접수할 수 있습니다.
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+
+
+
+
     if (isProfileSaved) {
       return (
         <div className="app my-profile-page">
@@ -3213,6 +3386,7 @@ if (reverseLikes.length > 0) {
               isSubmittingProfile={isSubmittingProfile}
               onProfileChange={handleProfileChange}
               onProfileSubmit={handleProfileSubmit}
+              onOpenPrivacyPolicy={handleOpenPrivacyPolicy}
             />
           </div>
       </div>

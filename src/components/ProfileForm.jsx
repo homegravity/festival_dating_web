@@ -6,6 +6,7 @@ function ProfileForm({
   isSubmittingProfile,
   onProfileChange,
   onProfileSubmit,
+  onOpenPrivacyPolicy,
 }) {
 
 
@@ -553,6 +554,22 @@ function ProfileForm({
           </div>
         </div>
       </section>
+
+
+      {profileFormMode !== 'edit' && (
+        <p className="privacy-consent-notice">
+          프로필을 생성하면{' '}
+          <button
+            type="button"
+            className="privacy-policy-link"
+            onClick={onOpenPrivacyPolicy}
+          >
+            개인정보 처리방침
+          </button>
+          에 동의하며, 매칭 성립 시 등록한 연락수단이 상대방에게 공개됩니다.
+        </p>
+      )}
+
 
   <button
     type="submit"

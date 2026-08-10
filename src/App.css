@@ -6596,13 +6596,18 @@ label {
   transform: translateX(-1px);
 }
 
-/* 둘러보기 카드: 긴 내용일 때 버튼 위치 고정 */
+/* 둘러보기 카드: 실제 모바일에서 버튼 잘림 방지 */
 .app.browse-page .browse-profile-card {
   display: flex !important;
   flex-direction: column !important;
 
-  max-height: min(620px, calc(100vh - 260px)) !important;
-  overflow: hidden !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.app.browse-page .browse-profile: none !important;
+  overflow: visible !important;
 }
 
 .app.browse-page .browse-profile-card .profile-card-top {
@@ -6610,33 +6615,30 @@ label {
 }
 
 .app.browse-page .browse-profile-card .profile-card-scroll {
-  flex: 1 1 auto !important;
+  flex: 0 1 auto !important;
   min-height: 0 !important;
+
+  max-height: min(280px, 34dvh) !important;
 
   overflow-y: auto !important;
   overflow-x: hidden !important;
 
-  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .app.browse-page .browse-profile-card .profile-card-actions {
   flex: 0 0 auto !important;
 
   margin-top: 10px !important;
-  padding-top: 12px !important;
+  padding-top: 10px !important;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.72),
-      rgba(255, 250, 252, 0.96)
-    );
-
+  overflow: visible !important;
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .app.browse-page .browse-profile-card .like-action-button {
   width: 100% !important;
+  min-height: 46px !important;
   flex-shrink: 0 !important;
 }

@@ -6596,3 +6596,51 @@ label {
   transform: translateX(-1px);
 }
 
+/* 둘러보기 카드: 긴 프로필 내용 때문에 관심 버튼 잘리는 문제 보정 */
+.app.browse-page .browse-profile-card {
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+
+  height: auto !important;
+  max-height: none !important;
+}
+
+.app.browse-page .browse-profile-card .profile-card-top {
+  flex: 0 0 auto !important;
+}
+
+.app.browse-page .browse-profile-card .profile-card-scroll {
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+
+  max-height: 290px !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.app.browse-page .browse-profile-card .profile-card-actions {
+  flex: 0 0 auto !important;
+
+  min-height: 58px !important;
+  margin-top: 10px !important;
+  padding-top: 10px !important;
+  padding-bottom: 4px !important;
+
+  box-sizing: border-box !important;
+}
+
+.app.browse-page .browse-profile-card .like-action-button {
+  width: 100% !important;
+  min-height: 46px !important;
+  height: 46px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  box-sizing: border-box !important;
+}

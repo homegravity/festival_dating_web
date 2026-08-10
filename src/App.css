@@ -6595,3 +6595,48 @@ label {
   display: inline-block;
   transform: translateX(-1px);
 }
+
+/* 둘러보기 카드: 긴 내용일 때 버튼 위치 고정 */
+.app.browse-page .browse-profile-card {
+  display: flex !important;
+  flex-direction: column !important;
+
+  max-height: min(620px, calc(100vh - 260px)) !important;
+  overflow: hidden !important;
+}
+
+.app.browse-page .browse-profile-card .profile-card-top {
+  flex: 0 0 auto !important;
+}
+
+.app.browse-page .browse-profile-card .profile-card-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  padding-right: 2px;
+}
+
+.app.browse-page .browse-profile-card .profile-card-actions {
+  flex: 0 0 auto !important;
+
+  margin-top: 10px !important;
+  padding-top: 12px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.72),
+      rgba(255, 250, 252, 0.96)
+    );
+
+  position: relative;
+  z-index: 2;
+}
+
+.app.browse-page .browse-profile-card .like-action-button {
+  width: 100% !important;
+  flex-shrink: 0 !important;
+}

@@ -6642,3 +6642,48 @@ label {
   min-height: 46px !important;
   flex-shrink: 0 !important;
 }
+
+/* 둘러보기 카드: 실제 모바일에서 관심 버튼 잘림 방지 - 바깥 wrapper 보정 */
+.app.browse-page .browse-card-center,
+.app.browse-page .swipe-card-front {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.app.browse-page .browse-card-center {
+  padding-bottom: 18px !important;
+}
+
+.app.browse-page .swipe-card-front {
+  display: block !important;
+  overflow: visible !important;
+}
+
+.app.browse-page .browse-profile-card {
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  margin-bottom: 8px !important;
+}
+
+.app.browse-page .browse-profile-card .profile-card-actions {
+  display: block !important;
+  flex-shrink: 0 !important;
+
+  min-height: 58px !important;
+  padding-bottom: 4px !important;
+
+  overflow: visible !important;
+}
+
+.app.browse-page .browse-profile-card .like-action-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-height: 46px !important;
+  height: 46px !important;
+
+  overflow: visible !important;
+}

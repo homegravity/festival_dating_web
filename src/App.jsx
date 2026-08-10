@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import './App.css';
 import { sampleProfiles } from './data/sampleProfiles';
 import BottomNav from './components/BottomNav';
@@ -18,12 +19,36 @@ function getAutoTargetGender(gender) {
 
   return '';
 }
+
+
+function FloatingInquiryButton({ onClick }) {
+  return createPortal(
+    <button
+      type="button"
+      className="floating-inquiry-button"
+      onClick={(event) => {
+        event.currentTarget.blur();
+        onClick();
+      }}
+      aria-label="문의하기"
+    >
+      <span className="floating-inquiry-icon" aria-hidden="true">
+        💬
+      </span>
+      <span className="floating-inquiry-text">문의</span>
+    </button>,
+    document.body
+  );
+}
+
+
+
 function App() {
   const savedData = JSON.parse(localStorage.getItem('festivalDatingData')) || {};
   
   const [isEntered, setIsEntered] = useState(savedData.isEntered || false);
   
-
+  const INQUIRY_OPEN_CHAT_URL = 'https://open.kakao.com/o/sypcu6Hi';
 
 
   const [profile, setProfile] = useState(
@@ -604,6 +629,16 @@ useEffect(() => {
       });
     });
   };
+
+  const handleOpenInquiryChat = () => {
+    if (!INQUIRY_OPEN_CHAT_URL) {
+      showToast('문의 링크가 아직 준비되지 않았어요.');
+      return;
+    }
+  
+    window.open(INQUIRY_OPEN_CHAT_URL, '_blank', 'noopener,noreferrer');
+  };
+
 
 
 
@@ -2869,6 +2904,9 @@ if (reverseLikes.length > 0) {
             
         </div>
 
+
+        <FloatingInquiryButton onClick={handleOpenInquiryChat} />
+
         <BottomNav
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
@@ -2909,6 +2947,8 @@ if (reverseLikes.length > 0) {
           
         </div>
   
+        <FloatingInquiryButton onClick={handleOpenInquiryChat} />
+
         <BottomNav
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
@@ -2958,6 +2998,8 @@ if (reverseLikes.length > 0) {
           ))}
         </div>
   
+        <FloatingInquiryButton onClick={handleOpenInquiryChat} />
+
         <BottomNav
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
@@ -3328,6 +3370,8 @@ if (currentPage === 'privacyPolicy') {
             </section>
           </div>
     
+          <FloatingInquiryButton onClick={handleOpenInquiryChat} />
+
           <BottomNav
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}

@@ -6500,3 +6500,98 @@ label {
   line-height: 1.55;
   letter-spacing: -0.025em;
 }
+
+
+/* 공통 플로팅 문의 버튼 - 작은 말풍선 버전 */
+.floating-inquiry-button {
+  position: fixed !important;
+  right: 16px !important;
+  bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+
+  z-index: 9999 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+
+  width: 64px !important;
+  height: 34px !important;
+  min-width: 0 !important;
+  max-width: 64px !important;
+  padding: 0 !important;
+
+  border: 1px solid rgba(255, 198, 216, 0.84) !important;
+  border-radius: 999px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(255, 246, 250, 0.92)
+    ) !important;
+
+  color: #b85f78 !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1 !important;
+
+  box-shadow:
+    0 8px 20px rgba(210, 102, 135, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96) !important;
+
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.floating-inquiry-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  line-height: 1;
+  transform: translateY(-0.5px);
+}
+
+.floating-inquiry-button::before,
+.floating-inquiry-button::after {
+  content: none !important;
+}
+
+.floating-inquiry-button:active {
+  transform: scale(0.94) !important;
+  opacity: 0.82 !important;
+}
+
+@media (max-width: 480px) {
+  .floating-inquiry-button {
+    right: 14px !important;
+    bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+
+    width: 62px !important;
+    height: 32px !important;
+
+    font-size: 12px !important;
+  }
+
+  .floating-inquiry-icon {
+    font-size: 11.5px;
+  }
+}
+
+.floating-inquiry-button {
+  padding-left: 1px !important;
+  padding-right: 3px !important;
+}
+
+.floating-inquiry-icon {
+  font-size: 11.5px !important;
+  transform: translate(-1px, -0.5px) !important;
+}
+
+.floating-inquiry-text {
+  display: inline-block;
+  transform: translateX(-1px);
+}

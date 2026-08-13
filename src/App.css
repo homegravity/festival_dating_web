@@ -6644,3 +6644,88 @@ label {
 
   box-sizing: border-box !important;
 }
+
+
+/* 시작 화면 서비스 통계 카드 */
+.start-stats-card {
+  width: 100%;
+  max-width: 320px;
+  margin: 18px auto 20px;
+  padding: 14px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 205, 222, 0.72);
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 247, 251, 0.78)
+    );
+
+  box-shadow:
+    0 12px 28px rgba(210, 102, 135, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+}
+
+.start-stat-item {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.start-stat-label {
+  color: #a57583;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.start-stat-value {
+  color: #b85f78;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.start-stat-value span {
+  margin-left: 2px;
+
+  color: #b98595;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.start-stat-divider {
+  width: 1px;
+  height: 36px;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      rgba(255, 198, 216, 0.9),
+      transparent
+    );
+}
+
+@media (max-width: 480px) {
+  .start-stats-card {
+    max-width: 300px;
+    margin: 16px auto 18px;
+    padding: 13px 14px;
+    border-radius: 18px;
+  }
+
+  .start-stat-value {
+    font-size: 21px;
+  }
+}

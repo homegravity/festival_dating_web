@@ -81,6 +81,14 @@ function App() {
   const skipNextNewProfileNoticeRef = useRef(false);
   
   
+  const [serviceStats, setServiceStats] = useState({
+    profileCount: 0,
+    matchCount: 0,
+  });
+  
+  const [isLoadingServiceStats, setIsLoadingServiceStats] = useState(true);
+
+
   const isProfileSavedRef = useRef(isProfileSaved);
   const profileFormModeRef = useRef(profileFormMode);
   const currentPageRef = useRef(currentPage);
@@ -279,6 +287,10 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   }, []);
   
   
+
+  useEffect(() => {
+    loadServiceStats();
+  }, []);
 
 
   useEffect(() => {
@@ -640,7 +652,35 @@ useEffect(() => {
   };
 
 
-
+  const loadServiceStats = async () => {
+    try {
+      setIsLoadingServiceStats(true);
+  
+      const { data, error } = await supabase
+        .from('likes')
+        .select('id, status');
+  
+      if (error) {
+        console.error('매칭 통계 불러오기 오류:', error);
+        return;
+      }
+  
+      console.log('likes 전체:', data);
+  
+      const acceptedMatches = (data || []).filter(
+        (like) => like.status === 'accepted'
+      );
+  
+      setServiceStats((prev) => ({
+        ...prev,
+        matchCount: acceptedMatches.length,
+      }));
+    } catch (error) {
+      console.error('서비스 통계 불러오기 오류:', error);
+    } finally {
+      setIsLoadingServiceStats(false);
+    }
+  };
 
 
   const handleCancelProfileForm = () => {
@@ -3480,6 +3520,27 @@ if (currentPage === 'privacyPolicy') {
             </div>
 
             <div className="start-action-box">
+            <div className="start-stats-card">
+            <div className="start-stat-item">
+              <span className="start-stat-label">참여 중</span>
+              <strong className="start-stat-value">
+              {supabaseProfiles.length}
+                <span>명</span>
+              </strong>
+            </div>
+
+            <div className="start-stat-divider" />
+
+            <div className="start-stat-item">
+              <span className="start-stat-label">성사된 매칭</span>
+              <strong className="start-stat-value">
+                {isLoadingServiceStats ? '-' : serviceStats.matchCount}
+                <span>건</span>
+              </strong>
+            </div>
+          </div>
+              
+              
               <button
                 type="button"
                 className="start-primary-button"

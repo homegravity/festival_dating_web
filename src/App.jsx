@@ -656,24 +656,16 @@ useEffect(() => {
     try {
       setIsLoadingServiceStats(true);
   
-      const { data, error } = await supabase
-        .from('likes')
-        .select('id, status');
+      const { data, error } = await supabase.rpc('get_service_stats');
   
       if (error) {
-        console.error('매칭 통계 불러오기 오류:', error);
+        console.error('서비스 통계 불러오기 오류:', error);
         return;
       }
   
-      console.log('likes 전체:', data);
-  
-      const acceptedMatches = (data || []).filter(
-        (like) => like.status === 'accepted'
-      );
-  
       setServiceStats((prev) => ({
         ...prev,
-        matchCount: acceptedMatches.length,
+        matchCount: Number(data?.matchCount || 0),
       }));
     } catch (error) {
       console.error('서비스 통계 불러오기 오류:', error);
@@ -681,8 +673,7 @@ useEffect(() => {
       setIsLoadingServiceStats(false);
     }
   };
-
-
+  
   const handleCancelProfileForm = () => {
     if (profileFormMode === 'edit') {
       setIsProfileSaved(true);

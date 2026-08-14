@@ -524,8 +524,12 @@ function ProfileForm({
             <span className="field-badge required">필수</span>
           </div>
           <p className="form-section-description">
-          연락수단은 서로 매칭된 상대에게만 공개돼요.
-          </p>
+          매칭 후 상대방에게 공개되는 연락수단이에요.
+          <br />
+          <span className="contact-warning-line">
+          ⚠️  연락이 불가능한 값이나 장난성 입력은 예고 없이 프로필이 삭제될 수 있어요.
+          </span>
+        </p>
         </div>
 
         <div className="form-field">

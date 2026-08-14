@@ -6729,3 +6729,11 @@ label {
     font-size: 21px;
   }
 }
+
+.app.form-page .contact-warning-line {
+  display: inline-block;
+  margin-top: 3px;
+
+  color: #c06a82;
+  font-weight: 800;
+}

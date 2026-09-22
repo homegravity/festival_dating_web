@@ -21,6 +21,12 @@ function getAutoTargetGender(gender) {
 }
 
 
+
+
+
+
+
+
 function FloatingInquiryButton({ onClick }) {
   return createPortal(
     <button
@@ -722,18 +728,60 @@ useEffect(() => {
   };
 
 
-  const handleHideMatchedProfile = (profileId) => {
-    setHiddenMatchedProfileIds((prevIds) => {
-      if (prevIds.includes(profileId)) {
-        return prevIds;
+  const handleCancelMatch = async (matchedProfileId) => {
+    if (!supabaseProfileId || !matchedProfileId) return;
+  
+    try {
+      const { data: matchRows, error: findError } = await supabase
+        .from('likes')
+        .select('id, sender_profile_id, receiver_profile_id, status')
+        .eq('status', 'accepted')
+        .or(
+          `and(sender_profile_id.eq.${supabaseProfileId},receiver_profile_id.eq.${matchedProfileId}),and(sender_profile_id.eq.${matchedProfileId},receiver_profile_id.eq.${supabaseProfileId})`
+        );
+  
+      if (findError) {
+        console.error('매칭 찾기 오류:', findError);
+        showToast('매칭 취소 중 오류가 발생했어요.');
+        return;
       }
   
-      return [...prevIds, profileId];
-    });
+      if (!matchRows || matchRows.length === 0) {
+        console.log('취소할 매칭을 찾지 못함');
+        return;
+      }
   
-    showToast('매칭 프로필을 숨겼어요.');
+      const matchIds = matchRows.map((match) => match.id);
+  
+      const { data: canceledRows, error: cancelError } = await supabase
+        .from('likes')
+        .update({
+          status: 'canceled',
+        })
+        .in('id', matchIds)
+        .select();
+  
+      console.log('매칭 취소 결과:', canceledRows);
+  
+      if (cancelError) {
+        console.error('매칭 취소 오류:', cancelError);
+        showToast('매칭 취소 중 오류가 발생했어요.');
+        return;
+      }
+  
+      setMatchedProfileIds((prev) =>
+        prev.filter(
+          (id) => String(id) !== String(matchedProfileId)
+        )
+      );
+  
+      await loadMyMatches(supabaseProfileId);
+      await loadServiceStats();
+    } catch (error) {
+      console.error('매칭 취소 오류:', error);
+      showToast('매칭 취소 중 오류가 발생했어요.');
+    }
   };
-
 
 
   const ensureAnonymousUser = async () => {
@@ -1560,6 +1608,9 @@ useEffect(() => {
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
+
+
+    
 
 
     if (isSubmittingProfile) {
@@ -3024,7 +3075,7 @@ if (reverseLikes.length > 0) {
               otherProfile={otherProfile}
               mode="match"
               handleCopyContactValue={handleCopyContactValue}
-              onHideMatch={handleHideMatchedProfile}
+              onHideMatch={() => handleCancelMatch(otherProfile.id)}
             />
           ))}
         </div>

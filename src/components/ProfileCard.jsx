@@ -107,7 +107,7 @@ function ProfileCard({
             onClick={(event) => {
               event.stopPropagation();
               event.currentTarget.blur();
-              onHideMatch(otherProfile.id);
+              onHideMatch();
             }}
             aria-label="매칭 프로필 숨기기"
           >

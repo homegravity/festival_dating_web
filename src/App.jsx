@@ -231,12 +231,7 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const profileSwipeModeRef = useRef(null);
 
 
-  const [hiddenMatchedProfileIds, setHiddenMatchedProfileIds] = useState(() => {
-    const savedHiddenMatches = localStorage.getItem('hiddenMatchedProfileIds');
   
-    return savedHiddenMatches ? JSON.parse(savedHiddenMatches) : [];
-  });
-
 
 
   
@@ -340,12 +335,7 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
 
 
 
-  useEffect(() => {
-    localStorage.setItem(
-      'hiddenMatchedProfileIds',
-      JSON.stringify(hiddenMatchedProfileIds)
-    );
-  }, [hiddenMatchedProfileIds]);
+  
 
 
 
@@ -1951,9 +1941,7 @@ useEffect(() => {
   .filter(Boolean);
 
   
-  const visibleMatchedProfiles = matchedProfiles.filter(
-    (otherProfile) => !hiddenMatchedProfileIds.includes(otherProfile.id)
-  );
+
 
 
   const toastElement = toastMessage && (
@@ -2993,7 +2981,7 @@ if (reverseLikes.length > 0) {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           receivedCount={receivedProfiles.length}
-          matchCount={visibleMatchedProfiles.length}
+          matchCount={matchedProfiles.length}
         />
       </div>
     );
@@ -3035,7 +3023,7 @@ if (reverseLikes.length > 0) {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           receivedCount={receivedProfiles.length}
-          matchCount={visibleMatchedProfiles.length}
+          matchCount={matchedProfiles.length}
         />
       </div>
     );
@@ -3063,13 +3051,13 @@ if (reverseLikes.length > 0) {
         })}
   
         <div className="profile-list">
-        {visibleMatchedProfiles.length === 0 && (
+        {matchedProfiles.length === 0 && (
             <div className="empty-message">
               아직 매칭된 사람이 없어요.
             </div>
           )}
 
-          {visibleMatchedProfiles.map((otherProfile) => (
+{matchedProfiles.map((otherProfile) => (
             <ProfileCard
               key={otherProfile.id}
               otherProfile={otherProfile}
@@ -3086,7 +3074,7 @@ if (reverseLikes.length > 0) {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           receivedCount={receivedProfiles.length}
-          matchCount={visibleMatchedProfiles.length}
+          matchCount={matchedProfiles.length}
         />
       </div>
     );
@@ -3458,7 +3446,7 @@ if (currentPage === 'privacyPolicy') {
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             receivedCount={receivedProfiles.length}
-            matchCount={visibleMatchedProfiles.length}
+            matchCount={matchedProfiles.length}
           />
         </div>
       );

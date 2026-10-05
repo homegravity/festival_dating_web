@@ -2055,57 +2055,61 @@ useEffect(() => {
 if (reverseCheckError) {
   console.error('상대 관심 확인 오류:', reverseCheckError);
   alert(`상대 관심 확인 오류: ${reverseCheckError.message}`);
+  setProcessingProfileId(null);
   return;
 }
 
-if (reverseLikes.length > 0) {
-  const reverseLike = reverseLikes[0];
+const reverseLike =
+  reverseLikes && reverseLikes.length > 0
+    ? reverseLikes[0]
+    : null;
 
-  if (reverseLike.status === 'pending') {
-    
-    const { error: acceptError } = await supabase
-      .from('likes')
-      .update({
-        status: 'accepted',
-        sender_seen_match: false,
-        receiver_seen_match: true,
-      })
-      .eq('id', reverseLike.id);
 
-    if (acceptError) {
-      console.error('자동 매칭 오류:', acceptError);
-      alert(`자동 매칭 오류: ${acceptError.message}`);
-      return;
+// 상대가 나에게 현재 관심을 보낸 상태라면 바로 매칭
+if (reverseLike?.status === 'pending') {
+  const { error: acceptError } = await supabase
+    .from('likes')
+    .update({
+      status: 'accepted',
+      sender_seen_match: false,
+      receiver_seen_match: true,
+    })
+    .eq('id', reverseLike.id);
+
+  if (acceptError) {
+    console.error('자동 매칭 오류:', acceptError);
+    alert(`자동 매칭 오류: ${acceptError.message}`);
+    setProcessingProfileId(null);
+    return;
+  }
+
+  await loadMyReceivedLikes(supabaseProfileId);
+  await loadMySentLikes(supabaseProfileId);
+  await loadMyMatches(supabaseProfileId);
+
+  setLikeCredits((prevCredits) => {
+    if (prevCredits >= maxLikes) {
+      setLastLikeRecoveredAt(new Date().toISOString());
     }
 
-    await loadMyReceivedLikes(supabaseProfileId);
-    await loadMySentLikes(supabaseProfileId);
-    await loadMyMatches(supabaseProfileId);
+    return Math.max(0, prevCredits - 1);
+  });
+
+  showToast('서로 관심을 보내 매칭되었어요!', 'success');
+
+  setProcessingProfileId(null);
+  return;
+}
 
 
+// 이미 매칭 상태라면 종료
+if (reverseLike?.status === 'accepted') {
+  await loadMyMatches(supabaseProfileId);
 
-    setLikeCredits((prevCredits) => {
-      if (prevCredits >= maxLikes) {
-        setLastLikeRecoveredAt(new Date().toISOString());
-      }
-    
-      return Math.max(0, prevCredits - 1);
-    });
+  alert('이미 매칭된 사람입니다.');
 
-
-
-
-    showToast('서로 관심을 보내 매칭되었어요!', 'success');
-    setProcessingProfileId(null);
-    return;
-  }
-
-  if (reverseLike.status === 'accepted') {
-    await loadMyMatches(supabaseProfileId);
-    alert('이미 매칭된 사람입니다.');
-    setProcessingProfileId(null);
-    return;
-  }
+  setProcessingProfileId(null);
+  return;
 }
 
 
@@ -2128,29 +2132,108 @@ if (reverseLikes.length > 0) {
   
     if (existingLikes.length > 0) {
       const existingLike = existingLikes[0];
-  
+    
+      // 이미 관심을 보낸 상태
       if (existingLike.status === 'pending') {
         setLikedProfileIds((prevIds) =>
-          prevIds.includes(profileId) ? prevIds : [...prevIds, profileId]
+          prevIds.includes(profileId)
+            ? prevIds
+            : [...prevIds, profileId]
         );
+    
         alert('이미 관심을 보낸 사람입니다.');
+        setProcessingProfileId(null);
         return;
       }
-  
+    
+      // 이미 매칭된 상태
       if (existingLike.status === 'accepted') {
         await loadMyMatches(supabaseProfileId);
+    
         alert('이미 매칭된 사람입니다.');
+        setProcessingProfileId(null);
         return;
       }
-  
-      if (existingLike.status === 'rejected') {
+    
+      // 예전에 거절된 관계
+      // 단, 반대 방향에 canceled가 있다면
+      // 이후 실제로 매칭됐다가 취소된 적이 있는 것이므로 다시 관심 가능
+      if (
+        existingLike.status === 'rejected' &&
+        reverseLike?.status !== 'canceled'
+      ) {
         setRejectedProfileIds((prevIds) =>
-          prevIds.includes(profileId) ? prevIds : [...prevIds, profileId]
+          prevIds.includes(profileId)
+            ? prevIds
+            : [...prevIds, profileId]
         );
+    
         alert('이미 거절된 관심입니다.');
+        setProcessingProfileId(null);
+        return;
+      }
+    
+      // 내가 → 상대 방향이 canceled이거나,
+      // 과거 rejected였지만 이후 반대 방향으로 매칭됐다가 취소된 경우
+      // 기존 row를 다시 pending으로 사용
+      if (
+        existingLike.status === 'canceled' ||
+        (
+          existingLike.status === 'rejected' &&
+          reverseLike?.status === 'canceled'
+        )
+      ) {
+        const { data: retriedRows, error: retryError } = await supabase
+          .from('likes')
+          .update({
+            status: 'pending',
+            receiver_seen_like: false,
+            sender_seen_result: true,
+            sender_seen_match: true,
+            receiver_seen_match: true,
+          })
+          .eq('id', existingLike.id)
+          .select();
+    
+        if (retryError) {
+          console.error('관심 다시 보내기 오류:', retryError);
+          alert(`관심 보내기 오류: ${retryError.message}`);
+          setProcessingProfileId(null);
+          return;
+        }
+    
+        if (!retriedRows || retriedRows.length === 0) {
+          console.error('취소된 관심 row 업데이트 실패');
+          alert('관심을 다시 보내지 못했어요.');
+          setProcessingProfileId(null);
+          return;
+        }
+    
+        await loadMySentLikes(supabaseProfileId);
+    
+        setLikedProfileIds((prevIds) =>
+          prevIds.includes(profileId)
+            ? prevIds
+            : [...prevIds, profileId]
+        );
+    
+        setLikeCredits((prevCredits) => {
+          if (prevCredits >= maxLikes) {
+            setLastLikeRecoveredAt(new Date().toISOString());
+          }
+    
+          return Math.max(0, prevCredits - 1);
+        });
+    
+        setProcessingProfileId(null);
         return;
       }
     }
+
+
+    
+
+
   
     const { error } = await supabase
       .from('likes')

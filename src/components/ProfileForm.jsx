@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function ProfileForm({
   profile,
@@ -10,13 +10,68 @@ function ProfileForm({
 }) {
 
 
-  const mbtiTypes = [
-    'ISTJ', 'ISFJ', 'INFJ', 'INTJ',
-    'ISTP', 'ISFP', 'INFP', 'INTP',
-    'ESTP', 'ESFP', 'ENFP', 'ENTP',
-    'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ',
+  
+  const mbtiPairs = [
+    ['E', 'I'],
+    ['N', 'S'],
+    ['F', 'T'],
+    ['P', 'J'],
   ];
   
+  const [mbtiSelections, setMbtiSelections] = useState(() => {
+    if (profile.mbti && profile.mbti.length === 4) {
+      return profile.mbti.split('');
+    }
+  
+    return ['', '', '', ''];
+  });
+  
+  useEffect(() => {
+    if (profile.mbti && profile.mbti.length === 4) {
+      setMbtiSelections(profile.mbti.split(''));
+    }
+  }, [profile.mbti]);
+  
+  const handleMbtiToggle = (index) => {
+    const [firstOption, secondOption] = mbtiPairs[index];
+  
+    const nextSelections = [...mbtiSelections];
+  
+    if (!nextSelections[index]) {
+      nextSelections[index] = firstOption;
+    } else {
+      nextSelections[index] =
+        nextSelections[index] === firstOption
+          ? secondOption
+          : firstOption;
+    }
+  
+    setMbtiSelections(nextSelections);
+  
+    const isComplete = nextSelections.every(Boolean);
+  
+    onProfileChange({
+      target: {
+        name: 'mbti',
+        value: isComplete ? nextSelections.join('') : '',
+      },
+    });
+  };
+
+
+  const handleMbtiReset = () => {
+    setMbtiSelections(['', '', '', '']);
+  
+    onProfileChange({
+      target: {
+        name: 'mbti',
+        value: '',
+      },
+    });
+  };
+
+
+
 
 
   const faceTypeOptions = [
@@ -297,31 +352,65 @@ function ProfileForm({
   <section className="form-section">
     
 
-    <div className="form-field">
-      <label className="field-label">
-        <span>MBTI</span>
-        <span className="field-badge optional">선택</span>
-      </label>
+  <div className="form-field">
+  <label className="field-label">
+    <span>MBTI</span>
+    <span className="field-badge optional">선택</span>
+  </label>
 
-      <div className="mbti-grid">
-        {mbtiTypes.map((mbti) => (
+  <div className="mbti-toggle-wrap">
+    <div className="mbti-toggle-row">
+      {mbtiPairs.map(([firstOption, secondOption], index) => {
+        const selectedLetter = mbtiSelections[index];
+
+        return (
           <button
-          key={mbti}
-          type="button"
-          className={`mbti-button ${profile.mbti === mbti ? 'selected' : ''}`}
-          onClick={(event) => {
-            event.currentTarget.blur();
-            handleMbtiSelect(mbti);
-          }}
-          onPointerUp={(event) => {
-            event.currentTarget.blur();
-          }}
-        >
-          {mbti}
-        </button>
-        ))}
-      </div>
+            key={`${firstOption}-${secondOption}`}
+            type="button"
+            className={`mbti-toggle-button ${
+              selectedLetter ? 'selected' : ''
+            }`}
+            onClick={(event) => {
+              event.currentTarget.blur();
+              handleMbtiToggle(index);
+            }}
+          >
+            {selectedLetter ? (
+              <span className="mbti-toggle-letter">
+                {selectedLetter}
+              </span>
+            ) : (
+              <span className="mbti-toggle-placeholder">
+                {firstOption}
+                <em>/</em>
+                {secondOption}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
+
+    <div className="mbti-toggle-guide-row">
+          <p className="mbti-toggle-guide">
+            각 칸을 눌러 성향을 선택해주세요.
+          </p>
+
+          {mbtiSelections.some(Boolean) && (
+            <button
+              type="button"
+              className="mbti-reset-button"
+              onClick={(event) => {
+                event.currentTarget.blur();
+                handleMbtiReset();
+              }}
+            >
+              선택 해제
+            </button>
+          )}
+        </div>
+  </div>
+</div>
 
     <div className="form-field">
       <label className="field-label">

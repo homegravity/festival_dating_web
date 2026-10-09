@@ -7147,3 +7147,243 @@ label {
     border-radius: 21px;
   }
 }
+
+
+/* =========================
+   MBTI 4칸 토글
+========================= */
+
+.app.form-page .mbti-toggle-wrap {
+  width: 100%;
+}
+
+.app.form-page .mbti-toggle-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  width: 100%;
+}
+
+/* 각 MBTI 버튼 */
+.app.form-page .mbti-toggle-button {
+  position: relative;
+
+  width: 48px;
+  height: 48px;
+
+  min-width: 48px;
+  min-height: 48px;
+
+  border-radius: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid rgba(232, 213, 219, 0.95);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.82);
+
+  color: #8c7c81;
+
+  box-shadow:
+    0 4px 12px rgba(120, 85, 96, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  transition:
+    transform 0.12s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease;
+}
+
+
+/* 선택된 상태 */
+.app.form-page .mbti-toggle-button.selected {
+  border-color: rgba(225, 155, 174, 0.8);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 241, 245, 0.98),
+      rgba(255, 249, 251, 0.98)
+    );
+
+  color: #d26986;
+
+  box-shadow:
+    0 6px 16px rgba(213, 110, 139, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+
+/* 선택된 한 글자 */
+.app.form-page .mbti-toggle-letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+
+  letter-spacing: -0.3px;
+}
+
+
+/* 아직 선택 전 E / I 형태 */
+.app.form-page .mbti-toggle-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10.5px;
+  color: #a99ca0;
+
+  
+  font-weight: 700;
+  line-height: 1;
+}
+
+.app.form-page .mbti-toggle-placeholder em {
+  color: #d6c7cb;
+
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+
+/* 눌렀을 때 아이폰 버튼처럼 살짝 들어감 */
+.app.form-page .mbti-toggle-button:active {
+  transform: scale(0.95);
+
+  background: #fff1f5;
+}
+
+
+/* PC에서만 아주 약한 hover */
+@media (hover: hover) {
+  .app.form-page .mbti-toggle-button:hover {
+    border-color: rgba(225, 177, 190, 0.95);
+
+    background: rgba(255, 248, 250, 0.95);
+  }
+}
+
+
+/* 아래 안내 문구 */
+.app.form-page .mbti-toggle-guide {
+  margin: 8px 2px 0;
+
+  color: #aaa0a3;
+
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.4;
+
+  text-align: left;
+}
+
+
+/* 작은 모바일에서도 4칸 유지 */
+@media (max-width: 380px) {
+  .app.form-page .mbti-toggle-row {
+    gap: 5px;
+  }
+
+  .app.form-page .mbti-toggle-button {
+    height: 42px;
+    border-radius: 13px;
+  }
+
+  .app.form-page .mbti-toggle-letter {
+    font-size: 17px;
+  }
+
+  .app.form-page .mbti-toggle-placeholder {
+    gap: 3px;
+    font-size: 11px;
+  }
+}
+
+.app.form-page .mbti-toggle-guide-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  margin-top: 8px;
+}
+
+.app.form-page .mbti-toggle-guide-row .mbti-toggle-guide {
+  margin: 0 !important;
+
+  color: #aaa0a3;
+
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 22px;
+
+  white-space: nowrap;
+}
+
+.app.form-page .mbti-reset-button {
+  width: auto !important;
+  min-width: 0 !important;
+
+  height: 22px !important;
+  min-height: 22px !important;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 !important;
+  padding: 0 8px !important;
+
+  border: 1px solid rgba(224, 193, 201, 0.85) !important;
+  border-radius: 999px !important;
+
+  background: rgba(255, 250, 251, 0.9) !important;
+  color: #a77e89 !important;
+
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+
+  box-shadow: none !important;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+@media (hover: hover) {
+  .app.form-page .mbti-reset-button:hover {
+    background: #fff2f5 !important;
+    border-color: #ddb3be !important;
+    color: #c36f85 !important;
+  }
+}
+
+.app.form-page .mbti-reset-button:active {
+  transform: scale(0.95);
+}

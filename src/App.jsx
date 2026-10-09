@@ -231,7 +231,11 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const profileSwipeModeRef = useRef(null);
 
 
-  
+  const [reportTargetProfile, setReportTargetProfile] = useState(null);
+const [reportReason, setReportReason] = useState('');
+const [reportDetail, setReportDetail] = useState('');
+const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+const [reportSourceMode, setReportSourceMode] = useState('');
 
 
   
@@ -276,6 +280,15 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
     participantCode,
 
   ]);
+
+
+  useEffect(() => {
+    setReportTargetProfile(null);
+    setReportSourceMode('');
+    setReportReason('');
+    setReportDetail('');
+  }, [currentPage]);
+
 
 
   useEffect(() => {
@@ -715,6 +728,98 @@ useEffect(() => {
     setTimeout(() => {
       recentToastKeysRef.current.delete(toastKey);
     }, 8000);
+  };
+
+  const handleOpenReportModal = (targetProfile, sourceMode) => {
+    setReportTargetProfile(targetProfile);
+    setReportSourceMode(sourceMode);
+    setReportReason('');
+    setReportDetail('');
+  };
+  
+  const handleCloseReportModal = () => {
+    if (isSubmittingReport) return;
+  
+    setReportTargetProfile(null);
+    setReportSourceMode('');
+    setReportReason('');
+    setReportDetail('');
+  };
+
+
+  const handleSubmitReport = async () => {
+    if (
+      isSubmittingReport ||
+      !supabaseProfileId ||
+      !reportTargetProfile ||
+      !reportReason
+    ) {
+      return;
+    }
+  
+    if (reportReason === 'other' && !reportDetail.trim()) {
+      showToast('기타 신고 사유를 간단히 입력해주세요.', 'warning');
+      return;
+    }
+  
+    setIsSubmittingReport(true);
+  
+    try {
+      // 현재 두 사람의 매칭 기록 찾기
+      const { data: matchRows, error: matchError } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('status', 'accepted')
+        .or(
+          `and(sender_profile_id.eq.${supabaseProfileId},receiver_profile_id.eq.${reportTargetProfile.id}),and(sender_profile_id.eq.${reportTargetProfile.id},receiver_profile_id.eq.${supabaseProfileId})`
+        )
+        .limit(1);
+  
+      if (matchError) {
+        console.error('신고용 매칭 정보 확인 오류:', matchError);
+        showToast('신고 처리 중 오류가 발생했어요.', 'warning');
+        return;
+      }
+  
+      const matchId = matchRows?.[0]?.id || null;
+  
+      // 신고 저장
+      const { error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          reporter_profile_id: supabaseProfileId,
+          reported_profile_id: reportTargetProfile.id,
+          like_id: matchId,
+  
+          reason: reportReason,
+          detail: reportDetail.trim() || null,
+  
+          reported_nickname: reportTargetProfile.nickname || null,
+          reported_contact_type: reportTargetProfile.contactType || null,
+          reported_contact_value: reportTargetProfile.contactValue || null,
+  
+          status: 'pending',
+        });
+  
+      if (reportError) {
+        console.error('신고 저장 오류:', reportError);
+        showToast('신고 접수 중 오류가 발생했어요.', 'warning');
+        return;
+      }
+  
+      // 성공하면 신고창 닫기
+      setReportTargetProfile(null);
+      setReportSourceMode('');
+      setReportReason('');
+      setReportDetail('');
+  
+      showToast('신고가 접수됐어요.', 'success');
+    } catch (error) {
+      console.error('신고 처리 오류:', error);
+      showToast('신고 접수 중 오류가 발생했어요.', 'warning');
+    } finally {
+      setIsSubmittingReport(false);
+    }
   };
 
 
@@ -1952,7 +2057,115 @@ useEffect(() => {
     </div>
   );
 
-  
+  const reportModalElement =
+  reportTargetProfile &&
+  createPortal(
+    <div
+      className="report-modal-layer"
+      onClick={handleCloseReportModal}
+    >
+      <div
+        className="report-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="report-modal-header">
+          <div>
+            <p className="report-modal-label">프로필 신고</p>
+            <h2>{reportTargetProfile.nickname}</h2>
+          </div>
+
+          <button
+            type="button"
+            className="report-modal-close"
+            onClick={handleCloseReportModal}
+            aria-label="신고창 닫기"
+          >
+            ×
+          </button>
+        </div>
+
+        <p className="report-modal-description">
+          신고 사유를 선택해주세요.
+        </p>
+
+        <div className="report-reason-list">
+          <label>
+            <input
+              type="radio"
+              name="reportReason"
+              value="invalid_contact"
+              checked={reportReason === 'invalid_contact'}
+              onChange={(event) => setReportReason(event.target.value)}
+            />
+            <span>연락수단이 올바르지 않아요</span>
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="reportReason"
+              value="fake_profile"
+              checked={reportReason === 'fake_profile'}
+              onChange={(event) => setReportReason(event.target.value)}
+            />
+            <span>허위·장난성 프로필이에요</span>
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="reportReason"
+              value="inappropriate"
+              checked={reportReason === 'inappropriate'}
+              onChange={(event) => setReportReason(event.target.value)}
+            />
+            <span>부적절한 내용이 있어요</span>
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="reportReason"
+              value="other"
+              checked={reportReason === 'other'}
+              onChange={(event) => setReportReason(event.target.value)}
+            />
+            <span>기타</span>
+          </label>
+        </div>
+
+        {reportReason === 'other' && (
+          <textarea
+            className="report-detail-input"
+            value={reportDetail}
+            onChange={(event) => setReportDetail(event.target.value)}
+            placeholder="신고 사유를 간단히 적어주세요."
+            maxLength={200}
+          />
+        )}
+
+        <div className="report-modal-actions">
+          <button
+            type="button"
+            className="report-cancel-button"
+            onClick={handleCloseReportModal}
+          >
+            취소
+          </button>
+
+          <button
+            type="button"
+            className="report-submit-button"
+            onClick={handleSubmitReport}
+            disabled={!reportReason || isSubmittingReport}
+          >
+            {isSubmittingReport ? '접수 중...' : '신고하기'}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
 
   
     const handleToggleLike = async (profileId) => {
@@ -2736,6 +2949,10 @@ if (reverseLike?.status === 'accepted') {
     return (
       <div className="app browse-page">
         {toastElement}
+        {reportModalElement}
+
+
+
         {renderPageHeader({
           title: '프로필 둘러보기',
           description: '',
@@ -3031,6 +3248,7 @@ if (reverseLike?.status === 'accepted') {
                       isLiked={likedProfileIds.includes(currentBrowseProfile.id)}
                       isProcessing={processingProfileId === currentBrowseProfile.id}
                       onToggleLike={handleToggleLike}
+                      
                     />
                   </div>
                 </div>
@@ -3074,6 +3292,7 @@ if (reverseLike?.status === 'accepted') {
     return (
       <div className="app received-page">
         {toastElement}
+        {reportModalElement}
         {renderPageHeader({
             title: '받은 관심',
             description: '관심을 보낸 사람을 확인하고 수락하면 매칭돼요.',
@@ -3095,6 +3314,7 @@ if (reverseLike?.status === 'accepted') {
             processingAction={processingReceivedAction}
             onAcceptLike={handleAcceptLike}
             onRejectLike={handleRejectLike}
+            
           />
           ))}
           
@@ -3128,6 +3348,14 @@ if (reverseLike?.status === 'accepted') {
     return (
       <div className="app match-page">
         {toastElement}
+        {reportModalElement}
+
+        
+
+
+
+
+
         {renderPageHeader({
           title: '매칭',
           description: '매칭된 사람의 연락수단을 확인할 수 있어요.',
@@ -3147,6 +3375,7 @@ if (reverseLike?.status === 'accepted') {
               mode="match"
               handleCopyContactValue={handleCopyContactValue}
               onHideMatch={() => handleCancelMatch(otherProfile.id)}
+              onReport={handleOpenReportModal}
             />
           ))}
         </div>

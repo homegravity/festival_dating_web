@@ -6737,3 +6737,413 @@ label {
   color: #c06a82;
   font-weight: 800;
 }
+
+
+
+
+
+/* =========================
+   프로필 신고 버튼
+========================= */
+
+.profile-card {
+  position: relative;
+}
+
+/* 프로필 신고 버튼 */
+.profile-card > .match-report-button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  height: 26px !important;
+  min-height: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 9px !important;
+
+  border: 1px solid #ead7dd;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.92);
+  color: #a77d89;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+
+  white-space: nowrap;
+
+  box-shadow: 0 2px 7px rgba(91, 57, 68, 0.07);
+
+  cursor: pointer;
+}
+
+.profile-card > .match-report-button:hover {
+  background: #fff4f6;
+  color: #be697e;
+  border-color: #e2b6c1;
+}
+
+.profile-card > .match-report-button:active {
+  transform: scale(0.96);
+}
+
+.profile-card .profile-card-header {
+  padding-right: 52px;
+}
+
+/* 매칭 화면에서는 X 버튼 아래에 신고 버튼 배치 */
+.app.match-page .match-report-button {
+  top: 48px;
+}
+
+
+/* =========================
+   신고 모달
+========================= */
+
+.report-modal-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 20000 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 16px !important;
+  box-sizing: border-box !important;
+
+  background: rgba(40, 30, 34, 0.2) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+
+/* 팝업 본체 */
+.report-modal {
+  width: 290px !important;
+  max-width: calc(100vw - 32px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 40px) !important;
+
+  display: block !important;
+
+  padding: 16px !important;
+  margin: 0 !important;
+
+  box-sizing: border-box !important;
+
+  background: #fffdfd !important;
+
+  border: 1px solid #efdde2 !important;
+  border-radius: 18px !important;
+
+  box-shadow: 0 16px 40px rgba(75, 49, 58, 0.16) !important;
+
+  overflow-y: auto !important;
+
+  text-align: left !important;
+}
+
+
+/* 모달 내부 전체 */
+.report-modal * {
+  box-sizing: border-box;
+}
+
+
+/* 상단 */
+.report-modal-header {
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+
+  gap: 10px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.report-modal-header > div {
+  display: block !important;
+  flex: 1 !important;
+}
+
+.report-modal-label {
+  display: block !important;
+
+  margin: 0 0 2px !important;
+  padding: 0 !important;
+
+  color: #bc7888 !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+
+  text-align: left !important;
+}
+
+.report-modal-header h2 {
+  display: block !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #493b40 !important;
+
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+
+  text-align: left !important;
+}
+
+
+/* X 버튼 */
+.report-modal-close {
+  position: static !important;
+
+  width: 26px !important;
+  min-width: 26px !important;
+  max-width: 26px !important;
+
+  height: 26px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex: 0 0 26px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+
+  background: #f6edef !important;
+  color: #9b7882 !important;
+
+  font-size: 17px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+
+  cursor: pointer;
+}
+
+
+/* 설명 */
+.report-modal-description {
+  display: block !important;
+
+  width: 100% !important;
+
+  margin: 13px 0 8px !important;
+  padding: 0 !important;
+
+  color: #77666b !important;
+
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+
+  text-align: left !important;
+}
+
+
+/* 신고 사유 목록 */
+.report-reason-list {
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 6px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* 신고 사유 한 줄 */
+.report-reason-list label {
+  width: 100% !important;
+  min-height: 36px !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  gap: 8px !important;
+
+  margin: 0 !important;
+  padding: 8px 10px !important;
+
+  border: 1px solid #eee1e5 !important;
+  border-radius: 11px !important;
+
+  background: #ffffff !important;
+
+  color: #58494e !important;
+
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+
+  text-align: left !important;
+
+  cursor: pointer;
+}
+
+
+/* 라디오 */
+.report-reason-list input[type='radio'] {
+  width: 14px !important;
+  height: 14px !important;
+
+  min-width: 14px !important;
+  max-width: 14px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  flex: 0 0 14px !important;
+
+  accent-color: #c97c8f;
+}
+
+
+/* 신고 사유 글자 */
+.report-reason-list label span {
+  display: block !important;
+  flex: 1 !important;
+
+  width: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+
+/* 선택 상태 */
+.report-reason-list label:has(input:checked) {
+  border-color: #dca5b2 !important;
+  background: #fff5f7 !important;
+}
+
+
+/* 기타 입력 */
+.report-detail-input {
+  display: block !important;
+
+  width: 100% !important;
+  height: 68px !important;
+  min-height: 68px !important;
+
+  margin: 8px 0 0 !important;
+  padding: 9px 10px !important;
+
+  border: 1px solid #eadde1 !important;
+  border-radius: 11px !important;
+
+  background: #ffffff !important;
+  color: #514249 !important;
+
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+
+  resize: none !important;
+
+  text-align: left !important;
+}
+
+
+/* 하단 버튼 영역 */
+.report-modal-actions {
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+
+  gap: 7px !important;
+
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+}
+
+
+/* 취소 / 신고하기 */
+.report-modal-actions button {
+  position: static !important;
+
+  flex: 1 !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+
+  margin: 0 !important;
+  padding: 0 8px !important;
+
+  border: 0 !important;
+  border-radius: 11px !important;
+
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+
+  cursor: pointer;
+}
+
+.report-cancel-button {
+  background: #f4edef !important;
+  color: #746268 !important;
+}
+
+.report-submit-button {
+  background: #c9798d !important;
+  color: #ffffff !important;
+}
+
+.report-submit-button:disabled {
+  background: #eadcdf !important;
+  color: #bba4aa !important;
+  cursor: not-allowed !important;
+}
+
+
+/* 모바일 */
+@media (max-width: 480px) {
+  .report-modal-layer {
+    padding: 14px;
+  }
+
+  .report-modal {
+    padding: 19px;
+    border-radius: 21px;
+  }
+}

@@ -31,6 +31,7 @@ function ProfileCard({
   onRejectLike,
   handleCopyContactValue,
   onHideMatch,
+  onReport,
 }) {
   
   const [isMatchDetailOpen, setIsMatchDetailOpen] = useState(false);
@@ -109,12 +110,27 @@ function ProfileCard({
               event.currentTarget.blur();
               onHideMatch();
             }}
-            aria-label="매칭 프로필 숨기기"
+            aria-label="매칭 취소"
           >
             ×
           </button>
         )}
-                
+
+
+        {mode === 'match' && onReport && (
+          <button
+            type="button"
+            className="match-report-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              event.currentTarget.blur();
+              onReport(otherProfile, mode);
+            }}
+          >
+            신고
+          </button>
+        )}
+                        
 
 
 

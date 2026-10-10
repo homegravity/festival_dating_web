@@ -8,6 +8,68 @@ import ProfileForm from './components/ProfileForm';
 import { supabase } from './lib/supabaseClient';
 
 
+const ACTIVITY_FALLBACK_POLL_MS = 60 * 1000;
+const FOREGROUND_REFRESH_DEBOUNCE_MS = 400;
+const TRANSIENT_RETRY_DELAY_MS = 700;
+
+
+function getErrorMessage(error) {
+  if (!error) {
+    return '';
+  }
+
+  return String(error.message || error.details || error.hint || error);
+}
+
+
+function isTransientNetworkError(error) {
+  const message = getErrorMessage(error).toLowerCase();
+
+  return (
+    error instanceof TypeError ||
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('network request failed') ||
+    message.includes('load failed') ||
+    message.includes('timeout') ||
+    message.includes('timed out') ||
+    message.includes('connection')
+  );
+}
+
+
+const wait = (delayMs) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, delayMs);
+  });
+
+
+async function runSupabaseReadWithRetry(queryFactory, label) {
+  let lastResult = { data: null, error: null };
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      lastResult = await queryFactory();
+    } catch (error) {
+      lastResult = { data: null, error };
+    }
+
+    if (!lastResult?.error) {
+      return lastResult;
+    }
+
+    if (!isTransientNetworkError(lastResult.error) || attempt === 1) {
+      return lastResult;
+    }
+
+    console.warn(`${label} 일시 실패 - 1회 재시도합니다.`, lastResult.error);
+    await wait(TRANSIENT_RETRY_DELAY_MS);
+  }
+
+  return lastResult;
+}
+
+
 function getAutoTargetGender(gender) {
   if (gender === '남성') {
     return '여성';
@@ -80,7 +142,9 @@ function App() {
   const [currentPage, setCurrentPage] = useState(savedData.currentPage || 'profileComplete');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [likedProfileIds, setLikedProfileIds] = useState(savedData.likedProfileIds || []);
-  const [rejectedProfileIds, setRejectedProfileIds] = useState([]);
+  const [rejectedProfileIds, setRejectedProfileIds] = useState(
+    savedData.rejectedProfileIds || []
+  );
   const [profileFormMode, setProfileFormMode] = useState('create');
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
   const hasInitializedVisibleProfileIdsRef = useRef(false);
@@ -184,7 +248,9 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   };
   
   
-  const [receivedLikeIds, setReceivedLikeIds] = useState([]);
+  const [receivedLikeIds, setReceivedLikeIds] = useState(
+    savedData.receivedLikeIds || []
+  );
   const [matchedProfileIds, setMatchedProfileIds] = useState(savedData.matchedProfileIds || []);
   
 
@@ -192,11 +258,13 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
 
   const [isProfileVisible, setIsProfileVisible] = useState(savedData.isProfileVisible ?? true);
   const [supabaseProfileId, setSupabaseProfileId] = useState(savedData.supabaseProfileId || null);
+  const supabaseProfileIdRef = useRef(supabaseProfileId);
   const [participantCode, setParticipantCode] = useState(savedData.participantCode || '');
   
   
   
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   const [startMode, setStartMode] = useState('home');
   const [lookupCode, setLookupCode] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
@@ -210,6 +278,18 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const [toastQueue, setToastQueue] = useState([]);
   const isCheckingNotificationsRef = useRef(false);
   const recentToastKeysRef = useRef(new Set());
+  const ensureAnonymousUserPromiseRef = useRef(null);
+  const isRefreshingActivityRef = useRef(false);
+  const pendingActivityRefreshRef = useRef(null);
+  const isRefreshingProfilesRef = useRef(false);
+  const profilesRefreshQueuedRef = useRef(false);
+  const sentLikesRequestIdRef = useRef(0);
+  const receivedLikesRequestIdRef = useRef(0);
+  const matchesRequestIdRef = useRef(0);
+  const contactsRequestIdRef = useRef(0);
+  const foregroundRefreshTimerRef = useRef(null);
+  const likesRealtimeConnectedRef = useRef(false);
+  const profilesRealtimeConnectedRef = useRef(false);
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
   const [contactMap, setContactMap] = useState({});
   const [selectedMbtiFilters, setSelectedMbtiFilters] = useState([]);
@@ -254,6 +334,7 @@ const [reportSourceMode, setReportSourceMode] = useState('');
       currentPage,
       profile,
       likedProfileIds,
+      rejectedProfileIds,
       receivedLikeIds,
       matchedProfileIds,
       likeCredits,
@@ -273,8 +354,11 @@ const [reportSourceMode, setReportSourceMode] = useState('');
     currentPage,
     profile,
     likedProfileIds,
+    rejectedProfileIds,
     receivedLikeIds,
     matchedProfileIds,
+    likeCredits,
+    lastLikeRecoveredAt,
     isProfileVisible,
     supabaseProfileId,
     participantCode,
@@ -297,7 +381,31 @@ const [reportSourceMode, setReportSourceMode] = useState('');
 
 
   useEffect(() => {
-    ensureAnonymousUser();
+    let isCancelled = false;
+
+    const initializeAuth = async () => {
+      // 저장된 프로필이 있는데 auth 세션만 사라진 경우 새 anonymous user를
+      // 자동 생성하면 owner_id와 다른 사용자가 되어 RLS 조회가 빈 결과가 될 수 있다.
+      const user = supabaseProfileId
+        ? await recoverExistingSession({ notifyIfMissing: true })
+        : await ensureAnonymousUser();
+
+      if (!isCancelled) {
+        setIsAuthReady(true);
+
+        if (!user && supabaseProfileId) {
+          console.warn(
+            '저장된 프로필의 Supabase 세션을 찾지 못해 기존 활동 데이터를 유지합니다.'
+          );
+        }
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
   
   
@@ -316,17 +424,6 @@ const [reportSourceMode, setReportSourceMode] = useState('');
     egenTetoFilter,
   ]);
 
-
-  useEffect(() => {
-    if (supabaseProfileId) {
-      loadMySentLikes(supabaseProfileId);
-      loadMyReceivedLikes(supabaseProfileId);
-      loadMyMatches(supabaseProfileId);
-      checkUnseenNotifications(supabaseProfileId);
-    }
-  }, [supabaseProfileId]);
-
-  
 
   useEffect(() => {
     recoverLikeCredits();
@@ -354,39 +451,32 @@ const [reportSourceMode, setReportSourceMode] = useState('');
 
 
   useEffect(() => {
-  if (!supabaseProfileId || !isProfileSaved) {
-    return;
-  }
+    if (
+      !supabaseProfileId ||
+      !isProfileSaved ||
+      !isAuthReady ||
+      !currentUserId
+    ) {
+      return;
+    }
 
-  const refreshMyActivity = async () => {
-    
-    await loadMyReceivedLikes(supabaseProfileId);
-    await loadMySentLikes(supabaseProfileId);
-    await loadMyMatches(supabaseProfileId);
-  };
+    refreshMyActivitySafely(supabaseProfileId, {
+      includeNotifications: true,
+    });
 
-  refreshMyActivity();
+    const timer = setInterval(() => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
 
-  const timer = setInterval(() => {
-    refreshMyActivity();
-  }, 8000);
+      // Realtime이 조용히 끊긴 경우에도 영원히 오래된 상태로 남지 않도록
+      // 저빈도 복구 폴링은 유지한다.
+      refreshMyActivitySafely(supabaseProfileId);
+      loadSupabaseProfiles();
+    }, ACTIVITY_FALLBACK_POLL_MS);
 
-  return () => clearInterval(timer);
-}, [supabaseProfileId, isProfileSaved]);
-
-useEffect(() => {
-  if (!isProfileSaved) {
-    return;
-  }
-
-  loadSupabaseProfiles();
-
-  const timer = setInterval(() => {
-    loadSupabaseProfiles();
-  }, 8000);
-
-  return () => clearInterval(timer);
-}, [isProfileSaved]);
+    return () => clearInterval(timer);
+  }, [supabaseProfileId, isProfileSaved, isAuthReady, currentUserId]);
 
 
 
@@ -407,7 +497,8 @@ useEffect(() => {
     isProfileSavedRef.current = isProfileSaved;
     profileFormModeRef.current = profileFormMode;
     currentPageRef.current = currentPage;
-  }, [isProfileSaved, profileFormMode, currentPage]);
+    supabaseProfileIdRef.current = supabaseProfileId;
+  }, [isProfileSaved, profileFormMode, currentPage, supabaseProfileId]);
 
 
   useEffect(() => {
@@ -489,10 +580,26 @@ useEffect(() => {
           table: 'likes',
         },
         async (payload) => {
-          
-          
-          
-          
+          const oldRow = payload.old || {};
+          const newRow = payload.new || {};
+          const hasRelationshipColumns = [oldRow, newRow].some(
+            (row) => row.sender_profile_id || row.receiver_profile_id
+          );
+          const isRelatedToCurrentProfile = [oldRow, newRow].some(
+            (row) =>
+              String(row.sender_profile_id) === String(supabaseProfileId) ||
+              String(row.receiver_profile_id) === String(supabaseProfileId)
+          );
+
+          // 기존에는 다른 사용자의 likes 변경에도 모든 클라이언트가 3개 쿼리를
+          // 다시 실행했다. 현재 프로필과 관계없는 이벤트는 무시한다.
+          if (
+            !isRelatedToCurrentProfile &&
+            !(payload.eventType === 'DELETE' && !hasRelationshipColumns)
+          ) {
+            return;
+          }
+
           if (
             payload.eventType === 'UPDATE' &&
             String(payload.new?.sender_profile_id) === String(supabaseProfileId) &&
@@ -530,14 +637,19 @@ useEffect(() => {
 
 
 
-          await loadMySentLikes(supabaseProfileId);
-          await loadMyReceivedLikes(supabaseProfileId);
-          await loadMyMatches(supabaseProfileId);
+          await refreshMyActivitySafely(supabaseProfileId);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        likesRealtimeConnectedRef.current = status === 'SUBSCRIBED';
+
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('likes Realtime 연결 상태:', status);
+        }
+      });
   
     return () => {
+      likesRealtimeConnectedRef.current = false;
       supabase.removeChannel(channel);
     };
   }, [supabaseProfileId]);
@@ -563,9 +675,16 @@ useEffect(() => {
           await loadSupabaseProfiles();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        profilesRealtimeConnectedRef.current = status === 'SUBSCRIBED';
+
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('profiles Realtime 연결 상태:', status);
+        }
+      });
   
     return () => {
+      profilesRealtimeConnectedRef.current = false;
       supabase.removeChannel(channel);
     };
   }, []);
@@ -573,43 +692,50 @@ useEffect(() => {
 
 
   useEffect(() => {
-    if (!supabaseProfileId) {
-      return;
-    }
-  
-    const refreshUserState = async () => {
-      await checkUnseenNotifications(supabaseProfileId);
-      await loadMySentLikes(supabaseProfileId);
-      await loadMyReceivedLikes(supabaseProfileId);
-      await loadMyMatches(supabaseProfileId);
-      await loadSupabaseProfiles();
-    };
-    
-
-    const refreshOnReturn = () => {
+    const scheduleSafeRefresh = () => {
       if (document.visibilityState !== 'visible') {
         return;
       }
-  
-      refreshUserState();
-  
-      setTimeout(() => {
-        refreshUserState();
-      }, 800);
-  
-      setTimeout(() => {
-        refreshUserState();
-      }, 2500);
+
+      if (foregroundRefreshTimerRef.current) {
+        clearTimeout(foregroundRefreshTimerRef.current);
+      }
+
+      foregroundRefreshTimerRef.current = setTimeout(async () => {
+        foregroundRefreshTimerRef.current = null;
+
+        const user = supabaseProfileId
+          ? await recoverExistingSession({ notifyIfMissing: true })
+          : null;
+        const refreshTasks = [loadSupabaseProfiles()];
+
+        if (user && supabaseProfileId) {
+          refreshTasks.push(
+            refreshMyActivitySafely(supabaseProfileId, {
+              includeNotifications: true,
+            })
+          );
+        }
+
+        await Promise.all(refreshTasks);
+      }, FOREGROUND_REFRESH_DEBOUNCE_MS);
     };
   
-    document.addEventListener('visibilitychange', refreshOnReturn);
-    window.addEventListener('focus', refreshOnReturn);
-    window.addEventListener('pageshow', refreshOnReturn);
+    document.addEventListener('visibilitychange', scheduleSafeRefresh);
+    window.addEventListener('focus', scheduleSafeRefresh);
+    window.addEventListener('pageshow', scheduleSafeRefresh);
+    window.addEventListener('online', scheduleSafeRefresh);
   
     return () => {
-      document.removeEventListener('visibilitychange', refreshOnReturn);
-      window.removeEventListener('focus', refreshOnReturn);
-      window.removeEventListener('pageshow', refreshOnReturn);
+      if (foregroundRefreshTimerRef.current) {
+        clearTimeout(foregroundRefreshTimerRef.current);
+        foregroundRefreshTimerRef.current = null;
+      }
+
+      document.removeEventListener('visibilitychange', scheduleSafeRefresh);
+      window.removeEventListener('focus', scheduleSafeRefresh);
+      window.removeEventListener('pageshow', scheduleSafeRefresh);
+      window.removeEventListener('online', scheduleSafeRefresh);
     };
   }, [supabaseProfileId]);
 
@@ -624,6 +750,7 @@ useEffect(() => {
     setCurrentPage('profileComplete');
     setLikedProfileIds([]);
     setRejectedProfileIds([]);
+    setReceivedLikeIds([]);
     setMatchedProfileIds([]);
     setLikeCredits(maxLikes);
     setLastLikeRecoveredAt(new Date().toISOString());
@@ -728,6 +855,21 @@ useEffect(() => {
     setTimeout(() => {
       recentToastKeysRef.current.delete(toastKey);
     }, 8000);
+  };
+
+
+  const handlePassiveReadError = (label, error) => {
+    console.error(`${label} 오류:`, error);
+
+    // 일시적인 연결 실패는 기존 화면을 유지하고 조용히 복구 폴링/Realtime에
+    // 맡긴다. 권한/스키마 같은 실제 서버 오류는 중복 제한된 toast로 알린다.
+    if (!isTransientNetworkError(error)) {
+      showToast(
+        '일부 데이터를 새로고침하지 못했어요. 잠시 후 다시 확인해주세요.',
+        'warning',
+        'passive-data-refresh-error'
+      );
+    }
   };
 
   const handleOpenReportModal = (targetProfile, sourceMode) => {
@@ -879,32 +1021,102 @@ useEffect(() => {
   };
 
 
-  const ensureAnonymousUser = async () => {
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  
-    if (sessionError) {
-      console.error('세션 확인 오류:', sessionError);
+  async function recoverExistingSession({ notifyIfMissing = false } = {}) {
+    try {
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError) {
+        handlePassiveReadError('세션 확인', sessionError);
+        return null;
+      }
+
+      let session = sessionData.session;
+
+      if (!session?.user) {
+        if (notifyIfMissing) {
+          showToast(
+            '로그인 세션을 찾지 못했어요. 기존 데이터는 유지했으며, 필요하면 참여 코드로 다시 연결해주세요.',
+            'warning',
+            'missing-anonymous-session'
+          );
+        }
+
+        return null;
+      }
+
+      const expiresSoon =
+        session.expires_at && session.expires_at * 1000 <= Date.now() + 60 * 1000;
+
+      if (expiresSoon) {
+        const { data: refreshedData, error: refreshError } =
+          await supabase.auth.refreshSession();
+
+        if (refreshError) {
+          handlePassiveReadError('세션 갱신', refreshError);
+          return null;
+        }
+
+        session = refreshedData.session;
+      }
+
+      if (!session?.user) {
+        return null;
+      }
+
+      setCurrentUserId(session.user.id);
+      return session.user;
+    } catch (error) {
+      handlePassiveReadError('세션 복구', error);
       return null;
     }
-  
-    if (sessionData.session?.user) {
-      console.log('기존 사용자 ID:', sessionData.session.user.id);
-      setCurrentUserId(sessionData.session.user.id);
-      return sessionData.session.user;
+  }
+
+
+  async function ensureAnonymousUser() {
+    if (ensureAnonymousUserPromiseRef.current) {
+      return ensureAnonymousUserPromiseRef.current;
     }
-  
-    const { data, error } = await supabase.auth.signInAnonymously();
-  
-    if (error) {
-      console.error('익명 로그인 오류:', error);
-      alert(`익명 로그인 오류: ${error.message}`);
-      return null;
+
+    const ensurePromise = (async () => {
+      const existingUser = await recoverExistingSession();
+
+      if (existingUser) {
+        console.log('기존 사용자 ID:', existingUser.id);
+        return existingUser;
+      }
+
+      const { data, error } = await supabase.auth.signInAnonymously();
+
+      if (error) {
+        console.error('익명 로그인 오류:', error);
+
+        if (!isTransientNetworkError(error)) {
+          showToast(
+            `익명 로그인 오류: ${error.message}`,
+            'warning',
+            'anonymous-sign-in-error'
+          );
+        }
+
+        return null;
+      }
+
+      console.log('익명 사용자 ID:', data.user.id);
+      setCurrentUserId(data.user.id);
+      return data.user;
+    })();
+
+    ensureAnonymousUserPromiseRef.current = ensurePromise;
+
+    try {
+      return await ensurePromise;
+    } finally {
+      if (ensureAnonymousUserPromiseRef.current === ensurePromise) {
+        ensureAnonymousUserPromiseRef.current = null;
+      }
     }
-  
-    console.log('익명 사용자 ID:', data.user.id);
-    setCurrentUserId(data.user.id);
-    return data.user;
-  };
+  }
 
 
 
@@ -982,6 +1194,8 @@ useEffect(() => {
       return;
     }
 
+    setIsAuthReady(true);
+
     const { error: ownerUpdateError } = await supabase
       .from('profiles')
       .update({
@@ -1053,11 +1267,12 @@ useEffect(() => {
     previousVisibleProfileIdsRef.current = [];
     hasInitializedVisibleProfileIdsRef.current = false;
 
-    await loadSupabaseProfiles();
-    await loadMySentLikes(foundProfile.id);
-    await loadMyReceivedLikes(foundProfile.id);
-    await loadMyMatches(foundProfile.id);
-    await checkUnseenNotifications(foundProfile.id);
+    await Promise.all([
+      loadSupabaseProfiles(),
+      refreshMyActivitySafely(foundProfile.id, {
+        includeNotifications: true,
+      }),
+    ]);
 
     setIsLoadingProfile(false);
   };
@@ -1133,45 +1348,58 @@ useEffect(() => {
 
 
   const loadSupabaseProfiles = async () => {
-    console.log('프로필 목록 새로고침 실행');
-    const { data, error } = await supabase
-      .from('public_profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-  
-    if (error) {
-      console.error('프로필 불러오기 오류:', error);
-      alert(`프로필을 불러오는 중 오류가 발생했어요: ${error.message}`);
-      return;
+    if (isRefreshingProfilesRef.current) {
+      profilesRefreshQueuedRef.current = true;
+      return false;
     }
-  
-    const loadedProfiles = data || [];
-    console.log('불러온 프로필 수:', loadedProfiles.length);
-    const formattedProfiles = loadedProfiles.map((item) => ({
-      id: item.id,
-      nickname: item.nickname,
-      gender: item.gender,
-      targetGender: item.target_gender,
-      grade: item.grade || '',
-      age: item.age ? String(item.age) : '',
-      department: item.department || '',
-      mbti: item.mbti || '',
-      faceType: item.face_type || '',
-      interests: item.interests || '',
-      introduction: item.introduction || '',
-      idealType: item.ideal_type || '',
-      egenTetoScore:
-        item.egen_teto_score !== null && item.egen_teto_score !== undefined
-          ? String(item.egen_teto_score)
-          : '',
-      isVisible: item.is_visible,
-    }));
-  
-    const currentProfileIds = formattedProfiles
-      .map((profileItem) => String(profileItem.id))
-      .filter((profileId) => profileId !== String(supabaseProfileId));
-  
-      if (isProfileSaved && supabaseProfileId) {
+
+    isRefreshingProfilesRef.current = true;
+
+    try {
+      console.log('프로필 목록 새로고침 실행');
+      const { data, error } = await runSupabaseReadWithRetry(
+        () =>
+          supabase
+            .from('public_profiles')
+            .select('*')
+            .order('created_at', { ascending: false }),
+        '프로필 목록 불러오기'
+      );
+
+      if (error) {
+        handlePassiveReadError('프로필 불러오기', error);
+        return false;
+      }
+
+      const loadedProfiles = Array.isArray(data) ? data : [];
+      console.log('불러온 프로필 수:', loadedProfiles.length);
+      const formattedProfiles = loadedProfiles.map((item) => ({
+        id: item.id,
+        nickname: item.nickname,
+        gender: item.gender,
+        targetGender: item.target_gender,
+        grade: item.grade || '',
+        age: item.age ? String(item.age) : '',
+        department: item.department || '',
+        mbti: item.mbti || '',
+        faceType: item.face_type || '',
+        interests: item.interests || '',
+        introduction: item.introduction || '',
+        idealType: item.ideal_type || '',
+        egenTetoScore:
+          item.egen_teto_score !== null && item.egen_teto_score !== undefined
+            ? String(item.egen_teto_score)
+            : '',
+        isVisible: item.is_visible,
+      }));
+
+      const activeProfileId = supabaseProfileIdRef.current;
+      const hasSavedProfile = isProfileSavedRef.current;
+      const currentProfileIds = formattedProfiles
+        .map((profileItem) => String(profileItem.id))
+        .filter((profileId) => profileId !== String(activeProfileId));
+
+      if (hasSavedProfile && activeProfileId) {
         if (skipNextNewProfileNoticeRef.current) {
           previousVisibleProfileIdsRef.current = currentProfileIds;
           hasInitializedVisibleProfileIdsRef.current = true;
@@ -1184,54 +1412,71 @@ useEffect(() => {
         } else {
           const newProfileIds = currentProfileIds.filter(
             (profileId) =>
-              profileId !== String(supabaseProfileId) &&
+              profileId !== String(activeProfileId) &&
               !previousVisibleProfileIdsRef.current.includes(profileId)
           );
-      
+
           if (newProfileIds.length > 0) {
             setNewProfileNoticeCount((prevCount) => prevCount + newProfileIds.length);
           }
-      
+
           previousVisibleProfileIdsRef.current = currentProfileIds;
         }
       }
-  
-    const orderedProfiles = orderProfilesForBrowse(formattedProfiles);
-    console.log('formattedProfiles 수:', formattedProfiles.length);
-    setSupabaseProfiles(orderedProfiles);
+
+      const orderedProfiles = orderProfilesForBrowse(formattedProfiles);
+      console.log('formattedProfiles 수:', formattedProfiles.length);
+      setSupabaseProfiles(orderedProfiles);
+      return true;
+    } finally {
+      isRefreshingProfilesRef.current = false;
+
+      if (profilesRefreshQueuedRef.current) {
+        profilesRefreshQueuedRef.current = false;
+        window.setTimeout(() => loadSupabaseProfiles(), 0);
+      }
+    }
   };
 
   const loadMySentLikes = async (profileId) => {
+    const requestId = ++sentLikesRequestIdRef.current;
+
     if (!profileId) {
       setLikedProfileIds([]);
       setRejectedProfileIds([]);
-      return;
+      return true;
     }
-  
 
+    const { data, error } = await runSupabaseReadWithRetry(
+      () =>
+        supabase
+          .from('likes')
+          .select('receiver_profile_id, status')
+          .eq('sender_profile_id', profileId),
+      '보낸 관심 불러오기'
+    );
 
+    if (requestId !== sentLikesRequestIdRef.current) {
+      return false;
+    }
 
-    const { data, error } = await supabase
-      .from('likes')
-      .select('receiver_profile_id, status')
-      .eq('sender_profile_id', profileId);
-  
     if (error) {
-      console.error('보낸 관심 불러오기 오류:', error);
-      alert(`보낸 관심 불러오기 오류: ${error.message}`);
-      return;
+      handlePassiveReadError('보낸 관심 불러오기', error);
+      return false;
     }
-  
-    const pendingIds = data
+
+    const rows = Array.isArray(data) ? data : [];
+    const pendingIds = rows
       .filter((item) => item.status === 'pending')
       .map((item) => item.receiver_profile_id);
-  
-    const rejectedIds = data
+
+    const rejectedIds = rows
       .filter((item) => item.status === 'rejected')
       .map((item) => item.receiver_profile_id);
-  
+
     setLikedProfileIds(pendingIds);
     setRejectedProfileIds(rejectedIds);
+    return true;
   };
 
 
@@ -1293,9 +1538,16 @@ useEffect(() => {
     if (!data || data.length === 0) {
       return;
     }
-  
-    
-  
+
+    const receivedLikeIdsToMark = data.map((item) => item.id);
+
+    const { error: updateError } = await supabase
+      .from('likes')
+      .update({
+        receiver_seen_like: true,
+      })
+      .in('id', receivedLikeIdsToMark);
+
     if (updateError) {
       console.error('받은 관심 알림 확인 처리 오류:', updateError);
     }
@@ -1511,46 +1763,72 @@ useEffect(() => {
 
 
   const loadMyReceivedLikes = async (profileId) => {
+    const requestId = ++receivedLikesRequestIdRef.current;
+
     if (!profileId) {
       setReceivedLikeIds([]);
-      return;
+      return true;
     }
-  
-    const { data, error } = await supabase
-      .from('likes')
-      .select('sender_profile_id')
-      .eq('receiver_profile_id', profileId)
-      .eq('status', 'pending');
-  
+
+    const { data, error } = await runSupabaseReadWithRetry(
+      () =>
+        supabase
+          .from('likes')
+          .select('sender_profile_id')
+          .eq('receiver_profile_id', profileId)
+          .eq('status', 'pending'),
+      '받은 관심 불러오기'
+    );
+
+    if (requestId !== receivedLikesRequestIdRef.current) {
+      return false;
+    }
+
     if (error) {
-      console.error('받은 관심 불러오기 오류:', error);
-      alert(`받은 관심 불러오기 오류: ${error.message}`);
-      return;
+      handlePassiveReadError('받은 관심 불러오기', error);
+      return false;
     }
-  
-    const senderIds = data.map((item) => item.sender_profile_id);
+
+    const senderIds = (Array.isArray(data) ? data : []).map(
+      (item) => item.sender_profile_id
+    );
     setReceivedLikeIds(senderIds);
+    return true;
   };
 
 
 
   const loadMyMatches = async (profileId) => {
-    if (!profileId) return;
-  
-    const { data, error } = await supabase
-      .from('likes')
-      .select('id, sender_profile_id, receiver_profile_id, status')
-      .eq('status', 'accepted')
-      .or(`sender_profile_id.eq.${profileId},receiver_profile_id.eq.${profileId}`);
-  
-    if (error) {
-      console.error('매칭 목록 불러오기 오류:', error);
-      return;
+    const requestId = ++matchesRequestIdRef.current;
+
+    if (!profileId) {
+      return false;
     }
-  
+
+    const { data, error } = await runSupabaseReadWithRetry(
+      () =>
+        supabase
+          .from('likes')
+          .select('id, sender_profile_id, receiver_profile_id, status')
+          .eq('status', 'accepted')
+          .or(
+            `sender_profile_id.eq.${profileId},receiver_profile_id.eq.${profileId}`
+          ),
+      '매칭 목록 불러오기'
+    );
+
+    if (requestId !== matchesRequestIdRef.current) {
+      return false;
+    }
+
+    if (error) {
+      handlePassiveReadError('매칭 목록 불러오기', error);
+      return false;
+    }
+
     const nextMatchedProfileIds = Array.from(
       new Set(
-        (data || [])
+        (Array.isArray(data) ? data : [])
           .map((like) => {
             if (String(like.sender_profile_id) === String(profileId)) {
               return like.receiver_profile_id;
@@ -1567,36 +1845,139 @@ useEffect(() => {
     );
   
     setMatchedProfileIds(nextMatchedProfileIds);
+    return true;
   };
 
 
+  async function refreshMyActivitySafely(
+    profileId,
+    { includeNotifications = false } = {}
+  ) {
+    if (!profileId) {
+      return false;
+    }
+
+    const pendingRefresh = pendingActivityRefreshRef.current;
+
+    if (
+      pendingRefresh &&
+      String(pendingRefresh.profileId) === String(profileId)
+    ) {
+      pendingRefresh.includeNotifications =
+        pendingRefresh.includeNotifications || includeNotifications;
+    } else {
+      pendingActivityRefreshRef.current = {
+        profileId,
+        includeNotifications,
+      };
+    }
+
+    if (isRefreshingActivityRef.current) {
+      return false;
+    }
+
+    isRefreshingActivityRef.current = true;
+    let latestRefreshSucceeded = true;
+    let refreshPassCount = 0;
+
+    try {
+      // 한 번의 refresh 실행 중 들어온 신호는 한 번의 trailing refresh로만
+      // 합친다. 이벤트가 계속 유입되어도 하나의 async 루프가 무한히 점유하지 않는다.
+      while (
+        pendingActivityRefreshRef.current &&
+        refreshPassCount < 2
+      ) {
+        const refreshRequest = pendingActivityRefreshRef.current;
+        pendingActivityRefreshRef.current = null;
+        refreshPassCount += 1;
+
+        const settledResults = await Promise.allSettled([
+          loadMySentLikes(refreshRequest.profileId),
+          loadMyReceivedLikes(refreshRequest.profileId),
+          loadMyMatches(refreshRequest.profileId),
+        ]);
+
+        latestRefreshSucceeded = settledResults.every(
+          (result) => result.status === 'fulfilled' && result.value === true
+        );
+
+        const rejectedResult = settledResults.find(
+          (result) => result.status === 'rejected'
+        );
+
+        if (rejectedResult) {
+          handlePassiveReadError(
+            '활동 데이터 새로고침',
+            rejectedResult.reason
+          );
+        }
+
+        if (refreshRequest.includeNotifications) {
+          try {
+            await checkUnseenNotifications(refreshRequest.profileId);
+          } catch (error) {
+            handlePassiveReadError('알림 상태 새로고침', error);
+          }
+        }
+      }
+
+      return latestRefreshSucceeded;
+    } catch (error) {
+      handlePassiveReadError('활동 데이터 새로고침', error);
+      return false;
+    } finally {
+      const deferredRefresh = pendingActivityRefreshRef.current;
+      pendingActivityRefreshRef.current = null;
+      isRefreshingActivityRef.current = false;
+
+      if (deferredRefresh) {
+        window.setTimeout(() => {
+          refreshMyActivitySafely(deferredRefresh.profileId, {
+            includeNotifications: deferredRefresh.includeNotifications,
+          });
+        }, 0);
+      }
+    }
+  }
+
+
   const loadContactsForMatches = async (profileIds) => {
+    const requestId = ++contactsRequestIdRef.current;
+
     if (!profileIds || profileIds.length === 0) {
       setContactMap({});
-      return;
+      return true;
     }
-  
-    const { data, error } = await supabase
-      .from('contacts')
-      .select('profile_id, contact_type, contact_value')
-      .in('profile_id', profileIds);
-  
+
+    const { data, error } = await runSupabaseReadWithRetry(
+      () =>
+        supabase
+          .from('contacts')
+          .select('profile_id, contact_type, contact_value')
+          .in('profile_id', profileIds),
+      '연락수단 불러오기'
+    );
+
+    if (requestId !== contactsRequestIdRef.current) {
+      return false;
+    }
+
     if (error) {
-      console.error('연락수단 불러오기 오류:', error);
-      alert(`연락수단 불러오기 오류: ${error.message}`);
-      return;
+      handlePassiveReadError('연락수단 불러오기', error);
+      return false;
     }
-  
+
     const newContactMap = {};
-  
-    data.forEach((contact) => {
+
+    (Array.isArray(data) ? data : []).forEach((contact) => {
       newContactMap[contact.profile_id] = {
         contactType: contact.contact_type,
         contactValue: contact.contact_value,
       };
     });
-  
+
     setContactMap(newContactMap);
+    return true;
   };
 
 
@@ -2296,9 +2677,7 @@ if (reverseLike?.status === 'pending') {
     return;
   }
 
-  await loadMyReceivedLikes(supabaseProfileId);
-  await loadMySentLikes(supabaseProfileId);
-  await loadMyMatches(supabaseProfileId);
+  await refreshMyActivitySafely(supabaseProfileId);
 
   setLikeCredits((prevCredits) => {
     if (prevCredits >= maxLikes) {
@@ -2618,7 +2997,8 @@ if (reverseLike?.status === 'accepted') {
     setCurrentPage('profileComplete');
     setSearchKeyword('');
     setLikedProfileIds([]);
-    setReceivedLikeIds([1, 2]);
+    setRejectedProfileIds([]);
+    setReceivedLikeIds([]);
     setMatchedProfileIds([]);
     setIsProfileVisible(true);
     setProfileFormMode('create');
@@ -2662,8 +3042,7 @@ if (reverseLike?.status === 'accepted') {
         return;
       }
   
-      await loadMyReceivedLikes(supabaseProfileId);
-      await loadMyMatches(supabaseProfileId);
+      await refreshMyActivitySafely(supabaseProfileId);
       showToast('매칭이 성사됐어요!', 'success');
     } finally {
       setProcessingReceivedProfileId(null);

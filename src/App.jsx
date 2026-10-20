@@ -70,6 +70,27 @@ async function runSupabaseReadWithRetry(queryFactory, label) {
 }
 
 
+function formatProfileForCard(item, profileId = item.id) {
+  return {
+    id: profileId,
+    nickname: item.nickname,
+    gender: item.gender,
+    grade: item.grade || '',
+    age: item.age ? String(item.age) : '',
+    department: item.department || '',
+    mbti: item.mbti || '',
+    faceType: item.face_type || '',
+    interests: item.interests || '',
+    introduction: item.introduction || '',
+    idealType: item.ideal_type || '',
+    egenTetoScore:
+      item.egen_teto_score !== null && item.egen_teto_score !== undefined
+        ? String(item.egen_teto_score)
+        : '',
+  };
+}
+
+
 function getAutoTargetGender(gender) {
   if (gender === '남성') {
     return '여성';
@@ -283,14 +304,22 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const pendingActivityRefreshRef = useRef(null);
   const isRefreshingProfilesRef = useRef(false);
   const profilesRefreshQueuedRef = useRef(false);
-  const sentLikesRequestIdRef = useRef(0);
-  const receivedLikesRequestIdRef = useRef(0);
-  const matchesRequestIdRef = useRef(0);
+  const relationshipProfilesRequestIdRef = useRef(0);
+  const relationshipProfileIdsRef = useRef(
+    new Set(
+      [
+        ...(savedData.likedProfileIds || []),
+        ...(savedData.receivedLikeIds || []),
+        ...(savedData.matchedProfileIds || []),
+      ].map((profileId) => String(profileId))
+    )
+  );
   const contactsRequestIdRef = useRef(0);
   const foregroundRefreshTimerRef = useRef(null);
   const likesRealtimeConnectedRef = useRef(false);
   const profilesRealtimeConnectedRef = useRef(false);
   const [supabaseProfiles, setSupabaseProfiles] = useState([]);
+  const [relationshipProfileMap, setRelationshipProfileMap] = useState({});
   const [contactMap, setContactMap] = useState({});
   const [selectedMbtiFilters, setSelectedMbtiFilters] = useState([]);
   const [selectedInterestFilters, setSelectedInterestFilters] = useState([]);
@@ -566,6 +595,16 @@ const [reportSourceMode, setReportSourceMode] = useState('');
   }, [matchedProfileIds]);
 
   useEffect(() => {
+    relationshipProfileIdsRef.current = new Set(
+      [
+        ...likedProfileIds,
+        ...receivedLikeIds,
+        ...matchedProfileIds,
+      ].map((profileId) => String(profileId))
+    );
+  }, [likedProfileIds, receivedLikeIds, matchedProfileIds]);
+
+  useEffect(() => {
     if (!supabaseProfileId) {
       return;
     }
@@ -591,8 +630,8 @@ const [reportSourceMode, setReportSourceMode] = useState('');
               String(row.receiver_profile_id) === String(supabaseProfileId)
           );
 
-          // 기존에는 다른 사용자의 likes 변경에도 모든 클라이언트가 3개 쿼리를
-          // 다시 실행했다. 현재 프로필과 관계없는 이벤트는 무시한다.
+          // 다른 사용자의 likes 변경으로 모든 클라이언트가 관계 조회를
+          // 다시 실행하지 않도록 현재 프로필과 무관한 이벤트는 무시한다.
           if (
             !isRelatedToCurrentProfile &&
             !(payload.eventType === 'DELETE' && !hasRelationshipColumns)
@@ -666,13 +705,21 @@ const [reportSourceMode, setReportSourceMode] = useState('');
           schema: 'public',
           table: 'profiles',
         },
-        async () => {
-          
-          
-          
-          
-          
-          await loadSupabaseProfiles();
+        async (payload) => {
+          const changedProfileId = payload.new?.id || payload.old?.id;
+          const activeProfileId = supabaseProfileIdRef.current;
+          const shouldRefreshRelationshipProfiles =
+            activeProfileId &&
+            changedProfileId &&
+            relationshipProfileIdsRef.current.has(String(changedProfileId));
+
+          const refreshTasks = [loadSupabaseProfiles()];
+
+          if (shouldRefreshRelationshipProfiles) {
+            refreshTasks.push(refreshMyActivitySafely(activeProfileId));
+          }
+
+          await Promise.all(refreshTasks);
         }
       )
       .subscribe((status) => {
@@ -752,6 +799,7 @@ const [reportSourceMode, setReportSourceMode] = useState('');
     setRejectedProfileIds([]);
     setReceivedLikeIds([]);
     setMatchedProfileIds([]);
+    setRelationshipProfileMap({});
     setLikeCredits(maxLikes);
     setLastLikeRecoveredAt(new Date().toISOString());
   
@@ -1012,7 +1060,7 @@ const [reportSourceMode, setReportSourceMode] = useState('');
         )
       );
   
-      await loadMyMatches(supabaseProfileId);
+      await refreshMyActivitySafely(supabaseProfileId);
       await loadServiceStats();
     } catch (error) {
       console.error('매칭 취소 오류:', error);
@@ -1374,22 +1422,8 @@ const [reportSourceMode, setReportSourceMode] = useState('');
       const loadedProfiles = Array.isArray(data) ? data : [];
       console.log('불러온 프로필 수:', loadedProfiles.length);
       const formattedProfiles = loadedProfiles.map((item) => ({
-        id: item.id,
-        nickname: item.nickname,
-        gender: item.gender,
+        ...formatProfileForCard(item),
         targetGender: item.target_gender,
-        grade: item.grade || '',
-        age: item.age ? String(item.age) : '',
-        department: item.department || '',
-        mbti: item.mbti || '',
-        faceType: item.face_type || '',
-        interests: item.interests || '',
-        introduction: item.introduction || '',
-        idealType: item.ideal_type || '',
-        egenTetoScore:
-          item.egen_teto_score !== null && item.egen_teto_score !== undefined
-            ? String(item.egen_teto_score)
-            : '',
         isVisible: item.is_visible,
       }));
 
@@ -1438,44 +1472,80 @@ const [reportSourceMode, setReportSourceMode] = useState('');
     }
   };
 
-  const loadMySentLikes = async (profileId) => {
-    const requestId = ++sentLikesRequestIdRef.current;
+  const loadMyRelationshipProfiles = async (profileId) => {
+    const requestId = ++relationshipProfilesRequestIdRef.current;
 
     if (!profileId) {
       setLikedProfileIds([]);
       setRejectedProfileIds([]);
+      setReceivedLikeIds([]);
+      setMatchedProfileIds([]);
+      setRelationshipProfileMap({});
       return true;
     }
 
     const { data, error } = await runSupabaseReadWithRetry(
       () =>
-        supabase
-          .from('likes')
-          .select('receiver_profile_id, status')
-          .eq('sender_profile_id', profileId),
-      '보낸 관심 불러오기'
+        supabase.rpc('get_my_relationship_profiles', {
+          input_profile_id: profileId,
+        }),
+      '관계 프로필 불러오기'
     );
 
-    if (requestId !== sentLikesRequestIdRef.current) {
+    if (requestId !== relationshipProfilesRequestIdRef.current) {
       return false;
     }
 
     if (error) {
-      handlePassiveReadError('보낸 관심 불러오기', error);
+      handlePassiveReadError('관계 프로필 불러오기', error);
       return false;
     }
 
     const rows = Array.isArray(data) ? data : [];
-    const pendingIds = rows
-      .filter((item) => item.status === 'pending')
-      .map((item) => item.receiver_profile_id);
+    const collectRelationshipIds = (relationshipType) =>
+      Array.from(
+        new Set(
+          rows
+            .filter((item) => item.relationship_type === relationshipType)
+            .map((item) => item.other_profile_id)
+            .filter(Boolean)
+        )
+      );
+    const nextRelationshipProfileMap = {};
+    const detailedRelationshipTypes = new Set([
+      'sent_pending',
+      'received_pending',
+      'matched',
+    ]);
 
-    const rejectedIds = rows
-      .filter((item) => item.status === 'rejected')
-      .map((item) => item.receiver_profile_id);
+    rows.forEach((item) => {
+      if (
+        item.other_profile_id &&
+        detailedRelationshipTypes.has(item.relationship_type)
+      ) {
+        nextRelationshipProfileMap[item.other_profile_id] =
+          formatProfileForCard(item, item.other_profile_id);
+      }
+    });
 
-    setLikedProfileIds(pendingIds);
-    setRejectedProfileIds(rejectedIds);
+    const nextLikedProfileIds = collectRelationshipIds('sent_pending');
+    const nextReceivedLikeIds = collectRelationshipIds('received_pending');
+    const nextMatchedProfileIds = collectRelationshipIds('matched');
+    const nextRejectedProfileIds = collectRelationshipIds('sent_rejected');
+
+    relationshipProfileIdsRef.current = new Set(
+      [
+        ...nextLikedProfileIds,
+        ...nextReceivedLikeIds,
+        ...nextMatchedProfileIds,
+      ].map((relatedProfileId) => String(relatedProfileId))
+    );
+
+    setLikedProfileIds(nextLikedProfileIds);
+    setReceivedLikeIds(nextReceivedLikeIds);
+    setMatchedProfileIds(nextMatchedProfileIds);
+    setRejectedProfileIds(nextRejectedProfileIds);
+    setRelationshipProfileMap(nextRelationshipProfileMap);
     return true;
   };
 
@@ -1762,93 +1832,6 @@ const [reportSourceMode, setReportSourceMode] = useState('');
 
 
 
-  const loadMyReceivedLikes = async (profileId) => {
-    const requestId = ++receivedLikesRequestIdRef.current;
-
-    if (!profileId) {
-      setReceivedLikeIds([]);
-      return true;
-    }
-
-    const { data, error } = await runSupabaseReadWithRetry(
-      () =>
-        supabase
-          .from('likes')
-          .select('sender_profile_id')
-          .eq('receiver_profile_id', profileId)
-          .eq('status', 'pending'),
-      '받은 관심 불러오기'
-    );
-
-    if (requestId !== receivedLikesRequestIdRef.current) {
-      return false;
-    }
-
-    if (error) {
-      handlePassiveReadError('받은 관심 불러오기', error);
-      return false;
-    }
-
-    const senderIds = (Array.isArray(data) ? data : []).map(
-      (item) => item.sender_profile_id
-    );
-    setReceivedLikeIds(senderIds);
-    return true;
-  };
-
-
-
-  const loadMyMatches = async (profileId) => {
-    const requestId = ++matchesRequestIdRef.current;
-
-    if (!profileId) {
-      return false;
-    }
-
-    const { data, error } = await runSupabaseReadWithRetry(
-      () =>
-        supabase
-          .from('likes')
-          .select('id, sender_profile_id, receiver_profile_id, status')
-          .eq('status', 'accepted')
-          .or(
-            `sender_profile_id.eq.${profileId},receiver_profile_id.eq.${profileId}`
-          ),
-      '매칭 목록 불러오기'
-    );
-
-    if (requestId !== matchesRequestIdRef.current) {
-      return false;
-    }
-
-    if (error) {
-      handlePassiveReadError('매칭 목록 불러오기', error);
-      return false;
-    }
-
-    const nextMatchedProfileIds = Array.from(
-      new Set(
-        (Array.isArray(data) ? data : [])
-          .map((like) => {
-            if (String(like.sender_profile_id) === String(profileId)) {
-              return like.receiver_profile_id;
-            }
-  
-            if (String(like.receiver_profile_id) === String(profileId)) {
-              return like.sender_profile_id;
-            }
-  
-            return null;
-          })
-          .filter(Boolean)
-      )
-    );
-  
-    setMatchedProfileIds(nextMatchedProfileIds);
-    return true;
-  };
-
-
   async function refreshMyActivitySafely(
     profileId,
     { includeNotifications = false } = {}
@@ -1892,9 +1875,7 @@ const [reportSourceMode, setReportSourceMode] = useState('');
         refreshPassCount += 1;
 
         const settledResults = await Promise.allSettled([
-          loadMySentLikes(refreshRequest.profileId),
-          loadMyReceivedLikes(refreshRequest.profileId),
-          loadMyMatches(refreshRequest.profileId),
+          loadMyRelationshipProfiles(refreshRequest.profileId),
         ]);
 
         latestRefreshSucceeded = settledResults.every(
@@ -2406,15 +2387,13 @@ const [reportSourceMode, setReportSourceMode] = useState('');
 
  
 
-  const receivedProfiles = supabaseProfiles.filter((otherProfile) =>
-    receivedLikeIds.includes(otherProfile.id)
-  );
+  const receivedProfiles = receivedLikeIds
+    .map((profileId) => relationshipProfileMap[profileId])
+    .filter(Boolean);
   
   const matchedProfiles = matchedProfileIds
   .map((profileId) => {
-    const profile = supabaseProfiles.find(
-      (item) => String(item.id) === String(profileId)
-    );
+    const profile = relationshipProfileMap[profileId];
 
     if (!profile) return null;
 
@@ -2696,7 +2675,7 @@ if (reverseLike?.status === 'pending') {
 
 // 이미 매칭 상태라면 종료
 if (reverseLike?.status === 'accepted') {
-  await loadMyMatches(supabaseProfileId);
+  await refreshMyActivitySafely(supabaseProfileId);
 
   alert('이미 매칭된 사람입니다.');
 
@@ -2732,6 +2711,8 @@ if (reverseLike?.status === 'accepted') {
             ? prevIds
             : [...prevIds, profileId]
         );
+
+        await refreshMyActivitySafely(supabaseProfileId);
     
         alert('이미 관심을 보낸 사람입니다.');
         setProcessingProfileId(null);
@@ -2740,7 +2721,7 @@ if (reverseLike?.status === 'accepted') {
     
       // 이미 매칭된 상태
       if (existingLike.status === 'accepted') {
-        await loadMyMatches(supabaseProfileId);
+        await refreshMyActivitySafely(supabaseProfileId);
     
         alert('이미 매칭된 사람입니다.');
         setProcessingProfileId(null);
@@ -2801,7 +2782,7 @@ if (reverseLike?.status === 'accepted') {
           return;
         }
     
-        await loadMySentLikes(supabaseProfileId);
+        await refreshMyActivitySafely(supabaseProfileId);
     
         setLikedProfileIds((prevIds) =>
           prevIds.includes(profileId)
@@ -2844,6 +2825,8 @@ if (reverseLike?.status === 'accepted') {
     }
   
     setLikedProfileIds((prevIds) => [...prevIds, profileId]);
+
+    await refreshMyActivitySafely(supabaseProfileId);
 
     setLikeCredits((prevCredits) => {
       if (prevCredits >= maxLikes) {
@@ -3000,6 +2983,7 @@ if (reverseLike?.status === 'accepted') {
     setRejectedProfileIds([]);
     setReceivedLikeIds([]);
     setMatchedProfileIds([]);
+    setRelationshipProfileMap({});
     setIsProfileVisible(true);
     setProfileFormMode('create');
     setSupabaseProfileId(null);
@@ -3081,18 +3065,16 @@ if (reverseLike?.status === 'accepted') {
         return;
       }
   
-      await loadMyReceivedLikes(supabaseProfileId);
+      await refreshMyActivitySafely(supabaseProfileId);
     } finally {
       setProcessingReceivedProfileId(null);
       setProcessingReceivedAction('');
     }
   };
 
-  const sentLikeProfiles = supabaseProfiles.filter((otherProfile) =>
-
-    likedProfileIds.includes(otherProfile.id)
-
-  );
+  const sentLikeProfiles = likedProfileIds
+    .map((profileId) => relationshipProfileMap[profileId])
+    .filter(Boolean);
 
   const handleInterestFilterToggle = (interest) => {
     setSelectedInterestFilters((prevFilters) =>
@@ -3344,7 +3326,7 @@ if (reverseLike?.status === 'accepted') {
             · {getLikeRecoveryText()}
           </span>
         </p>
-        {sentLikeProfiles.length > 0 && (
+        {likedProfileIds.length > 0 && (
           <button
           type="button"
           className="sent-likes-shortcut-button"
@@ -3360,7 +3342,7 @@ if (reverseLike?.status === 'accepted') {
             setCurrentPage('sentLikes');
           }}
         >
-          보낸 관심 {sentLikeProfiles.length}명 관리하기
+          보낸 관심 {likedProfileIds.length}명 관리하기
         </button>
         )}
                 
@@ -3660,8 +3642,8 @@ if (reverseLike?.status === 'accepted') {
         <BottomNav
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
-          receivedCount={receivedProfiles.length}
-          matchCount={matchedProfiles.length}
+          receivedCount={receivedLikeIds.length}
+          matchCount={matchedProfileIds.length}
         />
       </div>
     );
@@ -3704,8 +3686,8 @@ if (reverseLike?.status === 'accepted') {
         <BottomNav
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
-          receivedCount={receivedProfiles.length}
-          matchCount={matchedProfiles.length}
+          receivedCount={receivedLikeIds.length}
+          matchCount={matchedProfileIds.length}
         />
       </div>
     );
@@ -3764,8 +3746,8 @@ if (reverseLike?.status === 'accepted') {
         <BottomNav
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
-          receivedCount={receivedProfiles.length}
-          matchCount={matchedProfiles.length}
+          receivedCount={receivedLikeIds.length}
+          matchCount={matchedProfileIds.length}
         />
       </div>
     );
@@ -4136,8 +4118,8 @@ if (currentPage === 'privacyPolicy') {
           <BottomNav
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
-            receivedCount={receivedProfiles.length}
-            matchCount={matchedProfiles.length}
+            receivedCount={receivedLikeIds.length}
+            matchCount={matchedProfileIds.length}
           />
         </div>
       );

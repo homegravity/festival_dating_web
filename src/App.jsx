@@ -10,6 +10,7 @@ import { supabase } from './lib/supabaseClient';
 
 const ACTIVITY_FALLBACK_POLL_MS = 60 * 1000;
 const FOREGROUND_REFRESH_DEBOUNCE_MS = 400;
+const PROFILE_ACTIVITY_TOUCH_COOLDOWN_MS = 5 * 1000;
 const TRANSIENT_RETRY_DELAY_MS = 700;
 
 
@@ -300,6 +301,8 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const isCheckingNotificationsRef = useRef(false);
   const recentToastKeysRef = useRef(new Set());
   const ensureAnonymousUserPromiseRef = useRef(null);
+  const profileActivityTouchPromisesRef = useRef(new Map());
+  const lastProfileActivityTouchRef = useRef(new Map());
   const isRefreshingActivityRef = useRef(false);
   const pendingActivityRefreshRef = useRef(null);
   const isRefreshingProfilesRef = useRef(false);
@@ -492,6 +495,7 @@ const [reportSourceMode, setReportSourceMode] = useState('');
     refreshMyActivitySafely(supabaseProfileId, {
       includeNotifications: true,
     });
+    touchMyProfileActivitySafely(supabaseProfileId);
 
     const timer = setInterval(() => {
       if (document.visibilityState !== 'visible') {
@@ -762,6 +766,7 @@ const [reportSourceMode, setReportSourceMode] = useState('');
               includeNotifications: true,
             })
           );
+          refreshTasks.push(touchMyProfileActivitySafely(supabaseProfileId));
         }
 
         await Promise.all(refreshTasks);
@@ -1167,6 +1172,82 @@ const [reportSourceMode, setReportSourceMode] = useState('');
   }
 
 
+  async function touchMyProfileActivitySafely(
+    profileId,
+    { ignoreCooldown = false } = {}
+  ) {
+    if (!profileId) {
+      return null;
+    }
+
+    const profileKey = String(profileId);
+    const pendingTouch = profileActivityTouchPromisesRef.current.get(profileKey);
+
+    if (pendingTouch) {
+      return pendingTouch;
+    }
+
+    const lastTouch = lastProfileActivityTouchRef.current.get(profileKey);
+
+    if (
+      !ignoreCooldown &&
+      lastTouch &&
+      Date.now() - lastTouch.succeededAt < PROFILE_ACTIVITY_TOUCH_COOLDOWN_MS
+    ) {
+      return lastTouch.profile;
+    }
+
+    const touchPromise = (async () => {
+      try {
+        const { data, error } = await supabase.rpc('touch_my_profile_activity', {
+          input_profile_id: profileId,
+        });
+
+        if (error) {
+          console.warn('프로필 활동 시각 갱신 실패:', error);
+          return null;
+        }
+
+        const touchedProfile = Array.isArray(data) ? data[0] : data;
+
+        if (!touchedProfile) {
+          console.warn('프로필 활동 시각 갱신 결과가 없습니다.');
+          return null;
+        }
+
+        lastProfileActivityTouchRef.current.set(profileKey, {
+          succeededAt: Date.now(),
+          profile: touchedProfile,
+        });
+
+        if (
+          String(supabaseProfileIdRef.current) === profileKey &&
+          typeof touchedProfile.is_visible === 'boolean'
+        ) {
+          setIsProfileVisible(touchedProfile.is_visible);
+        }
+
+        return touchedProfile;
+      } catch (error) {
+        console.warn('프로필 활동 시각 갱신 중 오류:', error);
+        return null;
+      }
+    })();
+
+    profileActivityTouchPromisesRef.current.set(profileKey, touchPromise);
+
+    try {
+      return await touchPromise;
+    } finally {
+      if (
+        profileActivityTouchPromisesRef.current.get(profileKey) === touchPromise
+      ) {
+        profileActivityTouchPromisesRef.current.delete(profileKey);
+      }
+    }
+  }
+
+
 
 
   const handleCopyParticipantCode = async () => {
@@ -1258,6 +1339,10 @@ const [reportSourceMode, setReportSourceMode] = useState('');
       return;
     }
 
+    const touchedProfile = await touchMyProfileActivitySafely(foundProfile.id, {
+      ignoreCooldown: true,
+    });
+
 
 
 
@@ -1303,7 +1388,11 @@ const [reportSourceMode, setReportSourceMode] = useState('');
   
     setSupabaseProfileId(foundProfile.id);
     setParticipantCode(foundProfile.participant_code || code);
-    setIsProfileVisible(foundProfile.is_visible);
+    setIsProfileVisible(
+      typeof touchedProfile?.is_visible === 'boolean'
+        ? touchedProfile.is_visible
+        : foundProfile.is_visible
+    );
     setIsEntered(true);
     setIsProfileSaved(true);
     setCurrentPage('profileComplete');
@@ -2188,6 +2277,7 @@ const [reportSourceMode, setReportSourceMode] = useState('');
           egen_teto_score:
             profile.egenTetoScore !== '' ? Number(profile.egenTetoScore) : null,
           is_visible: isProfileVisible,
+          auto_hidden: false,
         })
         .eq('id', supabaseProfileId);
     
@@ -2893,6 +2983,7 @@ if (reverseLike?.status === 'accepted') {
           .from('profiles')
           .update({
             is_visible: nextVisible,
+            auto_hidden: false,
           })
           .eq('id', supabaseProfileId);
   

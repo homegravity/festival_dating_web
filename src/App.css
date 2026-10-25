@@ -3118,6 +3118,7 @@ label {
 
 .app.my-profile-page {
   position: relative;
+  isolation: isolate;
   min-height: 100vh;
   overflow-x: hidden;
   background:
@@ -3137,7 +3138,7 @@ label {
   border-radius: 999px;
   background: rgba(255, 142, 178, 0.12);
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 
 .app.my-profile-page::after {
@@ -3150,7 +3151,7 @@ label {
   border-radius: 999px;
   background: rgba(255, 210, 150, 0.16);
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 
 
@@ -4125,6 +4126,7 @@ label {
 
 .app.browse-page {
   position: relative;
+  isolation: isolate;
   min-height: 100vh;
   overflow-x: hidden;
   background:
@@ -4144,7 +4146,7 @@ label {
   border-radius: 999px;
   background: rgba(255, 142, 178, 0.12);
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 
 .app.browse-page::after {
@@ -4157,7 +4159,7 @@ label {
   border-radius: 999px;
   background: rgba(255, 210, 150, 0.16);
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 
 .app.browse-page .app-page-header {

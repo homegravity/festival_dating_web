@@ -3915,8 +3915,8 @@ label {
   box-shadow:
     0 14px 34px rgba(255, 115, 155, 0.16),
     0 4px 14px rgba(120, 80, 100, 0.06);
-  backdrop-filter: blur(32px) saturate(1.25);
-  -webkit-backdrop-filter: blur(32px) saturate(1.25);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -3999,8 +3999,8 @@ label {
     0 8px 18px rgba(120, 80, 100, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 -1px 0 rgba(255, 205, 220, 0.22) !important;
-  backdrop-filter: blur(32px) saturate(1.25) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(1.25) !important;
+  backdrop-filter: blur(22px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.25) !important;
 }
 
 .bottom-nav button {
@@ -4159,13 +4159,6 @@ label {
   pointer-events: none;
   z-index: 0;
 }
-
-.app.browse-page > *:not(.bottom-nav):not(.toast-layer) {
-  position: relative;
-  z-index: 1;
-}
-
-
 
 .app.browse-page .app-page-header {
   position: relative;
@@ -4346,8 +4339,8 @@ label {
       rgba(255, 245, 249, 0.38)
     ) !important;
   border: 1px solid rgba(255, 230, 237, 0.78) !important;
-  backdrop-filter: blur(32px) saturate(1.25) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(1.25) !important;
+  backdrop-filter: blur(22px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.25) !important;
   box-shadow:
     0 18px 42px rgba(255, 115, 155, 0.18),
     0 8px 18px rgba(120, 80, 100, 0.08),

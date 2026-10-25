@@ -12,6 +12,7 @@ const ACTIVITY_FALLBACK_POLL_MS = 60 * 1000;
 const FOREGROUND_REFRESH_DEBOUNCE_MS = 400;
 const PROFILE_ACTIVITY_TOUCH_COOLDOWN_MS = 5 * 1000;
 const TRANSIENT_RETRY_DELAY_MS = 700;
+const DELETE_PROFILE_MODAL_EXIT_MS = 180;
 const NOTICE_LAST_CHECKED_STORAGE_KEY = 'festivalDatingNoticeLastCheckedAt';
 const noticeDateFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
@@ -374,6 +375,14 @@ const [isProfileExiting, setIsProfileExiting] = useState(false);
   const [processingReceivedAction, setProcessingReceivedAction] = useState('');
   const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
   const [isDeletingProfile, setIsDeletingProfile] = useState(false);
+  const [isDeleteProfileModalOpen, setIsDeleteProfileModalOpen] = useState(false);
+  const [isDeleteProfileModalClosing, setIsDeleteProfileModalClosing] = useState(false);
+  const deleteProfileModalRef = useRef(null);
+  const deleteProfileCancelButtonRef = useRef(null);
+  const deleteProfileTriggerRef = useRef(null);
+  const deleteProfileCloseTimerRef = useRef(null);
+  const deleteProfileModalClosingRef = useRef(false);
+  const deleteProfileBusyRef = useRef(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('info');
   const [toastQueue, setToastQueue] = useState([]);
@@ -3362,79 +3371,195 @@ if (reverseLike?.status === 'accepted') {
 
 
 
+  const handleCloseDeleteProfileModal = useCallback(() => {
+    if (deleteProfileBusyRef.current || deleteProfileModalClosingRef.current) {
+      return;
+    }
+
+    deleteProfileModalClosingRef.current = true;
+    setIsDeleteProfileModalClosing(true);
+
+    if (deleteProfileCloseTimerRef.current) {
+      window.clearTimeout(deleteProfileCloseTimerRef.current);
+    }
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const closeDelay = prefersReducedMotion ? 0 : DELETE_PROFILE_MODAL_EXIT_MS;
+
+    deleteProfileCloseTimerRef.current = window.setTimeout(() => {
+      setIsDeleteProfileModalOpen(false);
+      setIsDeleteProfileModalClosing(false);
+      deleteProfileModalClosingRef.current = false;
+      deleteProfileCloseTimerRef.current = null;
+      deleteProfileTriggerRef.current?.focus();
+    }, closeDelay);
+  }, []);
+
+
+  const handleOpenDeleteProfileModal = () => {
+    if (isDeletingProfile || deleteProfileBusyRef.current) {
+      return;
+    }
+
+    if (deleteProfileCloseTimerRef.current) {
+      window.clearTimeout(deleteProfileCloseTimerRef.current);
+      deleteProfileCloseTimerRef.current = null;
+    }
+
+    deleteProfileModalClosingRef.current = false;
+    setIsDeleteProfileModalClosing(false);
+    setIsDeleteProfileModalOpen(true);
+  };
+
+
   const handleResetData = async () => {
-    if (isDeletingProfile) {
+    if (
+      isDeletingProfile ||
+      deleteProfileBusyRef.current ||
+      deleteProfileModalClosingRef.current
+    ) {
       return;
     }
-    
-    
-    const confirmed = window.confirm(
-      '정말 프로필을 삭제할까요?\n\n삭제하면 참여 코드로도 다시 불러올 수 없어요.'
-    );
-  
-    
-    
-    if (!confirmed) {
-      return;
-    }
-  
-    
-    if (supabaseProfileId) {
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', supabaseProfileId);
-    
+
+    deleteProfileBusyRef.current = true;
+    setIsDeletingProfile(true);
+
+    try {
+      if (supabaseProfileId) {
+        const { error } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', supabaseProfileId);
+
         if (error) {
           console.error('Supabase 삭제 오류:', error);
           alert(`Supabase 삭제 오류: ${error.message}`);
-          setIsDeletingProfile(false);
           return;
         }
-    
-      await loadSupabaseProfiles();
+
+        await loadSupabaseProfiles();
+      }
+
+      localStorage.removeItem('festivalDatingData');
+
+      setIsDeleteProfileModalOpen(false);
+      setIsDeleteProfileModalClosing(false);
+      deleteProfileModalClosingRef.current = false;
+      setIsEntered(false);
+
+      setProfile({
+        nickname: '',
+        gender: '',
+        targetGender: '',
+        grade: '',
+        age: '',
+        department: '',
+        mbti: '',
+        faceType: '',
+        interests: '',
+        introduction: '',
+        idealType: '',
+        egenTetoScore: '',
+        contactType: 'instagram',
+        contactValue: '',
+      });
+
+      setIsProfileSaved(false);
+      setCurrentPage('profileComplete');
+      setSearchKeyword('');
+      setLikedProfileIds([]);
+      setRejectedProfileIds([]);
+      setReceivedLikeIds([]);
+      setMatchedProfileIds([]);
+      setRelationshipProfileMap({});
+      setIsProfileVisible(true);
+      setProfileFormMode('create');
+      setSupabaseProfileId(null);
+      setParticipantCode('');
+    } finally {
+      deleteProfileBusyRef.current = false;
+      setIsDeletingProfile(false);
     }
-    
-    
-    
-    
-    localStorage.removeItem('festivalDatingData');
-  
-    
-    setIsEntered(false);
-    
-  
-    setProfile({
-      nickname: '',
-      gender: '',
-      targetGender: '',
-      grade: '',
-      age: '',
-      department: '',
-      mbti: '',
-      faceType: '',
-      interests: '',
-      introduction: '',
-      idealType: '',
-      egenTetoScore: '',
-      contactType: 'instagram',
-      contactValue: '',
-    });
-  
-    setIsProfileSaved(false);
-    setCurrentPage('profileComplete');
-    setSearchKeyword('');
-    setLikedProfileIds([]);
-    setRejectedProfileIds([]);
-    setReceivedLikeIds([]);
-    setMatchedProfileIds([]);
-    setRelationshipProfileMap({});
-    setIsProfileVisible(true);
-    setProfileFormMode('create');
-    setSupabaseProfileId(null);
-    setParticipantCode('');
-    setIsDeletingProfile(false);
   };
+
+
+  useEffect(() => {
+    if (!isDeleteProfileModalOpen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const focusTimer = window.setTimeout(() => {
+      deleteProfileCancelButtonRef.current?.focus();
+    }, 0);
+
+    const handleDeleteModalKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        if (!deleteProfileBusyRef.current) {
+          event.preventDefault();
+          handleCloseDeleteProfileModal();
+        }
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const modalElement = deleteProfileModalRef.current;
+
+      if (!modalElement) {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        modalElement.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        modalElement.focus();
+        return;
+      }
+
+      const firstFocusableElement = focusableElements[0];
+      const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey) {
+        if (
+          document.activeElement === firstFocusableElement ||
+          !modalElement.contains(document.activeElement)
+        ) {
+          event.preventDefault();
+          lastFocusableElement.focus();
+        }
+        return;
+      }
+
+      if (document.activeElement === lastFocusableElement) {
+        event.preventDefault();
+        firstFocusableElement.focus();
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleDeleteModalKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = previousBodyOverflow;
+      window.removeEventListener('keydown', handleDeleteModalKeyDown);
+    };
+  }, [handleCloseDeleteProfileModal, isDeleteProfileModalOpen]);
+
+
+  useEffect(() => () => {
+    if (deleteProfileCloseTimerRef.current) {
+      window.clearTimeout(deleteProfileCloseTimerRef.current);
+    }
+  }, []);
   
 
 
@@ -4254,6 +4379,84 @@ if (reverseLike?.status === 'accepted') {
     : '';
 
 
+  const deleteProfileModalElement =
+    isDeleteProfileModalOpen &&
+    createPortal(
+      <div
+        className={`profile-delete-modal-layer ${
+          isDeleteProfileModalClosing ? 'is-closing' : ''
+        }`}
+        onClick={(event) => {
+          if (
+            event.target === event.currentTarget &&
+            !deleteProfileBusyRef.current
+          ) {
+            handleCloseDeleteProfileModal();
+          }
+        }}
+      >
+        <section
+          ref={deleteProfileModalRef}
+          id="profile-delete-dialog"
+          className="profile-delete-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="profile-delete-modal-title"
+          aria-describedby="profile-delete-modal-description"
+          aria-busy={isDeletingProfile}
+          tabIndex={-1}
+        >
+          <div className="profile-delete-modal-icon-wrap" aria-hidden="true">
+            <svg
+              className="profile-delete-modal-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              focusable="false"
+            >
+              <path d="M4 7h16" />
+              <path d="M9 7V4h6v3" />
+              <path d="m6 7 1 13h10l1-13" />
+              <path d="M10 11v5M14 11v5" />
+            </svg>
+          </div>
+
+          <h2 id="profile-delete-modal-title">프로필을 삭제할까요?</h2>
+          <p id="profile-delete-modal-description">
+            저장된 프로필이 삭제되고 이 브라우저의 프로필·관심·매칭 정보가
+            초기화돼요. 참여 코드로 다시 불러올 수 없으며 삭제한 프로필은 복구할 수
+            없어요.
+          </p>
+
+          <div className="profile-delete-modal-actions">
+            <button
+              ref={deleteProfileCancelButtonRef}
+              type="button"
+              className="profile-delete-modal-cancel"
+              onClick={handleCloseDeleteProfileModal}
+              disabled={isDeletingProfile || isDeleteProfileModalClosing}
+            >
+              취소
+            </button>
+
+            <button
+              type="button"
+              className="profile-delete-modal-confirm"
+              onClick={handleResetData}
+              disabled={isDeletingProfile || isDeleteProfileModalClosing}
+            >
+              {isDeletingProfile ? '삭제 중...' : '프로필 삭제'}
+            </button>
+          </div>
+        </section>
+      </div>,
+      document.body
+    );
+
+
 
 
 if (currentPage === 'privacyPolicy') {
@@ -4394,6 +4597,7 @@ if (currentPage === 'privacyPolicy') {
         <div className="app my-profile-page">
           {toastElement}
           {noticeCenterElement}
+          {deleteProfileModalElement}
     
           {renderPageHeader({
             title: '내 프로필',
@@ -4434,7 +4638,32 @@ if (currentPage === 'privacyPolicy') {
             <section className="my-profile-card">
               <div className="my-profile-header">
                 <p className="my-profile-label">내 프로필</p>
-                <h2>{profile.nickname}</h2>
+
+                <div className="my-profile-title-row">
+                  <h2>{profile.nickname}</h2>
+
+                  <button
+                    type="button"
+                    className="my-profile-edit-button"
+                    onClick={handleEditProfile}
+                  >
+                    <svg
+                      className="my-profile-edit-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path d="M4 20h4l10.5-10.5a2.12 2.12 0 0 0-3-3L5 17v3Z" />
+                      <path d="m14 8 3 3" />
+                    </svg>
+                    수정
+                  </button>
+                </div>
     
                 {myProfileMetaItems.length > 0 && (
                   <p className="profile-meta">
@@ -4497,6 +4726,31 @@ if (currentPage === 'privacyPolicy') {
                   <p className="profile-section-text">{profile.idealType}</p>
                 </div>
               )}
+
+              <div className="my-profile-visibility-control">
+                <div className="my-profile-visibility-status" aria-live="polite">
+                  <span
+                    className={`my-profile-status-dot ${
+                      isProfileVisible ? 'is-visible' : 'is-hidden'
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <span>{profileStatus}</span>
+                </div>
+
+                <button
+                  type="button"
+                  className="my-profile-visibility-button"
+                  onClick={handleToggleProfileVisibility}
+                  disabled={isUpdatingVisibility}
+                >
+                  {isUpdatingVisibility
+                    ? '처리 중...'
+                    : isProfileVisible
+                      ? '숨기기'
+                      : '공개하기'}
+                </button>
+              </div>
             </section>
     
 
@@ -4513,54 +4767,34 @@ if (currentPage === 'privacyPolicy') {
               </p>
             </section>
 
-
-            <section className="my-info-card">
-              <p className="my-card-title">활동 상태</p>
-    
-              <p><strong>현재 매칭:</strong> {matchedProfileIds.length}명</p>
-              <p><strong>프로필 공개 상태:</strong> {profileStatus}</p>
-            </section>
-    
-            
-    
-            
-    
-            <section className="my-profile-actions">
-              <p className="my-card-title">프로필 관리</p>
-
-              <button
-                type="button"
-                className="my-action-button"
-                onClick={handleEditProfile}
+            <button
+              ref={deleteProfileTriggerRef}
+              type="button"
+              className="my-profile-delete-button"
+              onClick={handleOpenDeleteProfileModal}
+              disabled={isDeletingProfile}
+              aria-haspopup="dialog"
+              aria-expanded={isDeleteProfileModalOpen}
+              aria-controls="profile-delete-dialog"
+            >
+              <svg
+                className="my-profile-delete-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                focusable="false"
               >
-                프로필 수정하기
-              </button>
-
-             
-                <button
-                  type="button"
-                  className="my-action-button"
-                  onClick={handleToggleProfileVisibility}
-                  disabled={isUpdatingVisibility}
-                >
-                  {isUpdatingVisibility
-                    ? '처리 중...'
-                    : isProfileVisible
-                      ? '프로필 숨기기'
-                      : '다시 공개하기'}
-                </button>
-             
-
-             
-              <button
-                type="button"
-                className="my-action-button danger"
-                onClick={handleResetData}
-                disabled={isDeletingProfile}
-              >
-                {isDeletingProfile ? '삭제 중...' : '프로필 삭제하기'}
-              </button>
-            </section>
+                <path d="M4 7h16" />
+                <path d="M9 7V4h6v3" />
+                <path d="m6 7 1 13h10l1-13" />
+                <path d="M10 11v5M14 11v5" />
+              </svg>
+              <span>{isDeletingProfile ? '삭제 중...' : '프로필 삭제하기'}</span>
+            </button>
           </div>
     
           <FloatingInquiryButton onClick={handleOpenInquiryChat} />

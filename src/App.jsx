@@ -4754,7 +4754,7 @@ if (currentPage === 'privacyPolicy') {
             </section>
     
 
-            <section className="my-info-card">
+            <section className="my-info-card my-contact-card">
               <p className="my-card-title">내 연락수단</p>
     
               <div className="contact-value-box">

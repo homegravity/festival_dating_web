@@ -1,0 +1,207 @@
+.nav-blur-debug-current-backdrop {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  height: 112px;
+  background:
+    repeating-conic-gradient(#111111 0 25%, #ffffff 0 50%) 0 / 24px 24px;
+  pointer-events: none;
+}
+
+.nav-blur-debug-panel {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  z-index: 60000;
+  width: min(430px, calc(100vw - 20px));
+  max-height: min(68vh, 620px);
+  padding: 15px;
+  overflow-y: auto;
+  border: 1px solid rgba(218, 187, 200, 0.94);
+  border-radius: 20px;
+  background: rgba(255, 252, 250, 0.97);
+  color: #43383d;
+  box-shadow: 0 18px 48px rgba(57, 39, 47, 0.24);
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  text-align: left;
+  transform: translateX(-50%);
+  overscroll-behavior: contain;
+}
+
+.nav-blur-debug-panel * {
+  box-sizing: border-box;
+}
+
+.nav-blur-debug-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nav-blur-debug-heading p,
+.nav-blur-debug-heading h2,
+.nav-blur-debug-section h3,
+.nav-blur-debug-section p,
+.nav-blur-debug-guide {
+  margin: 0;
+}
+
+.nav-blur-debug-heading p {
+  color: #bb657e;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.nav-blur-debug-heading h2 {
+  margin-top: 2px;
+  color: #43383d;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.nav-blur-debug-heading > span {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #f5eaf0;
+  color: #8d6c79;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.nav-blur-debug-section {
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(225, 207, 215, 0.82);
+}
+
+.nav-blur-debug-section h3 {
+  color: #654f59;
+  font-size: 12.5px;
+  font-weight: 900;
+}
+
+.nav-blur-debug-section > p {
+  margin-top: 5px;
+  color: #806f77;
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.nav-blur-debug-independent-pattern {
+  position: relative;
+  height: 96px;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid #888888;
+  border-radius: 14px;
+  background:
+    repeating-conic-gradient(#000000 0 25%, #ffffff 0 50%) 0 / 20px 20px;
+}
+
+.nav-blur-debug-pattern-label {
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 9.5px;
+  font-weight: 900;
+}
+
+.nav-blur-debug-independent-blur {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  bottom: 9px;
+  width: 56%;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.nav-blur-debug-independent-blur span {
+  padding: 4px 7px;
+  border-radius: 7px;
+  background: rgba(20, 20, 20, 0.68);
+  color: #ffffff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.nav-blur-debug-values {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 0;
+}
+
+.nav-blur-debug-values > div {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 7px;
+  padding: 6px 7px;
+  border-radius: 8px;
+  background: #f8f3f5;
+}
+
+.nav-blur-debug-values dt {
+  color: #846874;
+  font-size: 10.5px;
+  font-weight: 850;
+}
+
+.nav-blur-debug-values dd {
+  min-width: 0;
+  margin: 0;
+  color: #43383d;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.nav-blur-debug-guide {
+  margin-top: 13px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #fff1f5;
+  color: #875d6c;
+  font-size: 10.8px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+@media (max-width: 390px) {
+  .nav-blur-debug-panel {
+    top: 7px;
+    width: calc(100vw - 14px);
+    max-height: 66vh;
+    padding: 13px;
+    border-radius: 17px;
+  }
+
+  .nav-blur-debug-heading h2 {
+    font-size: 16px;
+  }
+
+  .nav-blur-debug-heading > span {
+    display: none;
+  }
+
+  .nav-blur-debug-values > div {
+    grid-template-columns: 105px minmax(0, 1fr);
+  }
+}

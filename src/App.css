@@ -236,8 +236,10 @@ textarea {
   width: calc(100% - 32px);
   box-sizing: border-box;
   
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  transform: none;
   z-index: 1000;
 }
 
@@ -3902,9 +3904,11 @@ label {
 
 .bottom-nav {
   position: fixed;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 14px;
-  transform: translateX(-50%);
+  margin-inline: auto;
+  transform: none;
   width: calc(100% - 28px);
   max-width: 430px;
   min-height: 66px;

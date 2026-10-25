@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import './App.css';
 import { sampleProfiles } from './data/sampleProfiles';
@@ -12,6 +12,68 @@ const ACTIVITY_FALLBACK_POLL_MS = 60 * 1000;
 const FOREGROUND_REFRESH_DEBOUNCE_MS = 400;
 const PROFILE_ACTIVITY_TOUCH_COOLDOWN_MS = 5 * 1000;
 const TRANSIENT_RETRY_DELAY_MS = 700;
+const NOTICE_LAST_CHECKED_STORAGE_KEY = 'festivalDatingNoticeLastCheckedAt';
+const noticeDateFormatter = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: 'Asia/Seoul',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+
+function getNoticeTimestamp(value) {
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+
+function formatNoticeDate(value) {
+  const timestamp = getNoticeTimestamp(value);
+
+  if (timestamp === null) {
+    return '';
+  }
+
+  const dateParts = noticeDateFormatter
+    .formatToParts(new Date(timestamp))
+    .reduce((parts, part) => {
+      parts[part.type] = part.value;
+      return parts;
+    }, {});
+
+  return `${dateParts.year}.${dateParts.month}.${dateParts.day}`;
+}
+
+
+function getNoticeCategoryTone(category) {
+  if (category === '이벤트') {
+    return 'event';
+  }
+
+  if (category === '업데이트') {
+    return 'update';
+  }
+
+  return 'guide';
+}
+
+
+function formatNoticeForUi(item) {
+  return {
+    id: String(item.id),
+    category: item.category,
+    categoryTone: getNoticeCategoryTone(item.category),
+    title: item.title,
+    summary: item.summary,
+    content: String(item.content || '')
+      .split(/\r?\n+/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean),
+    isImportant: Boolean(item.is_important),
+    createdAt: item.created_at,
+    date: formatNoticeDate(item.created_at),
+  };
+}
 
 
 function getErrorMessage(error) {
@@ -128,6 +190,23 @@ function FloatingInquiryButton({ onClick }) {
       <span className="floating-inquiry-text">문의</span>
     </button>,
     document.body
+  );
+}
+
+
+function NoticeMegaphoneIcon() {
+  return (
+    <svg
+      className="notice-megaphone-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4.75 10.1v3.8c0 .9.73 1.63 1.63 1.63h2.1l7.06 3.25V5.22L8.48 8.47h-2.1c-.9 0-1.63.73-1.63 1.63Z" />
+      <path d="M15.54 8.15c1.2.67 1.96 2.12 1.96 3.85s-.76 3.18-1.96 3.85M8.08 15.53l1.02 3.2c.18.56.7.94 1.29.94h.7c.76 0 1.3-.74 1.07-1.47l-.45-1.42" />
+      <path d="M19.5 9.2 21 8.45M19.75 12H22M19.5 14.8l1.5.75" />
+    </svg>
   );
 }
 
@@ -348,6 +427,12 @@ const [reportReason, setReportReason] = useState('');
 const [reportDetail, setReportDetail] = useState('');
 const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 const [reportSourceMode, setReportSourceMode] = useState('');
+  const [isNoticeOpen, setIsNoticeOpen] = useState(false);
+  const [selectedNotice, setSelectedNotice] = useState(null);
+  const [notices, setNotices] = useState([]);
+  const [isNoticeLoading, setIsNoticeLoading] = useState(true);
+  const [hasUnreadNotice, setHasUnreadNotice] = useState(false);
+  const noticeRequestIdRef = useRef(0);
 
 
   
@@ -358,6 +443,80 @@ const [reportSourceMode, setReportSourceMode] = useState('');
   const maxMatches = 3;
   const isMatchFull = matchedProfileIds.length >= maxMatches;
   const profileStatus = isProfileVisible ? '공개 중' : '숨김 중';
+
+  const loadNotices = useCallback(async ({ markAsChecked = false } = {}) => {
+    const requestId = noticeRequestIdRef.current + 1;
+    noticeRequestIdRef.current = requestId;
+    setIsNoticeLoading(true);
+
+    const { data, error } = await runSupabaseReadWithRetry(
+      () =>
+        supabase
+          .from('notices')
+          .select('id, category, title, summary, content, is_important, created_at')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false }),
+      '공지사항 불러오기'
+    );
+
+    if (requestId !== noticeRequestIdRef.current) {
+      return false;
+    }
+
+    if (error) {
+      console.warn('공지사항 불러오기 실패:', error);
+      setIsNoticeLoading(false);
+      return false;
+    }
+
+    const loadedNotices = (Array.isArray(data) ? data : []).map(formatNoticeForUi);
+    const latestCreatedAt = loadedNotices[0]?.createdAt || '';
+    const latestTimestamp = getNoticeTimestamp(latestCreatedAt);
+
+    setNotices(loadedNotices);
+
+    if (latestTimestamp === null) {
+      setHasUnreadNotice(false);
+      setIsNoticeLoading(false);
+      return true;
+    }
+
+    if (markAsChecked) {
+      try {
+        localStorage.setItem(NOTICE_LAST_CHECKED_STORAGE_KEY, latestCreatedAt);
+      } catch (storageError) {
+        console.warn('공지 확인 시각 저장 실패:', storageError);
+      }
+
+      setHasUnreadNotice(false);
+      setIsNoticeLoading(false);
+      return true;
+    }
+
+    let savedLastCheckedAt = '';
+
+    try {
+      savedLastCheckedAt = localStorage.getItem(NOTICE_LAST_CHECKED_STORAGE_KEY) || '';
+    } catch (storageError) {
+      console.warn('공지 확인 시각 불러오기 실패:', storageError);
+    }
+
+    const lastCheckedTimestamp = getNoticeTimestamp(savedLastCheckedAt);
+    setHasUnreadNotice(
+      lastCheckedTimestamp === null || latestTimestamp > lastCheckedTimestamp
+    );
+    setIsNoticeLoading(false);
+    return true;
+  }, []);
+
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadNotices();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [loadNotices]);
 
   useEffect(() => {
     const dataToSave = {
@@ -404,6 +563,29 @@ const [reportSourceMode, setReportSourceMode] = useState('');
     setReportReason('');
     setReportDetail('');
   }, [currentPage]);
+
+
+  useEffect(() => {
+    if (!isNoticeOpen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const handleNoticeEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsNoticeOpen(false);
+        setSelectedNotice(null);
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleNoticeEscape);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      window.removeEventListener('keydown', handleNoticeEscape);
+    };
+  }, [isNoticeOpen]);
 
 
 
@@ -2617,6 +2799,178 @@ const [reportSourceMode, setReportSourceMode] = useState('');
     document.body
   );
 
+  const openNoticeCenter = () => {
+    const latestCreatedAt = notices[0]?.createdAt || '';
+
+    if (getNoticeTimestamp(latestCreatedAt) !== null) {
+      try {
+        localStorage.setItem(NOTICE_LAST_CHECKED_STORAGE_KEY, latestCreatedAt);
+      } catch (storageError) {
+        console.warn('공지 확인 시각 저장 실패:', storageError);
+      }
+    }
+
+    setHasUnreadNotice(false);
+    setSelectedNotice(null);
+    setIsNoticeOpen(true);
+    loadNotices({ markAsChecked: true });
+  };
+
+  const closeNoticeCenter = () => {
+    setIsNoticeOpen(false);
+    setSelectedNotice(null);
+  };
+
+  const noticeCenterElement = createPortal(
+    <>
+      <button
+        type="button"
+        className="notice-launcher"
+        onClick={openNoticeCenter}
+        aria-label="새소식 열기"
+        aria-haspopup="dialog"
+        aria-expanded={isNoticeOpen}
+      >
+        <NoticeMegaphoneIcon />
+        {hasUnreadNotice && (
+          <span className="notice-unread-dot" aria-hidden="true" />
+        )}
+      </button>
+
+      {isNoticeOpen && (
+        <div className="notice-center-layer">
+          <button
+            type="button"
+            className="notice-center-backdrop"
+            onClick={closeNoticeCenter}
+            aria-label="새소식 닫기"
+          />
+
+          <section
+            className="notice-center-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={selectedNotice ? 'notice-detail-title' : 'notice-center-title'}
+          >
+            <header className="notice-center-header">
+              <div className="notice-center-heading-row">
+                {selectedNotice && (
+                  <button
+                    type="button"
+                    className="notice-back-button"
+                    onClick={() => setSelectedNotice(null)}
+                    aria-label="공지 목록으로 돌아가기"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="m14.5 6-6 6 6 6" />
+                    </svg>
+                  </button>
+                )}
+
+                <div>
+                  <p className="notice-center-eyebrow">두유는 사랑을 타고</p>
+                  <h2 id={selectedNotice ? 'notice-detail-title' : 'notice-center-title'}>
+                    {selectedNotice ? '공지 상세' : '새소식'}
+                  </h2>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="notice-close-button"
+                onClick={closeNoticeCenter}
+                aria-label="새소식 닫기"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m7 7 10 10M17 7 7 17" />
+                </svg>
+              </button>
+            </header>
+
+            <div className="notice-center-scroll">
+              {selectedNotice ? (
+                <article className="notice-center-view notice-detail-view">
+                  <div className="notice-detail-meta">
+                    <span className={`notice-category-chip ${selectedNotice.categoryTone}`}>
+                      {selectedNotice.category}
+                    </span>
+                    <time dateTime={selectedNotice.createdAt}>
+                      {selectedNotice.date}
+                    </time>
+                  </div>
+
+                  <div className="notice-detail-title-row">
+                    <h3>{selectedNotice.title}</h3>
+                    {selectedNotice.isImportant && (
+                      <span className="notice-important-star" aria-label="중요 공지">
+                        ★
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="notice-detail-summary">{selectedNotice.summary}</p>
+
+                  <div className="notice-detail-body">
+                    {selectedNotice.content.map((paragraph, index) => (
+                      <p key={`${selectedNotice.id}-${index}`}>{paragraph}</p>
+                    ))}
+                  </div>
+                </article>
+              ) : (
+                <div className="notice-center-view notice-list" aria-label="공지 목록">
+                  {isNoticeLoading && notices.length === 0 ? (
+                    <div className="notice-empty-state" aria-live="polite">
+                      <p>불러오는 중...</p>
+                    </div>
+                  ) : notices.length === 0 ? (
+                    <div className="notice-empty-state" aria-live="polite">
+                      <p>등록된 새소식이 없어요.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="notice-list-intro">
+                        서비스의 중요한 안내와 업데이트를 확인해보세요.
+                      </p>
+
+                      {notices.map((notice) => (
+                        <button
+                          type="button"
+                          className="notice-list-item"
+                          key={notice.id}
+                          onClick={() => setSelectedNotice(notice)}
+                        >
+                          <div className="notice-list-meta">
+                            <span className={`notice-category-chip ${notice.categoryTone}`}>
+                              {notice.category}
+                            </span>
+                            <time dateTime={notice.createdAt}>{notice.date}</time>
+                          </div>
+
+                          <div className="notice-list-title-row">
+                            <h3>{notice.title}</h3>
+                            {notice.isImportant && (
+                              <span className="notice-important-star" aria-label="중요 공지">
+                                ★
+                              </span>
+                            )}
+                          </div>
+
+                          <p>{notice.summary}</p>
+                          <span className="notice-list-arrow" aria-hidden="true">→</span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+    </>,
+    document.body
+  );
+
   
     const handleToggleLike = async (profileId) => {
       if (processingProfileId === profileId) {
@@ -3347,6 +3701,7 @@ if (reverseLike?.status === 'accepted') {
       return (
         <div className="app sent-likes-page">
           {toastElement}
+          {noticeCenterElement}
     
           {renderPageHeader({
             title: '보낸 관심 관리',
@@ -3402,6 +3757,7 @@ if (reverseLike?.status === 'accepted') {
       <div className="app browse-page">
         {toastElement}
         {reportModalElement}
+        {noticeCenterElement}
 
 
 
@@ -3745,6 +4101,7 @@ if (reverseLike?.status === 'accepted') {
       <div className="app received-page">
         {toastElement}
         {reportModalElement}
+        {noticeCenterElement}
         {renderPageHeader({
             title: '받은 관심',
             description: '관심을 보낸 사람을 확인하고 수락하면 매칭돼요.',
@@ -3801,6 +4158,7 @@ if (reverseLike?.status === 'accepted') {
       <div className="app match-page">
         {toastElement}
         {reportModalElement}
+        {noticeCenterElement}
 
         
 
@@ -4035,6 +4393,7 @@ if (currentPage === 'privacyPolicy') {
       return (
         <div className="app my-profile-page">
           {toastElement}
+          {noticeCenterElement}
     
           {renderPageHeader({
             title: '내 프로필',
@@ -4274,6 +4633,7 @@ if (currentPage === 'privacyPolicy') {
   return (
     <div className="app start-page">
       {toastElement}
+      {noticeCenterElement}
 
         <div className="start-hero">
           <p className="start-brand" aria-label="두유는 사랑을 타고">
